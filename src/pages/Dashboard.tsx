@@ -3,10 +3,11 @@ import { MetricCard } from "@/components/vegia/MetricCard";
 import { NDVIHeatmapBar } from "@/components/vegia/NDVIHeatmapBar";
 import { NDVIBarChart } from "@/components/vegia/NDVIBarChart";
 import { AlertCard } from "@/components/vegia/AlertCard";
-import { segments } from "@/data/mock";
+import { useSegments } from "@/hooks/useVegiaData";
 import { RefreshCw } from "lucide-react";
 
 const Dashboard = () => {
+  const { data: segments = [], isLoading } = useSegments();
   const alerts = segments.filter(s => s.status !== "conforme").slice(0, 3);
   return (
     <>
@@ -73,6 +74,7 @@ const Dashboard = () => {
               <span className="text-[11px] px-2 py-1 rounded-full bg-destructive/10 text-destructive font-semibold">10 total</span>
             </div>
             <div className="space-y-3">
+              {isLoading && <div className="text-[12px] text-muted-foreground">Carregando alertas…</div>}
               {alerts.map(a => <AlertCard key={a.id} alert={a} />)}
             </div>
             <button className="w-full mt-4 py-3 rounded-lg border border-border text-[12px] font-semibold tracking-wider uppercase text-foreground hover:bg-surface-low">

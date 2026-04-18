@@ -14,16 +14,201 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      alerts: {
+        Row: {
+          created_at: string
+          id: string
+          message: string | null
+          segment_id: string
+          status: Database["public"]["Enums"]["segment_status"]
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          segment_id: string
+          status: Database["public"]["Enums"]["segment_status"]
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          segment_id?: string
+          status?: Database["public"]["Enums"]["segment_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alerts_segment_id_fkey"
+            columns: ["segment_id"]
+            isOneToOne: false
+            referencedRelation: "segments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cv_results: {
+        Row: {
+          box: Json | null
+          caption: string | null
+          confidence: number
+          created_at: string
+          id: number
+          km: string
+          label: string
+          status: Database["public"]["Enums"]["segment_status"]
+        }
+        Insert: {
+          box?: Json | null
+          caption?: string | null
+          confidence: number
+          created_at?: string
+          id: number
+          km: string
+          label: string
+          status: Database["public"]["Enums"]["segment_status"]
+        }
+        Update: {
+          box?: Json | null
+          caption?: string | null
+          confidence?: number
+          created_at?: string
+          id?: number
+          km?: string
+          label?: string
+          status?: Database["public"]["Enums"]["segment_status"]
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      segments: {
+        Row: {
+          altura: number
+          clause_full: string
+          clausula: string
+          created_at: string
+          deadline: string | null
+          deadline_urgent: boolean | null
+          detection: Json | null
+          id: string
+          insight: string | null
+          km: string
+          km_end: number
+          km_start: number
+          limite: number
+          ndvi: number
+          notification_id: string | null
+          status: Database["public"]["Enums"]["segment_status"]
+          street: Json | null
+          tipo: string
+          ultima_rocada: string
+          updated_at: string
+        }
+        Insert: {
+          altura: number
+          clause_full: string
+          clausula: string
+          created_at?: string
+          deadline?: string | null
+          deadline_urgent?: boolean | null
+          detection?: Json | null
+          id: string
+          insight?: string | null
+          km: string
+          km_end: number
+          km_start: number
+          limite?: number
+          ndvi: number
+          notification_id?: string | null
+          status: Database["public"]["Enums"]["segment_status"]
+          street?: Json | null
+          tipo: string
+          ultima_rocada: string
+          updated_at?: string
+        }
+        Update: {
+          altura?: number
+          clause_full?: string
+          clausula?: string
+          created_at?: string
+          deadline?: string | null
+          deadline_urgent?: boolean | null
+          detection?: Json | null
+          id?: string
+          insight?: string | null
+          km?: string
+          km_end?: number
+          km_start?: number
+          limite?: number
+          ndvi?: number
+          notification_id?: string | null
+          status?: Database["public"]["Enums"]["segment_status"]
+          street?: Json | null
+          tipo?: string
+          ultima_rocada?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "operator" | "viewer"
+      segment_status: "critico" | "atencao" | "conforme"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +335,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "operator", "viewer"],
+      segment_status: ["critico", "atencao", "conforme"],
+    },
   },
 } as const
