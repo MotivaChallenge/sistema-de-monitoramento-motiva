@@ -1,5 +1,6 @@
-import { Bell, RefreshCw } from "lucide-react";
+import { Bell, RefreshCw, LogOut } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Props {
   breadcrumb?: { label: string; to?: string }[];
@@ -12,6 +13,7 @@ interface Props {
 
 export const TopHeader = ({ breadcrumb = [{ label: "RODOANEL SP-021" }], current = "Dashboard", rightSlot, showStatusBadges, showTabs, showLastReading }: Props) => {
   const { pathname } = useLocation();
+  const { signOut, user } = useAuth();
   return (
     <header className="h-[88px] px-10 flex items-center justify-between bg-background">
       <div className="flex items-center gap-3 text-[13px] tracking-wider">
@@ -55,6 +57,11 @@ export const TopHeader = ({ breadcrumb = [{ label: "RODOANEL SP-021" }], current
         <button className="h-9 w-9 rounded-full hover:bg-surface-high flex items-center justify-center text-muted-foreground">
           <RefreshCw className="h-[18px] w-[18px]" />
         </button>
+        {user && (
+          <button onClick={signOut} title="Sair" className="h-9 w-9 rounded-full hover:bg-surface-high flex items-center justify-center text-muted-foreground">
+            <LogOut className="h-[18px] w-[18px]" />
+          </button>
+        )}
         {rightSlot}
       </div>
     </header>

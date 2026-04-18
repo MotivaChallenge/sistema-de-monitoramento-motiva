@@ -1,12 +1,14 @@
 import { TopHeader } from "@/components/vegia/TopHeader";
 import { CVImageGrid } from "@/components/vegia/CVImageGrid";
 import { useParams } from "react-router-dom";
-import { segments } from "@/data/mock";
+import { useSegment } from "@/hooks/useVegiaData";
 import { Sparkles, Wrench } from "lucide-react";
 
 const AnaliseCV = () => {
   const { id } = useParams();
-  const seg = segments.find(s => s.id === id) || segments[3];
+  const { data: seg, isLoading } = useSegment(id);
+  if (isLoading) return <div className="p-10 text-muted-foreground text-sm">Carregando…</div>;
+  if (!seg) return <div className="p-10 text-muted-foreground text-sm">Segmento não encontrado.</div>;
   return (
     <>
       <TopHeader

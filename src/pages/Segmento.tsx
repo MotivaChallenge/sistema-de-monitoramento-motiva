@@ -1,6 +1,7 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { TopHeader } from "@/components/vegia/TopHeader";
-import { segments, segmentEvolution } from "@/data/mock";
+import { segmentEvolution } from "@/data/mock";
+import { useSegment } from "@/hooks/useVegiaData";
 import { MonoClause } from "@/components/vegia/MonoClause";
 import { NDVILineChart } from "@/components/vegia/NDVILineChart";
 import { AIInsightBubble } from "@/components/vegia/AIInsightBubble";
@@ -10,7 +11,10 @@ import { toast } from "sonner";
 const Segmento = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const seg = segments.find(s => s.id === id) || segments[3];
+  const { data: seg, isLoading } = useSegment(id);
+
+  if (isLoading) return <div className="p-10 text-muted-foreground text-sm">Carregando segmento…</div>;
+  if (!seg) return <div className="p-10 text-muted-foreground text-sm">Segmento não encontrado.</div>;
 
   return (
     <>

@@ -10,6 +10,9 @@ import Dashboard from "./pages/Dashboard";
 import Segmento from "./pages/Segmento";
 import Relatorio from "./pages/Relatorio";
 import AnaliseCV from "./pages/AnaliseCV";
+import Auth from "./pages/Auth";
+import { AuthProvider } from "./hooks/useAuth";
+import { ProtectedRoute } from "./components/vegia/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -19,16 +22,19 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route element={<AppLayout />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/segmento/:id" element={<Segmento />} />
-            <Route path="/relatorio" element={<Relatorio />} />
-            <Route path="/analise-cv/:id" element={<AnaliseCV />} />
-          </Route>
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AuthProvider>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/segmento/:id" element={<Segmento />} />
+              <Route path="/relatorio" element={<Relatorio />} />
+              <Route path="/analise-cv/:id" element={<AnaliseCV />} />
+            </Route>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

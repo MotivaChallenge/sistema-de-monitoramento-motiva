@@ -1,11 +1,13 @@
 import { TopHeader } from "@/components/vegia/TopHeader";
 import { MetricCard } from "@/components/vegia/MetricCard";
 import { SegmentTable } from "@/components/vegia/SegmentTable";
-import { segments } from "@/data/mock";
+import { useSegments } from "@/hooks/useVegiaData";
 import { Calendar, FileDown, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
-const Relatorio = () => (
+const Relatorio = () => {
+  const { data: segments = [] } = useSegments();
+  return (
   <>
     <TopHeader
       breadcrumb={[{ label: "RODOANEL SP-021", to: "/dashboard" }]}
@@ -78,6 +80,7 @@ const Relatorio = () => (
       </div>
     </div>
   </>
-);
+  );
+};
 
 export default Relatorio;
