@@ -5,6 +5,11 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import { AppLayout } from "./components/vegia/AppLayout";
+import Dashboard from "./pages/Dashboard";
+import Segmento from "./pages/Segmento";
+import Relatorio from "./pages/Relatorio";
+import AnaliseCV from "./pages/AnaliseCV";
 
 const queryClient = new QueryClient();
 
@@ -16,7 +21,12 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route element={<AppLayout />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/segmento/:id" element={<Segmento />} />
+            <Route path="/relatorio" element={<Relatorio />} />
+            <Route path="/analise-cv/:id" element={<AnaliseCV />} />
+          </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

@@ -1,105 +1,91 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
+/* VegiaMap design system — Cartographic Ledger */
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 45 50% 96%;            /* #FCF9F1 */
+    --foreground: 60 7% 10%;              /* #1C1C17 */
+
+    --surface-low: 48 32% 92%;            /* #F6F4EB */
+    --surface-high: 50 14% 89%;           /* #EAE8E0 */
+    --surface-lowest: 0 0% 100%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 60 7% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 60 7% 10%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 161 100% 21%;              /* #00694C */
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 158 100% 26%;         /* #008560 */
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 48 32% 92%;
+    --secondary-foreground: 60 7% 10%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --secondary-container: 88 86% 71%;    /* #B7F473 */
+    --on-secondary-container: 84 100% 22%;/* #427000 */
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --muted: 48 32% 92%;
+    --muted-foreground: 80 6% 40%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --accent: 50 14% 89%;
+    --accent-foreground: 60 7% 10%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --tertiary: 32 86% 28%;               /* #854F0B */
+    --tertiary-container: 36 80% 90%;
 
-    --radius: 0.5rem;
+    --destructive: 0 76% 41%;             /* #BA1A1A */
+    --destructive-foreground: 0 0% 100%;
+    --error-container: 0 80% 94%;
 
-    --sidebar-background: 0 0% 98%;
+    --border: 150 11% 76%;                /* outline-variant ~#BCCAC1 */
+    --input: 50 14% 89%;
+    --ring: 161 100% 21%;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    --radius: 0.75rem;
 
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 48 32% 92%;
+    --sidebar-foreground: 60 7% 10%;
+    --sidebar-primary: 161 100% 21%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 50 14% 89%;
+    --sidebar-accent-foreground: 60 7% 10%;
+    --sidebar-border: 150 11% 76%;
+    --sidebar-ring: 161 100% 21%;
   }
 
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+  .dark { /* same — dark mode disabled visually */
+    --background: 45 50% 96%;
+    --foreground: 60 7% 10%;
   }
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
-
+  * { @apply border-border; }
+  html, body, #root { height: 100%; }
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-feature-settings: 'cv11', 'ss01';
+    -webkit-font-smoothing: antialiased;
   }
+  .font-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+}
+
+@layer utilities {
+  .label-md { @apply uppercase tracking-wider text-[11px] font-medium text-muted-foreground; }
+  .clause {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 10px;
+    line-height: 1.55;
+    letter-spacing: 0.01em;
+  }
+  .bg-surface-low { background-color: hsl(var(--surface-low)); }
+  .bg-surface-high { background-color: hsl(var(--surface-high)); }
+  .bg-surface-lowest { background-color: hsl(var(--surface-lowest)); }
 }
