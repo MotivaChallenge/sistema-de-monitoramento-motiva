@@ -1,12 +1,31 @@
+import { useMemo, useState } from "react";
 import { TopHeader } from "@/components/vegia/TopHeader";
 import { MetricCard } from "@/components/vegia/MetricCard";
 import { SegmentTable } from "@/components/vegia/SegmentTable";
 import { useSegments } from "@/hooks/useVegiaData";
-import { Calendar, FileDown, ShieldCheck } from "lucide-react";
+import { FileDown, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
+import { MonthYearPicker, MonthYearValue, formatMonthYear } from "@/components/vegia/MonthYearPicker";
+
+const parseBR = (s?: string): Date | null => {
+  if (!s) return null;
+  const m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+  if (!m) return null;
+  return new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]));
+};
 
 const Relatorio = () => {
   const { data: segments = [] } = useSegments();
+  const [period, setPeriod] = useState<MonthYearValue>({ month: 3, year: 2026 });
+  const filtered = useMemo(
+    () => segments.filter(s => {
+      const d = parseBR(s.ultimaRocada);
+      if (!d) return true;
+      return d.getMonth() === period.month && d.getFullYear() === period.year;
+    }),
+    [segments, period]
+  );
+  const periodLabel = formatMonthYear(period);
   return (
   <>
     <TopHeader
@@ -23,17 +42,12 @@ const Relatorio = () => {
       <div className="flex items-start justify-between mb-8">
         <div>
           <h1 className="text-[34px] font-bold tracking-tight">Relatório de conformidade</h1>
-          <p className="text-muted-foreground mt-1">Período de auditoria: 01 de Abril — 30 de Abril, 2026</p>
+          <p className="text-muted-foreground mt-1">Período de auditoria: {periodLabel}</p>
         </div>
         <div className="flex items-center gap-3">
+          <MonthYearPicker value={period} onChange={setPeriod} />
           <button
-            onClick={() => toast("Seletor de período em breve", { description: "Atualmente exibindo Abril/2026" })}
-            className="h-11 px-4 rounded-lg bg-surface-high text-[13px] font-medium inline-flex items-center gap-2"
-          >
-            <Calendar className="h-4 w-4" /> Abril 2026
-          </button>
-          <button
-            onClick={() => toast.success("Exportando PDF…", { description: "Relatório de conformidade Abril/2026" })}
+            onClick={() => toast.success("Exportando PDF…", { description: `Relatório de conformidade · ${periodLabel}` })}
             className="h-11 px-5 rounded-lg bg-gradient-to-b from-primary to-primary-glow text-primary-foreground text-[13px] font-semibold inline-flex items-center gap-2"
           >
             <FileDown className="h-4 w-4" /> Exportar PDF
@@ -60,7 +74,7 @@ const Relatorio = () => {
         </div>
       </div>
 
-      <SegmentTable rows={segments} />
+      <SegmentTable rows={filtered} />
 
       <div className="mt-6 bg-surface-lowest rounded-xl p-5 flex items-center justify-between">
         <div className="flex items-center gap-4">

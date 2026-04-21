@@ -1,8 +1,9 @@
-import { Bell, RefreshCw, LogOut } from "lucide-react";
+import { RefreshCw, LogOut } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { NotificationsPanel } from "./NotificationsPanel";
 
 interface Props {
   breadcrumb?: { label: string; to?: string }[];
@@ -54,13 +55,7 @@ export const TopHeader = ({ breadcrumb = [{ label: "RODOANEL SP-021" }], current
             <div className="text-[13px] font-medium">Hoje, 09:42 (UTC-3)</div>
           </div>
         )}
-        <button
-          onClick={() => toast("Sem novas notificações", { description: "Você está em dia com os alertas." })}
-          title="Notificações"
-          className="h-9 w-9 rounded-full hover:bg-surface-high flex items-center justify-center text-muted-foreground"
-        >
-          <Bell className="h-[18px] w-[18px]" />
-        </button>
+        <NotificationsPanel />
         <button
           onClick={() => { qc.invalidateQueries(); toast.success("Atualizando dados…"); }}
           title="Recarregar"
