@@ -5,7 +5,8 @@ import { useSegment } from "@/hooks/useVegiaData";
 import { MonoClause } from "@/components/vegia/MonoClause";
 import { NDVILineChart } from "@/components/vegia/NDVILineChart";
 import { AIInsightBubble } from "@/components/vegia/AIInsightBubble";
-import { ArrowUpRight, ClipboardPlus, Download, CheckCircle2, MapPin, AlertTriangle, Users } from "lucide-react";
+import { ArrowUpRight, ClipboardPlus, Download, CheckCircle2, AlertTriangle, Users } from "lucide-react";
+import { OSMMap } from "@/components/vegia/OSMMap";
 import { toast } from "sonner";
 
 const Segmento = () => {
@@ -80,20 +81,15 @@ const Segmento = () => {
 
           <aside className="space-y-5">
             <div className="bg-surface-lowest rounded-xl overflow-hidden">
-              <div
-                className="aspect-[4/3] relative"
-                style={{ background: "linear-gradient(180deg, #B5D8E8 0%, #7AAB8E 55%, #4A7A5E 100%)" }}
-              >
-                <div className="absolute inset-x-[15%] bottom-0 h-[55%]" style={{ background: "linear-gradient(180deg, transparent, #2C2C2A 70%)", clipPath: "polygon(15% 100%, 85% 100%, 60% 0, 40% 0)" }} />
-                <div className="absolute right-3 top-3 h-9 w-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
-                  <MapPin className="h-4 w-4" />
-                </div>
-                <div className="absolute bottom-3 left-3 bg-black/55 text-white text-[10px] font-mono px-2 py-1 rounded">
-                  KM 6+200 · LAT: {seg.street?.lat} · LONG: {seg.street?.lng}
-                </div>
-              </div>
+              <OSMMap
+                lat={Number(seg.street?.lat) || -23.5505}
+                lng={Number(seg.street?.lng) || -46.6333}
+                label={`${seg.km} · ${seg.tipo}`}
+                status={seg.status as "critico" | "atencao" | "conforme"}
+                className="aspect-[4/3] w-full"
+              />
               <div className="p-4">
-                <div className="label-md mb-1">Última Captura Mobile</div>
+                <div className="label-md mb-1">Localização (OpenStreetMap)</div>
                 <p className="text-[13px] italic text-foreground/80">"{seg.street?.caption}"</p>
               </div>
             </div>
