@@ -122,7 +122,18 @@ const Segmento = () => {
               <ClipboardPlus className="h-5 w-5" /> Gerar OS de roçada
             </button>
             <div className="grid grid-cols-2 gap-3">
-              <button className="h-11 rounded-lg bg-surface-high hover:bg-surface-high/80 text-[13px] font-medium inline-flex items-center justify-center gap-2">
+              <button
+                onClick={() => {
+                  const blob = new Blob([JSON.stringify(seg, null, 2)], { type: "application/json" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url; a.download = `segmento-${seg.id}.json`;
+                  document.body.appendChild(a); a.click(); a.remove();
+                  URL.revokeObjectURL(url);
+                  toast.success("Segmento exportado", { description: `segmento-${seg.id}.json` });
+                }}
+                className="h-11 rounded-lg bg-surface-high hover:bg-surface-high/80 text-[13px] font-medium inline-flex items-center justify-center gap-2"
+              >
                 <Download className="h-4 w-4" /> Exportar
               </button>
               <button onClick={() => toast.success("Marcado como resolvido")} className="h-11 rounded-lg bg-surface-high hover:bg-surface-high/80 text-[13px] font-medium inline-flex items-center justify-center gap-2">

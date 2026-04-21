@@ -1,15 +1,17 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { Map, Bell, BarChart3, Settings, LogOut, User } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 const items = [
   { to: "/dashboard", label: "Mapa", icon: Map },
   { to: "/relatorio", label: "Alertas", icon: Bell, match: ["/segmento"] },
   { to: "/relatorio", label: "Relatórios", icon: BarChart3 },
-  { to: "/configuracoes", label: "Configurações", icon: Settings },
 ];
 
 export const Sidebar = () => {
   const { pathname } = useLocation();
+  const { signOut } = useAuth();
   return (
     <aside className="w-[220px] shrink-0 bg-surface-low flex flex-col h-screen sticky top-0">
       <div className="px-6 pt-7 pb-10">
@@ -36,6 +38,12 @@ export const Sidebar = () => {
             </NavLink>
           );
         })}
+        <button
+          onClick={() => toast("Configurações em breve")}
+          className="w-full text-left flex items-center gap-3 px-4 py-2.5 rounded-md text-[14px] font-medium text-foreground/75 hover:bg-surface-high/60"
+        >
+          <Settings className="h-[18px] w-[18px]" /> Configurações
+        </button>
       </nav>
 
       <div className="px-4 pb-6 pt-4 space-y-3">
@@ -48,7 +56,10 @@ export const Sidebar = () => {
             <div className="text-[11px] text-muted-foreground">Perfil</div>
           </div>
         </div>
-        <button className="flex items-center gap-3 px-2 text-[13px] text-muted-foreground hover:text-foreground">
+        <button
+          onClick={signOut}
+          className="flex items-center gap-3 px-2 text-[13px] text-muted-foreground hover:text-foreground"
+        >
           <LogOut className="h-4 w-4" /> Sair
         </button>
       </div>

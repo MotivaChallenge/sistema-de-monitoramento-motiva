@@ -209,7 +209,9 @@ export const SegmentTable = ({ rows }: { rows: Segment[] }) => {
       </div>
       <div className="flex items-center justify-between mt-5 pt-4">
         <span className="label-md">Documento gerado via satélite — 24/04/2026 14:32</span>
-        <button className="text-primary text-[13px] font-semibold">Ver todos os segmentos ›</button>
+        <button onClick={resetFilters} className="text-primary text-[13px] font-semibold hover:underline">
+          Ver todos os segmentos ›
+        </button>
       </div>
     </div>
   );

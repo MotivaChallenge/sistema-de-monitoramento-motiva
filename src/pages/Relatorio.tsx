@@ -26,7 +26,10 @@ const Relatorio = () => {
           <p className="text-muted-foreground mt-1">Período de auditoria: 01 de Abril — 30 de Abril, 2026</p>
         </div>
         <div className="flex items-center gap-3">
-          <button className="h-11 px-4 rounded-lg bg-surface-high text-[13px] font-medium inline-flex items-center gap-2">
+          <button
+            onClick={() => toast("Seletor de período em breve", { description: "Atualmente exibindo Abril/2026" })}
+            className="h-11 px-4 rounded-lg bg-surface-high text-[13px] font-medium inline-flex items-center gap-2"
+          >
             <Calendar className="h-4 w-4" /> Abril 2026
           </button>
           <button
