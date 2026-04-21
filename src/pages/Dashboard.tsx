@@ -5,9 +5,14 @@ import { NDVIBarChart } from "@/components/vegia/NDVIBarChart";
 import { AlertCard } from "@/components/vegia/AlertCard";
 import { useSegments } from "@/hooks/useVegiaData";
 import { RefreshCw } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const Dashboard = () => {
   const { data: segments = [], isLoading } = useSegments();
+  const qc = useQueryClient();
+  const navigate = useNavigate();
   const alerts = segments.filter(s => s.status !== "conforme").slice(0, 3);
   return (
     <>
@@ -15,7 +20,13 @@ const Dashboard = () => {
         showStatusBadges
         showLastReading
         rightSlot={
-          <button className="ml-2 inline-flex items-center gap-2 px-5 h-10 rounded-lg bg-gradient-to-b from-primary to-primary-glow text-primary-foreground text-[12px] font-semibold tracking-wider uppercase">
+          <button
+            onClick={() => {
+              qc.invalidateQueries();
+              toast.success("Dados atualizados", { description: "Sincronizando leituras Sentinel-2…" });
+            }}
+            className="ml-2 inline-flex items-center gap-2 px-5 h-10 rounded-lg bg-gradient-to-b from-primary to-primary-glow text-primary-foreground text-[12px] font-semibold tracking-wider uppercase"
+          >
             <RefreshCw className="h-4 w-4" /> Atualizar Dados
           </button>
         }
@@ -77,7 +88,10 @@ const Dashboard = () => {
               {isLoading && <div className="text-[12px] text-muted-foreground">Carregando alertas…</div>}
               {alerts.map(a => <AlertCard key={a.id} alert={a} />)}
             </div>
-            <button className="w-full mt-4 py-3 rounded-lg border border-border text-[12px] font-semibold tracking-wider uppercase text-foreground hover:bg-surface-low">
+            <button
+              onClick={() => navigate("/relatorio")}
+              className="w-full mt-4 py-3 rounded-lg border border-border text-[12px] font-semibold tracking-wider uppercase text-foreground hover:bg-surface-low"
+            >
               Ver todos os alertas
             </button>
           </aside>

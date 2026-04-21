@@ -1,6 +1,8 @@
 import { Bell, RefreshCw, LogOut } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 interface Props {
   breadcrumb?: { label: string; to?: string }[];
@@ -14,6 +16,7 @@ interface Props {
 export const TopHeader = ({ breadcrumb = [{ label: "RODOANEL SP-021" }], current = "Dashboard", rightSlot, showStatusBadges, showTabs, showLastReading }: Props) => {
   const { pathname } = useLocation();
   const { signOut, user } = useAuth();
+  const qc = useQueryClient();
   return (
     <header className="h-[88px] px-10 flex items-center justify-between bg-background">
       <div className="flex items-center gap-3 text-[13px] tracking-wider">
@@ -51,10 +54,18 @@ export const TopHeader = ({ breadcrumb = [{ label: "RODOANEL SP-021" }], current
             <div className="text-[13px] font-medium">Hoje, 09:42 (UTC-3)</div>
           </div>
         )}
-        <button className="h-9 w-9 rounded-full hover:bg-surface-high flex items-center justify-center text-muted-foreground">
+        <button
+          onClick={() => toast("Sem novas notificações", { description: "Você está em dia com os alertas." })}
+          title="Notificações"
+          className="h-9 w-9 rounded-full hover:bg-surface-high flex items-center justify-center text-muted-foreground"
+        >
           <Bell className="h-[18px] w-[18px]" />
         </button>
-        <button className="h-9 w-9 rounded-full hover:bg-surface-high flex items-center justify-center text-muted-foreground">
+        <button
+          onClick={() => { qc.invalidateQueries(); toast.success("Atualizando dados…"); }}
+          title="Recarregar"
+          className="h-9 w-9 rounded-full hover:bg-surface-high flex items-center justify-center text-muted-foreground"
+        >
           <RefreshCw className="h-[18px] w-[18px]" />
         </button>
         {user && (
