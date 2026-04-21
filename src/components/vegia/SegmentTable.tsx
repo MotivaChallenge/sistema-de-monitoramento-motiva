@@ -112,7 +112,7 @@ export const SegmentTable = ({ rows }: { rows: Segment[] }) => {
       </div>
 
       {/* Filter bar */}
-      <div className="bg-surface-low rounded-md p-4 mb-5 grid grid-cols-[auto_auto_1fr_auto] gap-6 items-center">
+      <div className="bg-surface-low rounded-md p-4 mb-5 flex flex-wrap items-center gap-x-6 gap-y-3">
         {/* Status segmented */}
         <div className="flex items-center gap-3">
           <span className="label-md">Status</span>
@@ -145,21 +145,21 @@ export const SegmentTable = ({ rows }: { rows: Segment[] }) => {
         </div>
 
         {/* KM range */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-1 min-w-[260px]">
           <span className="label-md whitespace-nowrap">KM</span>
           <span className="text-[12px] tabular-nums w-8 text-right">{kmRange[0].toFixed(0)}</span>
-          <div className="flex-1 flex items-center gap-2">
+          <div className="flex-1 min-w-0 flex items-center gap-2">
             <input
               type="range" min={0} max={KM_MAX} step={1}
               value={kmRange[0]}
               onChange={e => setKmRange([Math.min(Number(e.target.value), kmRange[1]), kmRange[1]])}
-              className="flex-1 accent-primary"
+              className="flex-1 min-w-0 accent-primary"
             />
             <input
               type="range" min={0} max={KM_MAX} step={1}
               value={kmRange[1]}
               onChange={e => setKmRange([kmRange[0], Math.max(Number(e.target.value), kmRange[0])])}
-              className="flex-1 accent-primary"
+              className="flex-1 min-w-0 accent-primary"
             />
           </div>
           <span className="text-[12px] tabular-nums w-8">{kmRange[1].toFixed(0)}</span>
