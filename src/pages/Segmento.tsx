@@ -1,21 +1,43 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { TopHeader } from "@/components/vegia/TopHeader";
 import { segmentEvolution } from "@/data/mock";
-import { useSegment } from "@/hooks/useVegiaData";
+import { useSegment, useKmMarkers, useRocadaClassification } from "@/hooks/useVegiaData";
 import { MonoClause } from "@/components/vegia/MonoClause";
 import { NDVILineChart } from "@/components/vegia/NDVILineChart";
 import { AIInsightBubble } from "@/components/vegia/AIInsightBubble";
 import { ArrowUpRight, ClipboardPlus, Download, CheckCircle2, AlertTriangle, Users } from "lucide-react";
 import { OSMMap } from "@/components/vegia/OSMMap";
 import { toast } from "sonner";
+import { useMemo } from "react";
 
 const Segmento = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { data: seg, isLoading } = useSegment(id);
+  const { data: kmMarkers = [] } = useKmMarkers();
+  const { data: rocada = [] } = useRocadaClassification();
 
   if (isLoading) return <div className="p-10 text-muted-foreground text-sm">Carregando segmento…</div>;
   if (!seg) return <div className="p-10 text-muted-foreground text-sm">Segmento não encontrado.</div>;
+
+  // Resolve real lat/lng from km_markers (fallback to street.lat/lng or São Paulo)
+  const marker = kmMarkers.find(m => Math.round(m.km) === Math.round(seg.kmStart));
+  const lat = marker?.lat ?? Number(seg.street?.lat) ?? -23.5505;
+  const lng = marker?.lng ?? Number(seg.street?.lng) ?? -46.6333;
+
+  // Find recommended equipment by nearest rocada centroid (Haversine approx)
+  const recommended = useMemo(() => {
+    if (!rocada.length) return null;
+    const dist = (a: number, b: number, c: number, d: number) => {
+      const dx = a - c, dy = b - d; return dx * dx + dy * dy;
+    };
+    let best = rocada[0]; let bestD = Infinity;
+    for (const r of rocada) {
+      const d = dist(r.lat, r.lng, lat, lng);
+      if (d < bestD) { bestD = d; best = r; }
+    }
+    return best;
+  }, [rocada, lat, lng]);
 
   return (
     <>
@@ -59,6 +81,14 @@ const Segmento = () => {
                 } />
                 <Row label="Limite Contratual" value={`${seg.limite} cm`} />
                 <Row label="Última Roçada Executada" value={seg.ultimaRocada} />
+                {recommended && (
+                  <Row label="Equipamento Recomendado" value={
+                    <span className="text-[13px] font-medium text-foreground">{recommended.classe}</span>
+                  } />
+                )}
+                <Row label="Coordenadas" value={
+                  <span className="font-mono text-[12px] text-muted-foreground">{lat.toFixed(5)}, {lng.toFixed(5)}</span>
+                } />
                 {seg.deadline && (
                   <div className="flex items-center justify-between py-3.5 -mx-2 px-2 rounded bg-destructive/10">
                     <span className="text-[13px] text-destructive">Deadline ARTESP (Notificação {seg.notificationId})</span>
@@ -82,15 +112,19 @@ const Segmento = () => {
           <aside className="space-y-5">
             <div className="bg-surface-lowest rounded-xl overflow-hidden">
               <OSMMap
-                lat={Number(seg.street?.lat) || -23.5505}
-                lng={Number(seg.street?.lng) || -46.6333}
+                lat={lat}
+                lng={lng}
                 label={`${seg.km} · ${seg.tipo}`}
                 status={seg.status as "critico" | "atencao" | "conforme"}
                 className="aspect-[4/3] w-full"
               />
               <div className="p-4">
                 <div className="label-md mb-1">Localização (OpenStreetMap)</div>
-                <p className="text-[13px] italic text-foreground/80">"{seg.street?.caption}"</p>
+                <p className="text-[13px] italic text-foreground/80">
+                  {marker
+                    ? `Marco quilométrico oficial KM ${marker.km} — Rodoanel Oeste SP-021.`
+                    : (seg.street?.caption ?? "Coordenadas estimadas.")}
+                </p>
               </div>
             </div>
 
