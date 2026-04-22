@@ -79,6 +79,110 @@ export type Database = {
         }
         Relationships: []
       }
+      inspection_measurements: {
+        Row: {
+          created_at: string
+          id: number
+          item_codigo: string
+          item_descricao: string
+          km_offset: number
+          na: boolean
+          nivel: number | null
+          report_id: number
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          item_codigo: string
+          item_descricao: string
+          km_offset: number
+          na?: boolean
+          nivel?: number | null
+          report_id: number
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          item_codigo?: string
+          item_descricao?: string
+          km_offset?: number
+          na?: boolean
+          nivel?: number | null
+          report_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inspection_measurements_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "inspection_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inspection_reports: {
+        Row: {
+          created_at: string
+          data_levantamento: string
+          id: number
+          km_end: number
+          km_start: number
+          report_code: string
+          rodovia: string
+          unidade: string
+          versao: string | null
+        }
+        Insert: {
+          created_at?: string
+          data_levantamento: string
+          id?: number
+          km_end?: number
+          km_start?: number
+          report_code: string
+          rodovia?: string
+          unidade?: string
+          versao?: string | null
+        }
+        Update: {
+          created_at?: string
+          data_levantamento?: string
+          id?: number
+          km_end?: number
+          km_start?: number
+          report_code?: string
+          rodovia?: string
+          unidade?: string
+          versao?: string | null
+        }
+        Relationships: []
+      }
+      km_markers: {
+        Row: {
+          created_at: string
+          id: number
+          km_value: number
+          lat: number
+          lng: number
+          rodovia: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          km_value: number
+          lat: number
+          lng: number
+          rodovia?: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          km_value?: number
+          lat?: number
+          lng?: number
+          rodovia?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -100,6 +204,39 @@ export type Database = {
           id?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      rocada_classification: {
+        Row: {
+          area_m2: number | null
+          centroid_lat: number
+          centroid_lng: number
+          classe: string
+          created_at: string
+          id: number
+          km_approx: number | null
+          polygon_coords: Json
+        }
+        Insert: {
+          area_m2?: number | null
+          centroid_lat: number
+          centroid_lng: number
+          classe: string
+          created_at?: string
+          id?: number
+          km_approx?: number | null
+          polygon_coords: Json
+        }
+        Update: {
+          area_m2?: number | null
+          centroid_lat?: number
+          centroid_lng?: number
+          classe?: string
+          created_at?: string
+          id?: number
+          km_approx?: number | null
+          polygon_coords?: Json
         }
         Relationships: []
       }
