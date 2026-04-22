@@ -1,12 +1,46 @@
 import { TopHeader } from "@/components/vegia/TopHeader";
 import { CVImageGrid } from "@/components/vegia/CVImageGrid";
 import { useParams } from "react-router-dom";
-import { useSegment } from "@/hooks/useVegiaData";
+import {
+  useSegment, useInspectionReports, useInspectionMeasurements, useRocadaClassification,
+} from "@/hooks/useVegiaData";
 import { Sparkles, Wrench } from "lucide-react";
+import { useMemo } from "react";
 
 const AnaliseCV = () => {
   const { id } = useParams();
   const { data: seg, isLoading } = useSegment(id);
+  const { data: reports = [] } = useInspectionReports();
+  const latestReportId = reports[0]?.id;
+  const { data: measurements = [] } = useInspectionMeasurements(latestReportId);
+  const { data: rocada = [] } = useRocadaClassification();
+
+  const kmStartM = seg ? Math.round(seg.kmStart * 1000) : 0;
+  const kmEndM = seg ? Math.round(seg.kmEnd * 1000) : 0;
+
+  // Measurements for this segment range
+  const segMeas = useMemo(
+    () => measurements.filter(m => m.km_offset >= kmStartM && m.km_offset <= kmEndM),
+    [measurements, kmStartM, kmEndM]
+  );
+  const counted = segMeas.filter(m => !m.na && m.nivel != null);
+  const lvl1 = counted.filter(m => m.nivel === 1).length;
+  const lvl2 = counted.filter(m => m.nivel === 2).length;
+  const lvl3 = counted.filter(m => m.nivel === 3).length;
+  const score = counted.length ? Math.round(((lvl1 + lvl2 * 0.5) / counted.length) * 100) : 0;
+
+  // Recommended equipment summary in segment range
+  const equipmentBreakdown = useMemo(() => {
+    if (!seg || !rocada.length) return [];
+    const inRange = rocada.filter(r => {
+      // approximate: keep all and rank by proximity later. We don't have km_approx, so use centroid lat/lng vs first marker — but we don't have markers here.
+      return true;
+    });
+    const counts = new Map<string, number>();
+    for (const r of inRange) counts.set(r.classe, (counts.get(r.classe) ?? 0) + 1);
+    return Array.from(counts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 3);
+  }, [seg, rocada]);
+
   if (isLoading) return <div className="p-10 text-muted-foreground text-sm">Carregando…</div>;
   if (!seg) return <div className="p-10 text-muted-foreground text-sm">Segmento não encontrado.</div>;
   return (
@@ -24,7 +58,7 @@ const AnaliseCV = () => {
       <div className="px-10 pb-12">
         <div className="flex items-end justify-between mb-8">
           <div>
-            <h1 className="text-[30px] font-bold tracking-tight text-primary">Análise visual · {seg.km} ao 7+200 · 6 imagens</h1>
+            <h1 className="text-[30px] font-bold tracking-tight text-primary">Análise visual · {seg.km} · KM {seg.kmStart}–{seg.kmEnd}</h1>
             <p className="label-md mt-2">Processamento de visão computacional em tempo real</p>
           </div>
           <div className="flex items-center gap-3">
@@ -34,6 +68,67 @@ const AnaliseCV = () => {
         </div>
 
         <CVImageGrid />
+
+        {/* Real inspection measurements for this segment */}
+        {segMeas.length > 0 && (
+          <section className="mt-10 bg-surface-lowest rounded-xl p-6">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-[15px] font-semibold tracking-wider uppercase">Medições ARTESP do trecho</h3>
+              <span className="label-md">{counted.length} pontos avaliados · {segMeas.length - counted.length} N/A</span>
+            </div>
+            <div className="grid grid-cols-3 gap-4 mb-5">
+              <div className="bg-primary/10 rounded-lg p-4">
+                <div className="label-md text-primary">Nível 1 · h&lt;10cm</div>
+                <div className="text-[28px] font-bold text-primary tabular-nums">{lvl1}</div>
+              </div>
+              <div className="bg-tertiary/10 rounded-lg p-4">
+                <div className="label-md text-tertiary">Nível 2 · 10–30cm</div>
+                <div className="text-[28px] font-bold text-tertiary tabular-nums">{lvl2}</div>
+              </div>
+              <div className="bg-destructive/10 rounded-lg p-4">
+                <div className="label-md text-destructive">Nível 3 · h&gt;30cm</div>
+                <div className="text-[28px] font-bold text-destructive tabular-nums">{lvl3}</div>
+              </div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-[13px]">
+                <thead className="text-muted-foreground">
+                  <tr className="border-b border-border/40">
+                    <th className="text-left py-2 font-medium">Item</th>
+                    <th className="text-left py-2 font-medium">Descrição</th>
+                    <th className="text-right py-2 font-medium">KM offset</th>
+                    <th className="text-right py-2 font-medium">Nível</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {segMeas.slice(0, 30).map(m => (
+                    <tr key={m.id} className="border-b border-border/20">
+                      <td className="py-2 font-mono">{m.item_codigo}</td>
+                      <td className="py-2 text-muted-foreground">{m.item_descricao}</td>
+                      <td className="py-2 text-right tabular-nums">{m.km_offset}</td>
+                      <td className="py-2 text-right">
+                        {m.na ? (
+                          <span className="text-muted-foreground text-[12px]">N/A</span>
+                        ) : (
+                          <span className={`px-2 py-0.5 rounded text-[12px] font-semibold ${
+                            m.nivel === 3 ? "bg-destructive/15 text-destructive"
+                            : m.nivel === 2 ? "bg-tertiary/15 text-tertiary"
+                            : "bg-primary/15 text-primary"
+                          }`}>
+                            {m.nivel}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {segMeas.length > 30 && (
+                <p className="text-[12px] text-muted-foreground mt-3">+{segMeas.length - 30} medições adicionais.</p>
+              )}
+            </div>
+          </section>
+        )}
 
         <section className="mt-10 bg-surface-lowest rounded-xl p-6 relative overflow-hidden">
           <div className="absolute left-0 top-6 bottom-6 w-1 bg-primary rounded-r" />
@@ -49,13 +144,14 @@ const AnaliseCV = () => {
                 </div>
               </div>
               <p className="text-[14px] leading-relaxed text-foreground/85">
-                O trecho entre os KM 5+800 e 7+200 apresenta um estado geral de conservação <b>Satisfatório (82%)</b>.
-                Contudo, o modelo identificou dois pontos de atenção imediata que podem comprometer a segurança viária se não forem mitigados em curto prazo.
+                O trecho {seg.km} apresenta estado geral <b>{score >= 80 ? "Satisfatório" : score >= 50 ? "em Atenção" : "Crítico"} ({score}%)</b>{" "}
+                com base em {counted.length} pontos de medição ARTESP. Nível 3 detectado em {lvl3} ponto(s),
+                Nível 2 em {lvl2} e Nível 1 em {lvl1}.
               </p>
               <div className="flex flex-wrap gap-2 mt-5">
-                <span className="px-3 py-1.5 rounded-full bg-surface-high text-[12px]">Vegetação: Estável</span>
-                <span className="px-3 py-1.5 rounded-full bg-destructive/15 text-destructive text-[12px] font-medium">Pavimento: Alerta (KM 6+400)</span>
-                <span className="px-3 py-1.5 rounded-full bg-tertiary/15 text-tertiary text-[12px] font-medium">Talude: Monitoramento</span>
+                <span className="px-3 py-1.5 rounded-full bg-primary/15 text-primary text-[12px] font-medium">Conformes: {lvl1}</span>
+                <span className="px-3 py-1.5 rounded-full bg-tertiary/15 text-tertiary text-[12px] font-medium">Atenção: {lvl2}</span>
+                <span className="px-3 py-1.5 rounded-full bg-destructive/15 text-destructive text-[12px] font-medium">Críticos: {lvl3}</span>
               </div>
             </div>
             <div className="bg-surface-low rounded-xl p-5">
@@ -64,8 +160,18 @@ const AnaliseCV = () => {
                 <span className="label-md text-primary">Recomendação Operacional Técnica</span>
               </div>
               <ul className="space-y-3 text-[13.5px] leading-relaxed">
-                <li className="flex gap-3"><span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary shrink-0" /> Mobilizar equipe de conservação para correção asfáltica pontual no KM 6+400 (buraco detectado).</li>
-                <li className="flex gap-3"><span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary shrink-0" /> Programar vistoria de geotecnia para o KM 6+950 para avaliar profundidade da erosão no talude.</li>
+                {lvl3 > 0 && (
+                  <li className="flex gap-3"><span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-destructive shrink-0" /> Mobilizar equipe de roçada imediata para os {lvl3} ponto(s) Nível 3 (vegetação acima de 30cm).</li>
+                )}
+                {lvl2 > 0 && (
+                  <li className="flex gap-3"><span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-tertiary shrink-0" /> Programar inspeção de acompanhamento nos {lvl2} ponto(s) Nível 2.</li>
+                )}
+                {equipmentBreakdown.length > 0 && (
+                  <li className="flex gap-3">
+                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
+                    Equipamentos predominantes na malha: {equipmentBreakdown.map(([c, n]) => `${c} (${n})`).join(" · ")}.
+                  </li>
+                )}
                 <li className="flex gap-3"><span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary shrink-0" /> Manter cadência de captura Sentinel-2 a cada 5 dias para acompanhar tendência de NDVI.</li>
               </ul>
             </div>

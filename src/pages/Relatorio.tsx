@@ -1,31 +1,35 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { TopHeader } from "@/components/vegia/TopHeader";
 import { MetricCard } from "@/components/vegia/MetricCard";
 import { SegmentTable } from "@/components/vegia/SegmentTable";
-import { useSegments } from "@/hooks/useVegiaData";
+import { useSegments, useInspectionReports, useInspectionMeasurements } from "@/hooks/useVegiaData";
 import { FileDown, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
-import { MonthYearPicker, MonthYearValue, formatMonthYear } from "@/components/vegia/MonthYearPicker";
-
-const parseBR = (s?: string): Date | null => {
-  if (!s) return null;
-  const m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
-  if (!m) return null;
-  return new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]));
-};
 
 const Relatorio = () => {
   const { data: segments = [] } = useSegments();
-  const [period, setPeriod] = useState<MonthYearValue>({ month: 3, year: 2026 });
-  const filtered = useMemo(
-    () => segments.filter(s => {
-      const d = parseBR(s.ultimaRocada);
-      if (!d) return true;
-      return d.getMonth() === period.month && d.getFullYear() === period.year;
-    }),
-    [segments, period]
-  );
-  const periodLabel = formatMonthYear(period);
+  const { data: reports = [] } = useInspectionReports();
+  const [reportId, setReportId] = useState<number | undefined>(undefined);
+  useEffect(() => {
+    if (!reportId && reports.length) setReportId(reports[0].id);
+  }, [reports, reportId]);
+  const { data: measurements = [] } = useInspectionMeasurements(reportId);
+
+  const selectedReport = reports.find(r => r.id === reportId);
+  const periodLabel = selectedReport
+    ? new Date(selectedReport.data_levantamento + "T00:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" })
+    : "—";
+
+  // Compute compliance metrics from real measurements (only counted ones, not N/A)
+  const counted = measurements.filter(m => !m.na && m.nivel != null);
+  const lvl1 = counted.filter(m => m.nivel === 1).length;
+  const lvl2 = counted.filter(m => m.nivel === 2).length;
+  const lvl3 = counted.filter(m => m.nivel === 3).length;
+  const totalCounted = counted.length || 1;
+  const conformidade = Math.round(((lvl1 + lvl2 * 0.5) / totalCounted) * 100);
+  const intervencoes = lvl3;
+  const conformidadeLvl1Pct = Math.round((lvl1 / totalCounted) * 100);
+  const inconformidadePct = Math.max(0, 100 - conformidadeLvl1Pct);
   return (
   <>
     <TopHeader
@@ -42,12 +46,25 @@ const Relatorio = () => {
       <div className="flex items-start justify-between mb-8">
         <div>
           <h1 className="text-[34px] font-bold tracking-tight">Relatório de conformidade</h1>
-          <p className="text-muted-foreground mt-1">Período de auditoria: {periodLabel}</p>
+          <p className="text-muted-foreground mt-1">
+            Levantamento de campo: {periodLabel}
+            {selectedReport && <> · {selectedReport.report_code} · {selectedReport.rodovia}</>}
+          </p>
         </div>
         <div className="flex items-center gap-3">
-          <MonthYearPicker value={period} onChange={setPeriod} />
+          <select
+            value={reportId ?? ""}
+            onChange={e => setReportId(Number(e.target.value))}
+            className="h-11 px-4 rounded-lg bg-surface-high text-[13px] font-medium outline-none border border-border"
+          >
+            {reports.map(r => (
+              <option key={r.id} value={r.id}>
+                {new Date(r.data_levantamento + "T00:00:00").toLocaleDateString("pt-BR")} — {r.report_code}
+              </option>
+            ))}
+          </select>
           <button
-            onClick={() => toast.success("Exportando PDF…", { description: `Relatório de conformidade · ${periodLabel}` })}
+            onClick={() => toast.success("Exportando PDF…", { description: `Relatório ${selectedReport?.report_code ?? ""}` })}
             className="h-11 px-5 rounded-lg bg-gradient-to-b from-primary to-primary-glow text-primary-foreground text-[13px] font-semibold inline-flex items-center gap-2"
           >
             <FileDown className="h-4 w-4" /> Exportar PDF
@@ -56,25 +73,25 @@ const Relatorio = () => {
       </div>
 
       <div className="grid grid-cols-4 gap-5 mb-6">
-        <MetricCard label="Conformidade" value={<span>84<span className="text-[24px]">%</span></span>} footer={
+        <MetricCard label="Conformidade" value={<span>{conformidade}<span className="text-[24px]">%</span></span>} footer={
           <div className="space-y-2">
-            <span className="text-primary text-[12px] font-semibold">↑ 2.4%</span>
+            <span className="text-muted-foreground text-[12px] font-semibold">{lvl1}+{lvl2}/{totalCounted} pontos</span>
             <div className="h-1.5 rounded-full overflow-hidden flex">
-              <div className="flex-[84] bg-primary" />
-              <div className="flex-[16] bg-destructive" />
+              <div className="bg-primary" style={{ flex: conformidadeLvl1Pct }} />
+              <div className="bg-destructive" style={{ flex: inconformidadePct }} />
             </div>
           </div>
         } />
-        <MetricCard label="Intervenções" value="12" unit="" footer={<span className="text-[13px] text-muted-foreground">Equipes mobilizadas em campo</span>} variant="primary" />
-        <MetricCard label="Tempo Médio" value={<span>31<span className="text-[20px]">h</span></span>} footer={<span className="text-[13px] text-muted-foreground">Resposta a inconformidades</span>} />
+        <MetricCard label="Pontos Críticos (h>30cm)" value={String(intervencoes)} unit="" footer={<span className="text-[13px] text-muted-foreground">Nível 3 detectados em campo</span>} variant="primary" />
+        <MetricCard label="Pontos em Atenção" value={String(lvl2)} unit="(10–30cm)" footer={<span className="text-[13px] text-muted-foreground">Nível 2 monitoramento</span>} />
         <div className="bg-surface-high rounded-xl p-5">
-          <div className="label-md">Multas Evitadas</div>
-          <div className="mt-3 text-[34px] leading-none font-bold text-foreground tracking-tight">R$ 84.000</div>
+          <div className="label-md">Pontos Conformes</div>
+          <div className="mt-3 text-[34px] leading-none font-bold text-foreground tracking-tight">{lvl1}</div>
           <span className="mt-4 inline-flex px-3 py-1 rounded-full bg-secondary-container text-[11px] font-semibold tracking-wider text-secondary-on-container">ESTIMADO</span>
         </div>
       </div>
 
-      <SegmentTable rows={filtered} />
+      <SegmentTable rows={segments} />
 
       <div className="mt-6 bg-surface-lowest rounded-xl p-5 flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -84,14 +101,16 @@ const Relatorio = () => {
           </div>
           <div>
             <div className="font-semibold">Auditoria Técnica Validada</div>
-            <p className="text-[13px] text-muted-foreground">Este relatório foi revisado automaticamente pelos sistemas de IA e validado por 5 gestores de trecho.</p>
+            <p className="text-[13px] text-muted-foreground">Levantamento ARTESP — {totalCounted} pontos avaliados em {selectedReport ? `${selectedReport.km_start}–${selectedReport.km_end}km` : "—"}.</p>
           </div>
         </div>
         <div className="text-right">
           <div className="label-md">Status Geral</div>
           <div className="flex items-center gap-2 mt-1 justify-end">
-            <span className="font-semibold text-primary">ALTA CONFORMIDADE</span>
-            <ShieldCheck className="h-5 w-5 text-primary" />
+            <span className={`font-semibold ${conformidade >= 80 ? "text-primary" : conformidade >= 50 ? "text-tertiary" : "text-destructive"}`}>
+              {conformidade >= 80 ? "ALTA CONFORMIDADE" : conformidade >= 50 ? "MODERADA" : "BAIXA"}
+            </span>
+            <ShieldCheck className={`h-5 w-5 ${conformidade >= 80 ? "text-primary" : conformidade >= 50 ? "text-tertiary" : "text-destructive"}`} />
           </div>
         </div>
       </div>
