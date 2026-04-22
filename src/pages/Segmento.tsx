@@ -17,27 +17,25 @@ const Segmento = () => {
   const { data: kmMarkers = [] } = useKmMarkers();
   const { data: rocada = [] } = useRocadaClassification();
 
-  if (isLoading) return <div className="p-10 text-muted-foreground text-sm">Carregando segmento…</div>;
-  if (!seg) return <div className="p-10 text-muted-foreground text-sm">Segmento não encontrado.</div>;
-
   // Resolve real lat/lng from km_markers (fallback to street.lat/lng or São Paulo)
-  const marker = kmMarkers.find(m => Math.round(m.km) === Math.round(seg.kmStart));
-  const lat = marker?.lat ?? Number(seg.street?.lat) ?? -23.5505;
-  const lng = marker?.lng ?? Number(seg.street?.lng) ?? -46.6333;
+  const marker = seg ? kmMarkers.find(m => Math.round(m.km) === Math.round(seg.kmStart)) : undefined;
+  const lat = marker?.lat ?? Number(seg?.street?.lat) ?? -23.5505;
+  const lng = marker?.lng ?? Number(seg?.street?.lng) ?? -46.6333;
 
-  // Find recommended equipment by nearest rocada centroid (Haversine approx)
+  // Find recommended equipment by nearest rocada centroid (squared distance — fine for ranking)
   const recommended = useMemo(() => {
     if (!rocada.length) return null;
-    const dist = (a: number, b: number, c: number, d: number) => {
-      const dx = a - c, dy = b - d; return dx * dx + dy * dy;
-    };
     let best = rocada[0]; let bestD = Infinity;
     for (const r of rocada) {
-      const d = dist(r.lat, r.lng, lat, lng);
+      const dx = r.lat - lat, dy = r.lng - lng;
+      const d = dx * dx + dy * dy;
       if (d < bestD) { bestD = d; best = r; }
     }
     return best;
   }, [rocada, lat, lng]);
+
+  if (isLoading) return <div className="p-10 text-muted-foreground text-sm">Carregando segmento…</div>;
+  if (!seg) return <div className="p-10 text-muted-foreground text-sm">Segmento não encontrado.</div>;
 
   return (
     <>
