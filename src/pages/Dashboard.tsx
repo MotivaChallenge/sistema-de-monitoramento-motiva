@@ -5,6 +5,7 @@ import { AlertCard } from "@/components/vegia/AlertCard";
 import { useSegments, useKmMarkers } from "@/hooks/useVegiaData";
 import { OSMMap } from "@/components/vegia/OSMMap";
 import { WeatherForecast } from "@/components/vegia/WeatherForecast";
+import { AIInsightsPanel } from "@/components/vegia/AIInsightsPanel";
 import { RefreshCw } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -115,6 +116,8 @@ const Dashboard = () => {
             </section>
 
             <WeatherForecast />
+
+            <AIInsightsPanel />
           </div>
 
           <aside className="bg-surface-lowest rounded-xl p-5 h-fit">
