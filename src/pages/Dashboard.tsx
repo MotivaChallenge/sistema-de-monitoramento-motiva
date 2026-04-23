@@ -4,6 +4,7 @@ import { NDVIBarChart } from "@/components/vegia/NDVIBarChart";
 import { AlertCard } from "@/components/vegia/AlertCard";
 import { useSegments, useKmMarkers } from "@/hooks/useVegiaData";
 import { OSMMap } from "@/components/vegia/OSMMap";
+import { WeatherForecast } from "@/components/vegia/WeatherForecast";
 import { RefreshCw } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -112,6 +113,8 @@ const Dashboard = () => {
               </div>
               <NDVIBarChart />
             </section>
+
+            <WeatherForecast />
           </div>
 
           <aside className="bg-surface-lowest rounded-xl p-5 h-fit">
