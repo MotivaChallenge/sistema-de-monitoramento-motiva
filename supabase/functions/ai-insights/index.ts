@@ -24,12 +24,29 @@ Deno.serve(async (req) => {
     const SUPABASE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!;
     const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // 1. Buscar segmentos
-    const { data: segments, error: segErr } = await supabase
+    // Parse filtros opcionais do body
+    let filters: { statuses?: string[]; kmStart?: number; kmEnd?: number } = {};
+    if (req.method === "POST") {
+      try { filters = await req.json(); } catch { /* sem body */ }
+    }
+    const allowedStatuses = ["critico", "atencao", "conforme"] as const;
+    const statuses = Array.isArray(filters.statuses)
+      ? filters.statuses.filter((s) => (allowedStatuses as readonly string[]).includes(s))
+      : [];
+    const kmStart = typeof filters.kmStart === "number" ? filters.kmStart : undefined;
+    const kmEnd = typeof filters.kmEnd === "number" ? filters.kmEnd : undefined;
+
+    // 1. Buscar segmentos (com filtros)
+    let q = supabase
       .from("segments")
-      .select("id, km, tipo, ndvi, altura, limite, status, ultima_rocada")
+      .select("id, km, km_start, km_end, tipo, ndvi, altura, limite, status, ultima_rocada")
       .order("km_start");
+    if (statuses.length) q = q.in("status", statuses);
+    if (kmStart !== undefined) q = q.gte("km_end", kmStart);
+    if (kmEnd !== undefined) q = q.lte("km_start", kmEnd);
+    const { data: segments, error: segErr } = await q;
     if (segErr) throw segErr;
+    log("info", "filters_applied", { requestId, statuses, kmStart, kmEnd, matched: segments?.length ?? 0 });
 
     // 2. Buscar clima (chama a outra função)
     let weather: any = null;
@@ -51,6 +68,7 @@ Deno.serve(async (req) => {
     const alturaMax = segments?.reduce((a: number, s: any) => Math.max(a, s.altura), 0) ?? 0;
 
     const userPayload = {
+      filtrosAplicados: { statuses, kmStart, kmEnd },
       resumo: { total, criticos, atencao, conformes, ndviMedio: Number(ndviAvg.toFixed(2)), alturaMaxCm: alturaMax },
       criticosTop: segments?.filter((s: any) => s.status === "critico").slice(0, 8),
       clima: weather ? {
