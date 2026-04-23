@@ -8,7 +8,7 @@ export default {
     container: { center: true, padding: "2rem", screens: { "2xl": "1400px" } },
     extend: {
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['Sora', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
       },
       colors: {
@@ -31,6 +31,10 @@ export default {
         tertiary: {
           DEFAULT: "hsl(var(--tertiary))",
           container: "hsl(var(--tertiary-container))",
+        },
+        turquoise: {
+          DEFAULT: "hsl(var(--turquoise))",
+          foreground: "hsl(var(--turquoise-foreground))",
         },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",

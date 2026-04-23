@@ -1,67 +1,74 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* VegiaMap design system — Cartographic Ledger */
+/* Motiva design system — Anil + apoio (violeta, laranja, turquesa) */
 @layer base {
   :root {
-    --background: 45 50% 96%;            /* #FCF9F1 */
-    --foreground: 60 7% 10%;              /* #1C1C17 */
+    --background: 240 30% 98%;            /* near-white com leve anil */
+    --foreground: 250 35% 12%;            /* texto escuro anil */
 
-    --surface-low: 48 32% 92%;            /* #F6F4EB */
-    --surface-high: 50 14% 89%;           /* #EAE8E0 */
+    --surface-low: 245 35% 96%;
+    --surface-high: 245 25% 92%;
     --surface-lowest: 0 0% 100%;
 
     --card: 0 0% 100%;
-    --card-foreground: 60 7% 10%;
+    --card-foreground: 250 35% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 60 7% 10%;
+    --popover-foreground: 250 35% 12%;
 
-    --primary: 161 100% 21%;              /* #00694C */
+    /* Anil — cor primária Motiva */
+    --primary: 252 83% 58%;               /* #5A2BEE aprox */
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 158 100% 26%;         /* #008560 */
+    --primary-glow: 258 90% 68%;          /* anil-glow */
 
-    --secondary: 48 32% 92%;
-    --secondary-foreground: 60 7% 10%;
+    --secondary: 245 35% 96%;
+    --secondary-foreground: 250 35% 12%;
 
-    --secondary-container: 88 86% 71%;    /* #B7F473 */
-    --on-secondary-container: 84 100% 22%;/* #427000 */
+    /* Apoio: violeta */
+    --secondary-container: 270 90% 92%;
+    --on-secondary-container: 270 70% 30%;
 
-    --muted: 48 32% 92%;
-    --muted-foreground: 80 6% 40%;
+    --muted: 245 25% 94%;
+    --muted-foreground: 250 12% 42%;
 
-    --accent: 50 14% 89%;
-    --accent-foreground: 60 7% 10%;
+    --accent: 245 25% 92%;
+    --accent-foreground: 250 35% 12%;
 
-    --tertiary: 32 86% 28%;               /* #854F0B */
-    --tertiary-container: 36 80% 90%;
+    /* Apoio: laranja (atenção) */
+    --tertiary: 25 95% 53%;               /* #F97316 */
+    --tertiary-container: 30 100% 94%;
 
-    --destructive: 0 76% 41%;             /* #BA1A1A */
+    /* Apoio: turquesa */
+    --turquoise: 178 78% 41%;             /* #14B8A6 */
+    --turquoise-foreground: 0 0% 100%;
+
+    --destructive: 354 78% 52%;
     --destructive-foreground: 0 0% 100%;
-    --error-container: 0 80% 94%;
+    --error-container: 354 90% 95%;
 
-    --border: 150 11% 76%;                /* outline-variant ~#BCCAC1 */
-    --input: 50 14% 89%;
-    --ring: 161 100% 21%;
+    --border: 245 20% 88%;
+    --input: 245 25% 92%;
+    --ring: 252 83% 58%;
 
-    --radius: 0.75rem;
+    --radius: 0.875rem;
 
-    --sidebar-background: 48 32% 92%;
-    --sidebar-foreground: 60 7% 10%;
-    --sidebar-primary: 161 100% 21%;
+    --sidebar-background: 250 45% 14%;    /* anil profundo */
+    --sidebar-foreground: 245 30% 92%;
+    --sidebar-primary: 252 83% 58%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 50 14% 89%;
-    --sidebar-accent-foreground: 60 7% 10%;
-    --sidebar-border: 150 11% 76%;
-    --sidebar-ring: 161 100% 21%;
+    --sidebar-accent: 250 40% 20%;
+    --sidebar-accent-foreground: 245 30% 96%;
+    --sidebar-border: 250 35% 22%;
+    --sidebar-ring: 252 83% 58%;
   }
 
   .dark { /* same — dark mode disabled visually */
-    --background: 45 50% 96%;
-    --foreground: 60 7% 10%;
+    --background: 240 30% 98%;
+    --foreground: 250 35% 12%;
   }
 }
 
@@ -70,8 +77,8 @@
   html, body, #root { height: 100%; }
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', system-ui, sans-serif;
-    font-feature-settings: 'cv11', 'ss01';
+    font-family: 'Sora', system-ui, sans-serif;
+    font-feature-settings: 'ss01';
     -webkit-font-smoothing: antialiased;
   }
   .font-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
