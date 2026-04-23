@@ -4,17 +4,43 @@ import { corsHeaders } from "../_shared/cors.ts";
 const LAT = -23.5;
 const LON = -46.85;
 
+const log = (level: "info" | "warn" | "error", event: string, data: Record<string, unknown> = {}) => {
+  console.log(JSON.stringify({ level, event, fn: "weather-rodoanel", ts: new Date().toISOString(), ...data }));
+};
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
+  const startedAt = Date.now();
+  const requestId = crypto.randomUUID();
+  log("info", "request_received", { requestId, method: req.method });
+
   try {
     const apiKey = Deno.env.get("OPENWEATHER_API");
-    if (!apiKey) throw new Error("OPENWEATHER_API not configured");
+    if (!apiKey) {
+      log("error", "missing_secret", { requestId, secret: "OPENWEATHER_API" });
+      throw new Error("OPENWEATHER_API not configured");
+    }
 
     const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${LAT}&lon=${LON}&units=metric&lang=pt_br&appid=${apiKey}`;
+    log("info", "openweather_request", { requestId, lat: LAT, lon: LON });
     const r = await fetch(url);
-    if (!r.ok) throw new Error(`OpenWeather ${r.status}: ${await r.text()}`);
+    if (!r.ok) {
+      const body = await r.text();
+      log("error", "openweather_error", {
+        requestId,
+        status: r.status,
+        statusText: r.statusText,
+        body: body.slice(0, 1000),
+      });
+      throw new Error(`OpenWeather ${r.status}: ${body}`);
+    }
     const data = await r.json();
+    log("info", "openweather_ok", {
+      requestId,
+      city: data.city?.name,
+      items: Array.isArray(data.list) ? data.list.length : 0,
+    });
 
     // Agrupa por dia (próximos 5 dias)
     const byDay = new Map<string, { tempSum: number; tempCount: number; rainMm: number; humSum: number; humCount: number; icon: string; desc: string }>();
@@ -57,6 +83,14 @@ Deno.serve(async (req) => {
     const totalRain = forecast.reduce((a, d) => a + d.rainMm, 0);
     const totalGrowth = forecast.reduce((a, d) => a + d.growthCmPerDay, 0);
 
+    log("info", "request_success", {
+      requestId,
+      durationMs: Date.now() - startedAt,
+      days: forecast.length,
+      totalRainMm: Number(totalRain.toFixed(1)),
+      estimatedGrowthCm: Number(totalGrowth.toFixed(1)),
+    });
+
     return new Response(
       JSON.stringify({
         location: data.city?.name ?? "Rodoanel SP-021",
@@ -71,7 +105,13 @@ Deno.serve(async (req) => {
     );
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Unknown error";
-    return new Response(JSON.stringify({ error: msg }), {
+    log("error", "request_failed", {
+      requestId,
+      durationMs: Date.now() - startedAt,
+      error: msg,
+      stack: e instanceof Error ? e.stack : undefined,
+    });
+    return new Response(JSON.stringify({ error: msg, requestId }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
