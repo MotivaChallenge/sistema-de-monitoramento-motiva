@@ -68,9 +68,9 @@ const Dashboard = () => {
               qc.invalidateQueries();
               toast.success("Dados atualizados", { description: "Sincronizando leituras Sentinel-2…" });
             }}
-            className="ml-2 inline-flex items-center gap-2 px-5 h-10 rounded-lg bg-gradient-to-b from-primary to-primary-glow text-primary-foreground text-[12px] font-semibold tracking-wider uppercase"
+            className="ml-1 inline-flex items-center gap-1.5 px-3 h-9 rounded-lg bg-gradient-to-b from-primary to-primary-glow text-primary-foreground text-[11px] font-semibold tracking-wider uppercase whitespace-nowrap"
           >
-            <RefreshCw className="h-4 w-4" /> Atualizar Dados
+            <RefreshCw className="h-3.5 w-3.5" /> <span className="hidden md:inline">Atualizar</span> Dados
           </button>
         }
       />
