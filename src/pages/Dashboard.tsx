@@ -6,6 +6,9 @@ import { useSegments, useKmMarkers } from "@/hooks/useVegiaData";
 import { OSMMap } from "@/components/vegia/OSMMap";
 import { WeatherForecast } from "@/components/vegia/WeatherForecast";
 import { AIInsightsPanel } from "@/components/vegia/AIInsightsPanel";
+import { IRCPanel } from "@/components/vegia/IRCPanel";
+import { useWeather } from "@/hooks/useWeather";
+import { ircForSegment } from "@/lib/irc";
 import { RefreshCw } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -15,6 +18,7 @@ import { useMemo } from "react";
 const Dashboard = () => {
   const { data: segments = [], isLoading } = useSegments();
   const { data: kmMarkers = [] } = useKmMarkers();
+  const { data: weather } = useWeather();
   const qc = useQueryClient();
   const navigate = useNavigate();
 
@@ -25,6 +29,10 @@ const Dashboard = () => {
   const totalAlerts = segments.filter(s => s.status !== "conforme").length;
   const conformidadePct = total ? Math.round((conformes / total) * 100) : 0;
   const ndviAvg = total ? (segments.reduce((a, s) => a + s.ndvi, 0) / total) : 0;
+  const rain5d = weather?.summary.totalRainMm ?? 0;
+  const ircAvg = total
+    ? Math.round(segments.reduce((a, s) => a + ircForSegment(s, rain5d).score, 0) / total)
+    : 0;
 
   // Build OSM data from real km markers and segments
   const polyline = useMemo<[number, number][]>(
@@ -79,10 +87,21 @@ const Dashboard = () => {
               <div className="flex-1 bg-destructive/30" /><div className="flex-1 bg-tertiary/40" /><div className="flex-[2] bg-primary" />
             </div>
           } />
-          <MetricCard label="Conformidade ARTESP" value={String(conformidadePct)} unit="%" footer={
-            <span className="inline-flex items-center px-3 py-1 rounded-full bg-secondary-container text-[11px] font-semibold tracking-wider text-secondary-on-container">
-              {conformidadePct >= 80 ? "ALTA CONFORMIDADE" : conformidadePct >= 50 ? "MODERADA" : "BAIXA"}
-            </span>
+          <MetricCard label="IRC Médio" value={String(ircAvg)} unit="/ 100" variant={ircAvg >= 75 ? "danger" : undefined} footer={
+            <div className="h-1.5 rounded-full bg-surface-high">
+              <div
+                className="h-full rounded-full"
+                style={{
+                  width: `${ircAvg}%`,
+                  background:
+                    ircAvg >= 75
+                      ? "hsl(var(--destructive))"
+                      : ircAvg >= 55
+                      ? "hsl(var(--tertiary))"
+                      : "hsl(var(--primary))",
+                }}
+              />
+            </div>
           } />
         </div>
 
@@ -116,6 +135,8 @@ const Dashboard = () => {
             </section>
 
             <WeatherForecast />
+
+            <IRCPanel />
 
             <AIInsightsPanel />
           </div>

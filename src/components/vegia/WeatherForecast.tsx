@@ -1,21 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Cloud, CloudRain, Droplets, Sprout, Thermometer } from "lucide-react";
-
-interface ForecastDay {
-  date: string;
-  tempAvg: number;
-  humidity: number;
-  rainMm: number;
-  icon: string;
-  description: string;
-  growthCmPerDay: number;
-}
-interface WeatherResponse {
-  location: string;
-  forecast: ForecastDay[];
-  summary: { totalRainMm: number; estimatedGrowthCm: number; growthLevel: "baixo" | "moderado" | "alto" };
-}
+import { useWeather } from "@/hooks/useWeather";
 
 const dayLabel = (iso: string) => {
   const d = new Date(iso + "T12:00:00");
@@ -23,16 +7,7 @@ const dayLabel = (iso: string) => {
 };
 
 export const WeatherForecast = () => {
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["weather-rodoanel"],
-    queryFn: async (): Promise<WeatherResponse> => {
-      const { data, error } = await supabase.functions.invoke("weather-rodoanel");
-      if (error) throw error;
-      if ((data as any)?.error) throw new Error((data as any).error);
-      return data as WeatherResponse;
-    },
-    staleTime: 1000 * 60 * 30,
-  });
+  const { data, isLoading, error } = useWeather();
 
   const levelColor =
     data?.summary.growthLevel === "alto"
