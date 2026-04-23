@@ -1,8 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Sparkles, AlertTriangle, CheckCircle2, RefreshCw, Loader2 } from "lucide-react";
-import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { Slider } from "@/components/ui/slider";
 
 interface Recommendation {
   title: string;
@@ -35,10 +36,18 @@ const urgencyStyles: Record<string, string> = {
 
 export const AIInsightsPanel = () => {
   const qc = useQueryClient();
+  const [statuses, setStatuses] = useState<Array<"critico" | "atencao" | "conforme">>([]);
+  const [kmRange, setKmRange] = useState<[number, number]>([0, 30]);
+
+  const filters = useMemo(
+    () => ({ statuses, kmStart: kmRange[0], kmEnd: kmRange[1] }),
+    [statuses, kmRange]
+  );
+
   const { data, isLoading, isFetching, error, refetch } = useQuery({
-    queryKey: ["ai-insights"],
+    queryKey: ["ai-insights", filters],
     queryFn: async (): Promise<InsightsResponse> => {
-      const { data, error } = await supabase.functions.invoke("ai-insights");
+      const { data, error } = await supabase.functions.invoke("ai-insights", { body: filters });
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);
       return data as InsightsResponse;
@@ -47,9 +56,19 @@ export const AIInsightsPanel = () => {
   });
 
   const handleRefresh = async () => {
-    await qc.invalidateQueries({ queryKey: ["ai-insights"] });
+    await qc.invalidateQueries({ queryKey: ["ai-insights", filters] });
     toast.success("Insights atualizados pela IA");
   };
+
+  const toggleStatus = (s: "critico" | "atencao" | "conforme") => {
+    setStatuses((prev) => (prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]));
+  };
+
+  const statusChips: Array<{ key: "critico" | "atencao" | "conforme"; label: string; cls: string }> = [
+    { key: "critico", label: "Crítico", cls: "bg-destructive/15 text-destructive border-destructive/40" },
+    { key: "atencao", label: "Atenção", cls: "bg-tertiary/15 text-tertiary border-tertiary/50" },
+    { key: "conforme", label: "Conforme", cls: "bg-primary/10 text-primary border-primary/40" },
+  ];
 
   return (
     <section className="bg-surface-lowest rounded-xl p-6">
@@ -71,6 +90,50 @@ export const AIInsightsPanel = () => {
             {isFetching ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
             Atualizar
           </button>
+        </div>
+      </div>
+
+      {/* Filtros */}
+      <div className="bg-surface-low rounded-lg p-4 mb-5 space-y-4">
+        <div>
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">Status</div>
+          <div className="flex flex-wrap gap-2">
+            {statusChips.map((c) => {
+              const active = statuses.includes(c.key);
+              return (
+                <button
+                  key={c.key}
+                  onClick={() => toggleStatus(c.key)}
+                  className={`text-[11px] font-semibold uppercase tracking-wider px-3 py-1 rounded-full border transition ${
+                    active ? c.cls : "border-border text-muted-foreground hover:bg-surface-high"
+                  }`}
+                >
+                  {c.label}
+                </button>
+              );
+            })}
+            {statuses.length > 0 && (
+              <button
+                onClick={() => setStatuses([])}
+                className="text-[11px] uppercase tracking-wider px-3 py-1 rounded-full text-muted-foreground hover:text-foreground"
+              >
+                Limpar
+              </button>
+            )}
+          </div>
+        </div>
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Faixa de KM</div>
+            <div className="text-[12px] font-mono">KM {kmRange[0]} – {kmRange[1]}</div>
+          </div>
+          <Slider
+            min={0}
+            max={30}
+            step={1}
+            value={kmRange}
+            onValueChange={(v) => setKmRange([v[0], v[1]] as [number, number])}
+          />
         </div>
       </div>
 
