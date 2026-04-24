@@ -1,9 +1,10 @@
-import { RefreshCw, LogOut } from "lucide-react";
+import { RefreshCw, LogOut, MoreVertical } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { NotificationsPanel } from "./NotificationsPanel";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface Props {
   breadcrumb?: { label: string; to?: string }[];
@@ -18,6 +19,7 @@ export const TopHeader = ({ breadcrumb = [{ label: "RODOANEL SP-021" }], current
   const { pathname } = useLocation();
   const { signOut, user } = useAuth();
   const qc = useQueryClient();
+  const refresh = () => { qc.invalidateQueries(); toast.success("Atualizando dados…"); };
   return (
     <header className="h-[72px] px-6 flex items-center justify-between gap-4 bg-background">
       <div className="flex items-center gap-2 text-[12px] tracking-wider min-w-0 shrink">
@@ -56,18 +58,46 @@ export const TopHeader = ({ breadcrumb = [{ label: "RODOANEL SP-021" }], current
           </div>
         )}
         <NotificationsPanel />
+        {/* Desktop ≥ md */}
         <button
-          onClick={() => { qc.invalidateQueries(); toast.success("Atualizando dados…"); }}
+          onClick={refresh}
           title="Recarregar"
-          className="h-8 w-8 rounded-full hover:bg-surface-high flex items-center justify-center text-muted-foreground"
+          className="hidden md:flex h-8 w-8 rounded-full hover:bg-surface-high items-center justify-center text-muted-foreground"
         >
           <RefreshCw className="h-[16px] w-[16px]" />
         </button>
         {user && (
-          <button onClick={signOut} title="Sair" className="h-8 w-8 rounded-full hover:bg-surface-high flex items-center justify-center text-muted-foreground">
+          <button onClick={signOut} title="Sair" className="hidden md:flex h-8 w-8 rounded-full hover:bg-surface-high items-center justify-center text-muted-foreground">
             <LogOut className="h-[16px] w-[16px]" />
           </button>
         )}
+        {/* Mobile < md: kebab menu */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <button
+              title="Mais ações"
+              className="md:hidden h-8 w-8 rounded-full hover:bg-surface-high flex items-center justify-center text-muted-foreground"
+            >
+              <MoreVertical className="h-[16px] w-[16px]" />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent align="end" sideOffset={8} className="w-44 p-1">
+            <button
+              onClick={refresh}
+              className="w-full flex items-center gap-2 px-2 py-2 rounded-md text-sm text-foreground hover:bg-surface-high"
+            >
+              <RefreshCw className="h-4 w-4 text-muted-foreground" /> Atualizar
+            </button>
+            {user && (
+              <button
+                onClick={signOut}
+                className="w-full flex items-center gap-2 px-2 py-2 rounded-md text-sm text-foreground hover:bg-surface-high"
+              >
+                <LogOut className="h-4 w-4 text-muted-foreground" /> Sair
+              </button>
+            )}
+          </PopoverContent>
+        </Popover>
         {rightSlot}
       </div>
     </header>
