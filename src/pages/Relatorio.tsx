@@ -3,12 +3,13 @@ import { TopHeader } from "@/components/vegia/TopHeader";
 import { MetricCard } from "@/components/vegia/MetricCard";
 import { SegmentTable } from "@/components/vegia/SegmentTable";
 import { useSegments, useInspectionReports, useInspectionMeasurements } from "@/hooks/useVegiaData";
-import { FileDown, ShieldCheck } from "lucide-react";
+import { FileDown, ShieldCheck, FileX } from "lucide-react";
 import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Relatorio = () => {
-  const { data: segments = [] } = useSegments();
-  const { data: reports = [] } = useInspectionReports();
+  const { data: segments = [], isLoading: loadingSegs } = useSegments();
+  const { data: reports = [], isLoading: loadingReports } = useInspectionReports();
   const [reportId, setReportId] = useState<number | undefined>(undefined);
   useEffect(() => {
     if (!reportId && reports.length) setReportId(reports[0].id);
@@ -52,11 +53,15 @@ const Relatorio = () => {
           </p>
         </div>
         <div className="flex items-center gap-3">
+          <label htmlFor="report-select" className="sr-only">Selecionar relatório</label>
           <select
+            id="report-select"
             value={reportId ?? ""}
             onChange={e => setReportId(Number(e.target.value))}
-            className="h-11 px-4 rounded-lg bg-surface-high text-[13px] font-medium outline-none border border-border"
+            disabled={!reports.length}
+            className="h-11 px-4 rounded-lg bg-surface-high text-[13px] font-medium outline-none border border-border disabled:opacity-50"
           >
+            {reports.length === 0 && <option value="">Nenhum relatório</option>}
             {reports.map(r => (
               <option key={r.id} value={r.id}>
                 {new Date(r.data_levantamento + "T00:00:00").toLocaleDateString("pt-BR")} — {r.report_code}
@@ -65,13 +70,28 @@ const Relatorio = () => {
           </select>
           <button
             onClick={() => toast.success("Exportando PDF…", { description: `Relatório ${selectedReport?.report_code ?? ""}` })}
-            className="h-11 px-5 rounded-lg bg-gradient-to-b from-primary to-primary-glow text-primary-foreground text-[13px] font-semibold inline-flex items-center gap-2"
+            disabled={!selectedReport}
+            aria-label="Exportar relatório em PDF"
+            className="h-11 px-5 rounded-lg bg-gradient-to-b from-primary to-primary-glow text-primary-foreground text-[13px] font-semibold inline-flex items-center gap-2 disabled:opacity-50"
           >
             <FileDown className="h-4 w-4" /> Exportar PDF
           </button>
         </div>
       </div>
 
+      {loadingReports || loadingSegs ? (
+        <div className="space-y-5">
+          <div className="grid grid-cols-4 gap-5"><Skeleton className="h-28" /><Skeleton className="h-28" /><Skeleton className="h-28" /><Skeleton className="h-28" /></div>
+          <Skeleton className="h-96 w-full" />
+        </div>
+      ) : reports.length === 0 ? (
+        <div className="bg-surface-lowest rounded-xl p-12 text-center">
+          <FileX className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
+          <h3 className="text-[16px] font-semibold mb-1">Nenhum relatório de campo disponível</h3>
+          <p className="text-[13px] text-muted-foreground">Os levantamentos ARTESP aparecerão aqui assim que forem registrados.</p>
+        </div>
+      ) : (
+      <>
       <div className="grid grid-cols-4 gap-5 mb-6">
         <MetricCard label="Conformidade" value={<span>{conformidade}<span className="text-[24px]">%</span></span>} footer={
           <div className="space-y-2">
@@ -114,6 +134,8 @@ const Relatorio = () => {
           </div>
         </div>
       </div>
+      </>
+      )}
     </div>
   </>
   );
