@@ -16,7 +16,21 @@ import { ProtectedRoute } from "./components/vegia/ProtectedRoute";
 import { SettingsProvider } from "./hooks/useSettings";
 import Configuracoes from "./pages/Configuracoes";
 
-const queryClient = new QueryClient();
+import { toast as sonnerToast } from "sonner";
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 60_000,
+    },
+  },
+});
+queryClient.getQueryCache().subscribe((event) => {
+  if (event.type === "updated" && event.query.state.status === "error") {
+    const err = event.query.state.error as Error | undefined;
+    sonnerToast.error("Falha ao carregar dados", { description: err?.message ?? "Tente novamente em instantes." });
+  }
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
