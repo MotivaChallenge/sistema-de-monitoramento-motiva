@@ -330,6 +330,60 @@ export type Database = {
         }
         Relationships: []
       }
+      user_settings: {
+        Row: {
+          altura_atencao_cm: number
+          altura_critica_cm: number
+          created_at: string
+          density: string
+          id: string
+          irc_weight_altura: number
+          irc_weight_chuva: number
+          irc_weight_idade: number
+          irc_weight_ndvi: number
+          notify_atencao: boolean
+          notify_critico: boolean
+          notify_email: boolean
+          theme: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          altura_atencao_cm?: number
+          altura_critica_cm?: number
+          created_at?: string
+          density?: string
+          id?: string
+          irc_weight_altura?: number
+          irc_weight_chuva?: number
+          irc_weight_idade?: number
+          irc_weight_ndvi?: number
+          notify_atencao?: boolean
+          notify_critico?: boolean
+          notify_email?: boolean
+          theme?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          altura_atencao_cm?: number
+          altura_critica_cm?: number
+          created_at?: string
+          density?: string
+          id?: string
+          irc_weight_altura?: number
+          irc_weight_chuva?: number
+          irc_weight_idade?: number
+          irc_weight_ndvi?: number
+          notify_atencao?: boolean
+          notify_critico?: boolean
+          notify_email?: boolean
+          theme?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
