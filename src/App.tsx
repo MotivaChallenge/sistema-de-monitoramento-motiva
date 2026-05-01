@@ -13,6 +13,8 @@ import AnaliseCV from "./pages/AnaliseCV";
 import Auth from "./pages/Auth";
 import { AuthProvider } from "./hooks/useAuth";
 import { ProtectedRoute } from "./components/vegia/ProtectedRoute";
+import { SettingsProvider } from "./hooks/useSettings";
+import Configuracoes from "./pages/Configuracoes";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +25,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <SettingsProvider>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
@@ -31,9 +34,11 @@ const App = () => (
               <Route path="/segmento/:id" element={<Segmento />} />
               <Route path="/relatorio" element={<Relatorio />} />
               <Route path="/analise-cv/:id" element={<AnaliseCV />} />
+              <Route path="/configuracoes" element={<Configuracoes />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </SettingsProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
