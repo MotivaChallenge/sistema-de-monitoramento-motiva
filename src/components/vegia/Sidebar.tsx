@@ -1,13 +1,13 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { Map, Bell, BarChart3, Settings, LogOut, User } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { toast } from "sonner";
 import logoMotiva from "@/assets/motiva-logo.png";
 
 const items = [
   { to: "/dashboard", label: "Mapa", icon: Map },
   { to: "/relatorio", label: "Alertas", icon: Bell, match: ["/segmento"] },
   { to: "/relatorio", label: "Relatórios", icon: BarChart3 },
+  { to: "/configuracoes", label: "Configurações", icon: Settings },
 ];
 
 export const Sidebar = () => {
@@ -32,6 +32,8 @@ export const Sidebar = () => {
             <NavLink
               key={i}
               to={it.to}
+              aria-label={it.label}
+              aria-current={active ? "page" : undefined}
               className={`relative flex items-center gap-3 px-4 py-2.5 rounded-md text-[14px] font-medium transition-colors ${
                 active ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground/75 hover:bg-sidebar-accent/60"
               }`}
@@ -42,12 +44,6 @@ export const Sidebar = () => {
             </NavLink>
           );
         })}
-        <button
-          onClick={() => toast("Configurações em breve")}
-          className="w-full text-left flex items-center gap-3 px-4 py-2.5 rounded-md text-[14px] font-medium text-sidebar-foreground/75 hover:bg-sidebar-accent/60"
-        >
-          <Settings className="h-[18px] w-[18px]" /> Configurações
-        </button>
       </nav>
 
       <div className="px-4 pb-6 pt-4 space-y-3 border-t border-sidebar-border">

@@ -9,18 +9,21 @@ import { AIInsightsPanel } from "@/components/vegia/AIInsightsPanel";
 import { IRCPanel } from "@/components/vegia/IRCPanel";
 import { useWeather } from "@/hooks/useWeather";
 import { ircForSegment } from "@/lib/irc";
-import { RefreshCw } from "lucide-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { RefreshCw, Inbox } from "lucide-react";
+import { useQueryClient, useIsFetching } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Dashboard = () => {
-  const { data: segments = [], isLoading } = useSegments();
+  const { data: segments = [], isLoading, isError: segmentsError } = useSegments();
   const { data: kmMarkers = [] } = useKmMarkers();
   const { data: weather } = useWeather();
   const qc = useQueryClient();
   const navigate = useNavigate();
+  const fetching = useIsFetching();
+  const [refreshing, setRefreshing] = useState(false);
 
   const total = segments.length;
   const criticos = segments.filter(s => s.status === "critico").length;
@@ -64,13 +67,21 @@ const Dashboard = () => {
         showLastReading
         rightSlot={
           <button
-            onClick={() => {
-              qc.invalidateQueries();
-              toast.success("Dados atualizados", { description: "Sincronizando leituras Sentinel-2…" });
+            onClick={async () => {
+              setRefreshing(true);
+              try {
+                await qc.invalidateQueries();
+                toast.success("Dados atualizados", { description: "Leituras Sentinel-2 sincronizadas." });
+              } finally {
+                setRefreshing(false);
+              }
             }}
-            className="ml-1 inline-flex items-center gap-1.5 px-3 h-9 rounded-lg bg-gradient-to-b from-primary to-primary-glow text-primary-foreground text-[11px] font-semibold tracking-wider uppercase whitespace-nowrap"
+            disabled={refreshing || fetching > 0}
+            aria-label="Atualizar dados"
+            className="ml-1 inline-flex items-center gap-1.5 px-3 h-9 rounded-lg bg-gradient-to-b from-primary to-primary-glow text-primary-foreground text-[11px] font-semibold tracking-wider uppercase whitespace-nowrap disabled:opacity-60"
           >
-            <RefreshCw className="h-3.5 w-3.5" /> <span className="hidden md:inline">Atualizar</span> Dados
+            <RefreshCw className={`h-3.5 w-3.5 ${refreshing || fetching > 0 ? "animate-spin" : ""}`} />
+            <span className="hidden md:inline">{refreshing ? "Atualizando" : "Atualizar"}</span> Dados
           </button>
         }
       />
@@ -147,7 +158,24 @@ const Dashboard = () => {
               <span className="text-[11px] px-2 py-1 rounded-full bg-destructive/10 text-destructive font-semibold">{totalAlerts} total</span>
             </div>
             <div className="space-y-3">
-              {isLoading && <div className="text-[12px] text-muted-foreground">Carregando alertas…</div>}
+              {isLoading && (
+                <>
+                  <Skeleton className="h-[120px] w-full" />
+                  <Skeleton className="h-[120px] w-full" />
+                  <Skeleton className="h-[120px] w-full" />
+                </>
+              )}
+              {!isLoading && segmentsError && (
+                <div className="text-[12px] text-destructive bg-destructive/10 rounded-lg p-3">
+                  Não foi possível carregar os alertas. Tente novamente.
+                </div>
+              )}
+              {!isLoading && !segmentsError && alerts.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Inbox className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-[12px]">Nenhum alerta ativo. Tudo conforme.</p>
+                </div>
+              )}
               {alerts.map(a => <AlertCard key={a.id} alert={a} />)}
             </div>
             <button

@@ -62,12 +62,13 @@ export const TopHeader = ({ breadcrumb = [{ label: "RODOANEL SP-021" }], current
         <button
           onClick={refresh}
           title="Recarregar"
+          aria-label="Recarregar dados"
           className="hidden md:flex h-8 w-8 rounded-full hover:bg-surface-high items-center justify-center text-muted-foreground"
         >
           <RefreshCw className="h-[16px] w-[16px]" />
         </button>
         {user && (
-          <button onClick={signOut} title="Sair" className="hidden md:flex h-8 w-8 rounded-full hover:bg-surface-high items-center justify-center text-muted-foreground">
+          <button onClick={signOut} title="Sair" aria-label="Sair da conta" className="hidden md:flex h-8 w-8 rounded-full hover:bg-surface-high items-center justify-center text-muted-foreground">
             <LogOut className="h-[16px] w-[16px]" />
           </button>
         )}
@@ -76,6 +77,7 @@ export const TopHeader = ({ breadcrumb = [{ label: "RODOANEL SP-021" }], current
           <PopoverTrigger asChild>
             <button
               title="Mais ações"
+              aria-label="Mais ações"
               className="md:hidden h-8 w-8 rounded-full hover:bg-surface-high flex items-center justify-center text-muted-foreground"
             >
               <MoreVertical className="h-[16px] w-[16px]" />

@@ -13,8 +13,24 @@ import AnaliseCV from "./pages/AnaliseCV";
 import Auth from "./pages/Auth";
 import { AuthProvider } from "./hooks/useAuth";
 import { ProtectedRoute } from "./components/vegia/ProtectedRoute";
+import { SettingsProvider } from "./hooks/useSettings";
+import Configuracoes from "./pages/Configuracoes";
 
-const queryClient = new QueryClient();
+import { toast as sonnerToast } from "sonner";
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 60_000,
+    },
+  },
+});
+queryClient.getQueryCache().subscribe((event) => {
+  if (event.type === "updated" && event.query.state.status === "error") {
+    const err = event.query.state.error as Error | undefined;
+    sonnerToast.error("Falha ao carregar dados", { description: err?.message ?? "Tente novamente em instantes." });
+  }
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -23,6 +39,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <SettingsProvider>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
@@ -31,9 +48,11 @@ const App = () => (
               <Route path="/segmento/:id" element={<Segmento />} />
               <Route path="/relatorio" element={<Relatorio />} />
               <Route path="/analise-cv/:id" element={<AnaliseCV />} />
+              <Route path="/configuracoes" element={<Configuracoes />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </SettingsProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
