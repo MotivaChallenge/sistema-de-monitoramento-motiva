@@ -6,10 +6,18 @@ import { useSegments, useInspectionReports, useInspectionMeasurements } from "@/
 import { FileDown, ShieldCheck, FileX } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useFilters } from "@/contexts/FiltersContext";
+import { GlobalFilters } from "@/components/vegia/GlobalFilters";
+import { useMemo as useMemoR } from "react";
 
 const Relatorio = () => {
-  const { data: segments = [], isLoading: loadingSegs } = useSegments();
+  const { data: segmentsRaw = [], isLoading: loadingSegs } = useSegments();
   const { data: reports = [], isLoading: loadingReports } = useInspectionReports();
+  const { matches } = useFilters();
+  const segments = useMemoR(
+    () => segmentsRaw.filter(s => matches({ status: s.status, kmStart: s.kmStart })),
+    [segmentsRaw, matches]
+  );
   const [reportId, setReportId] = useState<number | undefined>(undefined);
   useEffect(() => {
     if (!reportId && reports.length) setReportId(reports[0].id);
@@ -38,9 +46,12 @@ const Relatorio = () => {
       current="Relatório"
       showTabs
       rightSlot={
-        <span className="ml-2 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary-container text-[12px] font-semibold tracking-wider uppercase text-secondary-on-container">
-          <ShieldCheck className="h-3.5 w-3.5" /> Monitoramento Ativo
-        </span>
+        <>
+          <GlobalFilters />
+          <span className="ml-2 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary-container text-[12px] font-semibold tracking-wider uppercase text-secondary-on-container">
+            <ShieldCheck className="h-3.5 w-3.5" /> Monitoramento Ativo
+          </span>
+        </>
       }
     />
     <div className="px-10 pb-12">
