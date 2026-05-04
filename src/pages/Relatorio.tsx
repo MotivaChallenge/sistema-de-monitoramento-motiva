@@ -8,13 +8,12 @@ import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useFilters } from "@/contexts/FiltersContext";
 import { GlobalFilters } from "@/components/vegia/GlobalFilters";
-import { useMemo as useMemoR } from "react";
 
 const Relatorio = () => {
   const { data: segmentsRaw = [], isLoading: loadingSegs } = useSegments();
   const { data: reports = [], isLoading: loadingReports } = useInspectionReports();
   const { matches } = useFilters();
-  const segments = useMemoR(
+  const segments = useMemo(
     () => segmentsRaw.filter(s => matches({ status: s.status, kmStart: s.kmStart })),
     [segmentsRaw, matches]
   );
