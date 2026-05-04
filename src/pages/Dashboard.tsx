@@ -15,15 +15,22 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useMemo, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useFilters } from "@/contexts/FiltersContext";
+import { GlobalFilters } from "@/components/vegia/GlobalFilters";
 
 const Dashboard = () => {
-  const { data: segments = [], isLoading, isError: segmentsError } = useSegments();
+  const { data: segmentsRaw = [], isLoading, isError: segmentsError } = useSegments();
   const { data: kmMarkers = [] } = useKmMarkers();
   const { data: weather } = useWeather();
   const qc = useQueryClient();
   const navigate = useNavigate();
   const fetching = useIsFetching();
   const [refreshing, setRefreshing] = useState(false);
+  const { matches, activeCount } = useFilters();
+  const segments = useMemo(
+    () => segmentsRaw.filter(s => matches({ status: s.status, kmStart: s.kmStart })),
+    [segmentsRaw, matches]
+  );
 
   const total = segments.length;
   const criticos = segments.filter(s => s.status === "critico").length;
@@ -66,6 +73,8 @@ const Dashboard = () => {
         showStatusBadges
         showLastReading
         rightSlot={
+          <>
+          <GlobalFilters />
           <button
             onClick={async () => {
               setRefreshing(true);
@@ -83,9 +92,15 @@ const Dashboard = () => {
             <RefreshCw className={`h-3.5 w-3.5 ${refreshing || fetching > 0 ? "animate-spin" : ""}`} />
             <span className="hidden md:inline">{refreshing ? "Atualizando" : "Atualizar"}</span> Dados
           </button>
+          </>
         }
       />
       <div className="px-10 pb-12 space-y-6">
+        {activeCount > 0 && (
+          <div className="text-[12px] text-muted-foreground bg-surface-low rounded-lg px-3 py-2 inline-block">
+            Mostrando {segments.length} de {segmentsRaw.length} segmentos com filtros ativos.
+          </div>
+        )}
         <div className="grid grid-cols-4 gap-5">
           <MetricCard label="Cobertura Total" value="29,3" unit="km" footer={<div className="h-1.5 rounded-full bg-surface-high"><div className="h-full w-full rounded-full bg-primary" /></div>} />
           <MetricCard label="Trechos Críticos" value={String(criticos)} unit={`de ${total} segmentos`} variant="danger" footer={

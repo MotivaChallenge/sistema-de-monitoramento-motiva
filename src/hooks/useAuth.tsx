@@ -7,15 +7,18 @@ interface AuthCtx {
   session: Session | null;
   loading: boolean;
   isAdmin: boolean;
+  isOperator: boolean;
+  canEdit: boolean;
   signOut: () => Promise<void>;
 }
 
-const Ctx = createContext<AuthCtx>({ user: null, session: null, loading: true, isAdmin: false, signOut: async () => {} });
+const Ctx = createContext<AuthCtx>({ user: null, session: null, loading: true, isAdmin: false, isOperator: false, canEdit: false, signOut: async () => {} });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isOperator, setIsOperator] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -26,9 +29,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setTimeout(async () => {
           const { data } = await supabase.from("user_roles").select("role").eq("user_id", sess.user.id);
           setIsAdmin(!!data?.some(r => r.role === "admin"));
+          setIsOperator(!!data?.some(r => r.role === "operator"));
         }, 0);
       } else {
         setIsAdmin(false);
+        setIsOperator(false);
       }
     });
 
@@ -39,6 +44,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (session?.user) {
         supabase.from("user_roles").select("role").eq("user_id", session.user.id).then(({ data }) => {
           setIsAdmin(!!data?.some(r => r.role === "admin"));
+          setIsOperator(!!data?.some(r => r.role === "operator"));
         });
       }
     });
@@ -48,7 +54,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = async () => { await supabase.auth.signOut(); };
 
-  return <Ctx.Provider value={{ user, session, loading, isAdmin, signOut }}>{children}</Ctx.Provider>;
+  return <Ctx.Provider value={{ user, session, loading, isAdmin, isOperator, canEdit: isAdmin || isOperator, signOut }}>{children}</Ctx.Provider>;
 };
 
 export const useAuth = () => useContext(Ctx);

@@ -240,6 +240,63 @@ export type Database = {
         }
         Relationships: []
       }
+      rocada_events: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          data: string
+          id: string
+          observacao: string | null
+          responsavel: string | null
+          segment_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          data?: string
+          id?: string
+          observacao?: string | null
+          responsavel?: string | null
+          segment_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          data?: string
+          id?: string
+          observacao?: string | null
+          responsavel?: string | null
+          segment_id?: string
+        }
+        Relationships: []
+      }
+      segment_observations: {
+        Row: {
+          autor: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          segment_id: string
+          texto: string
+        }
+        Insert: {
+          autor?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          segment_id: string
+          texto: string
+        }
+        Update: {
+          autor?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          segment_id?: string
+          texto?: string
+        }
+        Relationships: []
+      }
       segments: {
         Row: {
           altura: number

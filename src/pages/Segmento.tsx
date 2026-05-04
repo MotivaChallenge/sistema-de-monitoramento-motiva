@@ -5,10 +5,11 @@ import { useSegment, useKmMarkers, useRocadaClassification } from "@/hooks/useVe
 import { MonoClause } from "@/components/vegia/MonoClause";
 import { NDVILineChart } from "@/components/vegia/NDVILineChart";
 import { AIInsightBubble } from "@/components/vegia/AIInsightBubble";
-import { ArrowUpRight, ClipboardPlus, Download, CheckCircle2, AlertTriangle, Users } from "lucide-react";
+import { ArrowUpRight, Download, AlertTriangle, Users } from "lucide-react";
 import { OSMMap } from "@/components/vegia/OSMMap";
 import { toast } from "sonner";
 import { useMemo } from "react";
+import { OperatorActions } from "@/components/vegia/OperatorActions";
 
 const Segmento = () => {
   const { id } = useParams();
@@ -143,13 +144,9 @@ const Segmento = () => {
               </div>
             </div>
 
-            <button
-              onClick={() => toast.success("OS de roçada gerada", { description: `Equipe Consórcio SP-Verde notificada · ${seg.km}` })}
-              className="w-full inline-flex items-center justify-center gap-2 h-12 rounded-lg bg-gradient-to-b from-destructive to-[hsl(0_72%_36%)] text-destructive-foreground font-semibold"
-            >
-              <ClipboardPlus className="h-5 w-5" /> Gerar OS de roçada
-            </button>
-            <div className="grid grid-cols-2 gap-3">
+            <OperatorActions segmentId={seg.id} />
+
+            <div>
               <button
                 onClick={() => {
                   const blob = new Blob([JSON.stringify(seg, null, 2)], { type: "application/json" });
@@ -160,12 +157,9 @@ const Segmento = () => {
                   URL.revokeObjectURL(url);
                   toast.success("Segmento exportado", { description: `segmento-${seg.id}.json` });
                 }}
-                className="h-11 rounded-lg bg-surface-high hover:bg-surface-high/80 text-[13px] font-medium inline-flex items-center justify-center gap-2"
+                className="w-full h-11 rounded-lg bg-surface-high hover:bg-surface-high/80 text-[13px] font-medium inline-flex items-center justify-center gap-2"
               >
                 <Download className="h-4 w-4" /> Exportar
-              </button>
-              <button onClick={() => toast.success("Marcado como resolvido")} className="h-11 rounded-lg bg-surface-high hover:bg-surface-high/80 text-[13px] font-medium inline-flex items-center justify-center gap-2">
-                <CheckCircle2 className="h-4 w-4" /> Resolvido
               </button>
             </div>
 
