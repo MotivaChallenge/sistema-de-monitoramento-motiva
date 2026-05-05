@@ -8,11 +8,14 @@ import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useFilters } from "@/contexts/FiltersContext";
 import { GlobalFilters } from "@/components/vegia/GlobalFilters";
+import { generateConformityPdf } from "@/lib/pdf-export";
+import { useAuth } from "@/hooks/useAuth";
 
 const Relatorio = () => {
   const { data: segmentsRaw = [], isLoading: loadingSegs } = useSegments();
   const { data: reports = [], isLoading: loadingReports } = useInspectionReports();
   const { matches } = useFilters();
+  const { user } = useAuth();
   const segments = useMemo(
     () => segmentsRaw.filter(s => matches({ status: s.status, kmStart: s.kmStart })),
     [segmentsRaw, matches]
@@ -38,6 +41,36 @@ const Relatorio = () => {
   const intervencoes = lvl3;
   const conformidadeLvl1Pct = Math.round((lvl1 / totalCounted) * 100);
   const inconformidadePct = Math.max(0, 100 - conformidadeLvl1Pct);
+
+  const handleExportPdf = () => {
+    if (!selectedReport) return;
+    try {
+      generateConformityPdf({
+        reportCode: selectedReport.report_code,
+        rodovia: selectedReport.rodovia,
+        unidade: selectedReport.unidade,
+        dataLevantamento: selectedReport.data_levantamento,
+        kmStart: Number(selectedReport.km_start),
+        kmEnd: Number(selectedReport.km_end),
+        metrics: { conformidade, lvl1, lvl2, lvl3, totalCounted: counted.length },
+        measurements: measurements.map(m => ({
+          item_codigo: m.item_codigo,
+          item_descricao: m.item_descricao,
+          km_offset: m.km_offset,
+          nivel: m.nivel,
+          na: m.na,
+        })),
+        segments: segments.map(s => ({
+          km: s.km, tipo: s.tipo, altura: s.altura, limite: s.limite,
+          status: s.status, ultimaRocada: s.ultimaRocada,
+        })),
+        assinanteNome: user?.user_metadata?.display_name || user?.email || undefined,
+      });
+      toast.success("PDF gerado", { description: selectedReport.report_code });
+    } catch (e) {
+      toast.error("Falha ao gerar PDF", { description: (e as Error).message });
+    }
+  };
   return (
   <>
     <TopHeader
@@ -79,7 +112,7 @@ const Relatorio = () => {
             ))}
           </select>
           <button
-            onClick={() => toast.success("Exportando PDF…", { description: `Relatório ${selectedReport?.report_code ?? ""}` })}
+            onClick={handleExportPdf}
             disabled={!selectedReport}
             aria-label="Exportar relatório em PDF"
             className="h-11 px-5 rounded-lg bg-gradient-to-b from-primary to-primary-glow text-primary-foreground text-[13px] font-semibold inline-flex items-center gap-2 disabled:opacity-50"
