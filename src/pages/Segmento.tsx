@@ -1,16 +1,18 @@
 import { useNavigate, useParams } from "react-router-dom";
+import { lazy, Suspense, useMemo } from "react";
 import { TopHeader } from "@/components/vegia/TopHeader";
 import { segmentEvolution } from "@/data/mock";
 import { useSegment, useKmMarkers, useRocadaClassification } from "@/hooks/useVegiaData";
 import { MonoClause } from "@/components/vegia/MonoClause";
-import { NDVILineChart } from "@/components/vegia/NDVILineChart";
 import { AIInsightBubble } from "@/components/vegia/AIInsightBubble";
 import { ArrowUpRight, Download, AlertTriangle, Users } from "lucide-react";
-import { OSMMap } from "@/components/vegia/OSMMap";
 import { toast } from "sonner";
-import { useMemo } from "react";
 import { OperatorActions } from "@/components/vegia/OperatorActions";
 import { RocadaTimeline } from "@/components/vegia/RocadaTimeline";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const OSMMap = lazy(() => import("@/components/vegia/OSMMap").then(m => ({ default: m.OSMMap })));
+const NDVILineChart = lazy(() => import("@/components/vegia/NDVILineChart").then(m => ({ default: m.NDVILineChart })));
 
 const Segmento = () => {
   const { id } = useParams();
@@ -103,7 +105,9 @@ const Segmento = () => {
 
             <section className="bg-surface-lowest rounded-xl p-6">
               <h3 className="text-[14px] font-semibold tracking-wider uppercase mb-4">Evolução de Crescimento (30 dias)</h3>
-              <NDVILineChart data={segmentEvolution} threshold={30} thresholdLabel="THRESHOLD (30cm)" />
+              <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+                <NDVILineChart data={segmentEvolution} threshold={30} thresholdLabel="THRESHOLD (30cm)" />
+              </Suspense>
             </section>
 
             {seg.insight && <AIInsightBubble>{seg.insight}</AIInsightBubble>}
@@ -113,13 +117,15 @@ const Segmento = () => {
 
           <aside className="space-y-5">
             <div className="bg-surface-lowest rounded-xl overflow-hidden">
-              <OSMMap
-                lat={lat}
-                lng={lng}
-                label={`${seg.km} · ${seg.tipo}`}
-                status={seg.status as "critico" | "atencao" | "conforme"}
-                className="aspect-[4/3] w-full"
-              />
+              <Suspense fallback={<Skeleton className="aspect-[4/3] w-full" />}>
+                <OSMMap
+                  lat={lat}
+                  lng={lng}
+                  label={`${seg.km} · ${seg.tipo}`}
+                  status={seg.status as "critico" | "atencao" | "conforme"}
+                  className="aspect-[4/3] w-full"
+                />
+              </Suspense>
               <div className="p-4">
                 <div className="label-md mb-1">Localização (OpenStreetMap)</div>
                 <p className="text-[13px] italic text-foreground/80">

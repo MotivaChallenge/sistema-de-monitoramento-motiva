@@ -6,15 +6,24 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import { AppLayout } from "./components/vegia/AppLayout";
-import Dashboard from "./pages/Dashboard";
-import Segmento from "./pages/Segmento";
-import Relatorio from "./pages/Relatorio";
-import AnaliseCV from "./pages/AnaliseCV";
 import Auth from "./pages/Auth";
 import { AuthProvider } from "./hooks/useAuth";
 import { ProtectedRoute } from "./components/vegia/ProtectedRoute";
 import { SettingsProvider } from "./hooks/useSettings";
-import Configuracoes from "./pages/Configuracoes";
+import { lazy, Suspense } from "react";
+
+// Code splitting por rota — reduz bundle inicial.
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Segmento = lazy(() => import("./pages/Segmento"));
+const Relatorio = lazy(() => import("./pages/Relatorio"));
+const AnaliseCV = lazy(() => import("./pages/AnaliseCV"));
+const Configuracoes = lazy(() => import("./pages/Configuracoes"));
+
+const RouteFallback = () => (
+  <div className="min-h-[60vh] flex items-center justify-center text-muted-foreground text-sm">
+    Carregando…
+  </div>
+);
 
 import { toast as sonnerToast } from "sonner";
 const queryClient = new QueryClient({
@@ -40,6 +49,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <SettingsProvider>
+          <Suspense fallback={<RouteFallback />}>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
@@ -52,6 +62,7 @@ const App = () => (
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </Suspense>
           </SettingsProvider>
         </AuthProvider>
       </BrowserRouter>

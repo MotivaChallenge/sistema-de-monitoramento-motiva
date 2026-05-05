@@ -4,6 +4,11 @@ import { corsHeaders } from "../_shared/cors.ts";
 const LAT = -23.5;
 const LON = -46.85;
 
+// Cache em memória do worker (TTL 15min). Sobrevive entre invocações enquanto
+// o isolate estiver "warm"; reduz chamadas ao OpenWeather e latência.
+const CACHE_TTL_MS = 15 * 60 * 1000;
+let cache: { at: number; payload: unknown } | null = null;
+
 const log = (level: "info" | "warn" | "error", event: string, data: Record<string, unknown> = {}) => {
   console.log(JSON.stringify({ level, event, fn: "weather-rodoanel", ts: new Date().toISOString(), ...data }));
 };
@@ -16,6 +21,19 @@ Deno.serve(async (req) => {
   log("info", "request_received", { requestId, method: req.method });
 
   try {
+    if (cache && Date.now() - cache.at < CACHE_TTL_MS) {
+      const ageMs = Date.now() - cache.at;
+      log("info", "cache_hit", { requestId, ageMs });
+      return new Response(JSON.stringify(cache.payload), {
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+          "x-cache": "HIT",
+          "x-cache-age-ms": String(ageMs),
+        },
+      });
+    }
+
     const apiKey = Deno.env.get("OPENWEATHER_API");
     if (!apiKey) {
       log("error", "missing_secret", { requestId, secret: "OPENWEATHER_API" });
@@ -91,18 +109,19 @@ Deno.serve(async (req) => {
       estimatedGrowthCm: Number(totalGrowth.toFixed(1)),
     });
 
-    return new Response(
-      JSON.stringify({
-        location: data.city?.name ?? "Rodoanel SP-021",
-        forecast,
-        summary: {
-          totalRainMm: Number(totalRain.toFixed(1)),
-          estimatedGrowthCm: Number(totalGrowth.toFixed(1)),
-          growthLevel: totalGrowth > 5 ? "alto" : totalGrowth > 3 ? "moderado" : "baixo",
-        },
-      }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    const payload = {
+      location: data.city?.name ?? "Rodoanel SP-021",
+      forecast,
+      summary: {
+        totalRainMm: Number(totalRain.toFixed(1)),
+        estimatedGrowthCm: Number(totalGrowth.toFixed(1)),
+        growthLevel: totalGrowth > 5 ? "alto" : totalGrowth > 3 ? "moderado" : "baixo",
+      },
+    };
+    cache = { at: Date.now(), payload };
+    return new Response(JSON.stringify(payload), {
+      headers: { ...corsHeaders, "Content-Type": "application/json", "x-cache": "MISS" },
+    });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Unknown error";
     log("error", "request_failed", {
