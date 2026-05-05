@@ -10,6 +10,7 @@ import { OSMMap } from "@/components/vegia/OSMMap";
 import { toast } from "sonner";
 import { useMemo } from "react";
 import { OperatorActions } from "@/components/vegia/OperatorActions";
+import { RocadaTimeline } from "@/components/vegia/RocadaTimeline";
 
 const Segmento = () => {
   const { id } = useParams();
@@ -106,6 +107,8 @@ const Segmento = () => {
             </section>
 
             {seg.insight && <AIInsightBubble>{seg.insight}</AIInsightBubble>}
+
+            <RocadaTimeline segmentId={seg.id} />
           </div>
 
           <aside className="space-y-5">

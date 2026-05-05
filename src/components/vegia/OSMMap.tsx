@@ -107,7 +107,11 @@ export const OSMMap = ({
     }
 
     return () => {
-      map.remove();
+      // Defer removal to next frame to avoid Leaflet `_leaflet_pos` race
+      // when the container is unmounted mid-animation.
+      requestAnimationFrame(() => {
+        try { map.remove(); } catch { /* ignore */ }
+      });
       mapRef.current = null;
     };
   }, [lat, lng, label, status, polyline, markers, zoom, fitBounds]);
