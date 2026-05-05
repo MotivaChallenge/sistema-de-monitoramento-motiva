@@ -1,9 +1,7 @@
 import { TopHeader } from "@/components/vegia/TopHeader";
 import { MetricCard } from "@/components/vegia/MetricCard";
-import { NDVIBarChart } from "@/components/vegia/NDVIBarChart";
 import { AlertCard } from "@/components/vegia/AlertCard";
 import { useSegments, useKmMarkers } from "@/hooks/useVegiaData";
-import { OSMMap } from "@/components/vegia/OSMMap";
 import { WeatherForecast } from "@/components/vegia/WeatherForecast";
 import { AIInsightsPanel } from "@/components/vegia/AIInsightsPanel";
 import { IRCPanel } from "@/components/vegia/IRCPanel";
@@ -13,10 +11,14 @@ import { RefreshCw, Inbox } from "lucide-react";
 import { useQueryClient, useIsFetching } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { useMemo, useState } from "react";
+import { useMemo, useState, lazy, Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useFilters } from "@/contexts/FiltersContext";
 import { GlobalFilters } from "@/components/vegia/GlobalFilters";
+
+// Code splitting: mapa Leaflet e gráficos Recharts são pesados — carrega só quando precisa.
+const OSMMap = lazy(() => import("@/components/vegia/OSMMap").then(m => ({ default: m.OSMMap })));
+const NDVIBarChart = lazy(() => import("@/components/vegia/NDVIBarChart").then(m => ({ default: m.NDVIBarChart })));
 
 const Dashboard = () => {
   const { data: segmentsRaw = [], isLoading, isError: segmentsError } = useSegments();
