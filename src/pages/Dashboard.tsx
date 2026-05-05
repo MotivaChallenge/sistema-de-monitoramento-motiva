@@ -145,12 +145,14 @@ const Dashboard = () => {
                 </div>
               </div>
               <div className="rounded-lg overflow-hidden">
-                <OSMMap
-                  className="w-full h-[420px]"
-                  polyline={polyline}
-                  markers={segmentMarkers}
-                  fitBounds
-                />
+                <Suspense fallback={<Skeleton className="w-full h-[420px]" />}>
+                  <OSMMap
+                    className="w-full h-[420px]"
+                    polyline={polyline}
+                    markers={segmentMarkers}
+                    fitBounds
+                  />
+                </Suspense>
               </div>
             </section>
 
@@ -159,7 +161,9 @@ const Dashboard = () => {
                 <h3 className="text-[15px] font-semibold tracking-wide uppercase">Tendência NDVI (últimas 6 leituras)</h3>
                 <span className="text-[12px] text-muted-foreground bg-surface-high px-3 py-1.5 rounded-full">Período: Junho – Agosto 2024</span>
               </div>
-              <NDVIBarChart />
+              <Suspense fallback={<Skeleton className="h-72 w-full" />}>
+                <NDVIBarChart />
+              </Suspense>
             </section>
 
             <WeatherForecast />
