@@ -39,7 +39,7 @@ export const useAlertsFeed = () => {
 
   useEffect(() => {
     const channel = supabase
-      .channel("alerts-feed-rt")
+      .channel(`alerts-feed-rt-${Math.random().toString(36).slice(2)}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "alerts" },
