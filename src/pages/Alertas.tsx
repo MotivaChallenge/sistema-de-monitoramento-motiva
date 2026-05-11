@@ -15,7 +15,11 @@ const Alertas = () => {
   const navigate = useNavigate();
 
   const items = useMemo(
-    () => feed.filter(a => matches({ status: a.status })),
+    () => feed.filter(a => {
+      const m = a.km.match(/(\d+)[+](\d+)/);
+      const kmStart = m ? Number(m[1]) + Number(m[2]) / 1000 : 0;
+      return matches({ status: a.status, kmStart });
+    }),
     [feed, matches]
   );
 
