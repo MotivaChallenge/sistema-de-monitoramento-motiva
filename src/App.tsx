@@ -18,6 +18,7 @@ const Segmento = lazy(() => import("./pages/Segmento"));
 const Relatorio = lazy(() => import("./pages/Relatorio"));
 const AnaliseCV = lazy(() => import("./pages/AnaliseCV"));
 const Configuracoes = lazy(() => import("./pages/Configuracoes"));
+const Alertas = lazy(() => import("./pages/Alertas"));
 
 const RouteFallback = () => (
   <div className="min-h-[60vh] flex items-center justify-center text-muted-foreground text-sm">
@@ -57,6 +58,7 @@ const App = () => (
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/segmento/:id" element={<Segmento />} />
               <Route path="/relatorio" element={<Relatorio />} />
+              <Route path="/alertas" element={<Alertas />} />
               <Route path="/analise-cv/:id" element={<AnaliseCV />} />
               <Route path="/configuracoes" element={<Configuracoes />} />
             </Route>
