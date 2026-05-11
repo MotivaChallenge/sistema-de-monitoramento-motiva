@@ -36,6 +36,8 @@ type Props = {
   zoom?: number;
   /** Auto-fit bounds to polyline/markers. */
   fitBounds?: boolean;
+  /** Called when user clicks anywhere on the map or on a marker. */
+  onPointSelect?: (lat: number, lng: number, label?: string) => void;
 };
 
 const statusColor = (s?: string) =>
@@ -43,7 +45,7 @@ const statusColor = (s?: string) =>
 
 export const OSMMap = ({
   lat, lng, label, status, className,
-  polyline, markers, zoom, fitBounds,
+  polyline, markers, zoom, fitBounds, onPointSelect,
 }: Props) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -82,7 +84,11 @@ export const OSMMap = ({
           weight: 2,
         }).addTo(map);
         if (m.label) dot.bindPopup(`<strong>${m.label}</strong>`);
-        if (m.onClick) dot.on("click", () => m.onClick?.());
+        dot.on("click", (e: L.LeafletMouseEvent) => {
+          L.DomEvent.stopPropagation(e);
+          if (onPointSelect) onPointSelect(m.lat, m.lng, m.label);
+          else m.onClick?.();
+        });
       });
     } else if (lat != null && lng != null) {
       L.circle([lat, lng], {
@@ -94,6 +100,12 @@ export const OSMMap = ({
       L.marker([lat, lng], { icon })
         .addTo(map)
         .bindPopup(`<strong>${label ?? "Localização"}</strong><br/>${lat.toFixed(5)}, ${lng.toFixed(5)}`);
+    }
+
+    if (onPointSelect) {
+      map.on("click", (e: L.LeafletMouseEvent) => {
+        onPointSelect(e.latlng.lat, e.latlng.lng);
+      });
     }
 
     if (fitBounds) {
@@ -114,7 +126,7 @@ export const OSMMap = ({
       });
       mapRef.current = null;
     };
-  }, [lat, lng, label, status, polyline, markers, zoom, fitBounds]);
+  }, [lat, lng, label, status, polyline, markers, zoom, fitBounds, onPointSelect]);
 
   return <div ref={containerRef} className={className} style={{ position: "relative", zIndex: 0 }} />;
 };
