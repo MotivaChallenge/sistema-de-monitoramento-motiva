@@ -15,6 +15,7 @@ import { useMemo, useState, lazy, Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useFilters } from "@/contexts/FiltersContext";
 import { GlobalFilters } from "@/components/vegia/GlobalFilters";
+import { MapPointSheet } from "@/components/vegia/MapPointSheet";
 
 // Code splitting: mapa Leaflet e gráficos Recharts são pesados — carrega só quando precisa.
 const OSMMap = lazy(() => import("@/components/vegia/OSMMap").then(m => ({ default: m.OSMMap })));
@@ -29,6 +30,7 @@ const Dashboard = () => {
   const fetching = useIsFetching();
   const [refreshing, setRefreshing] = useState(false);
   const { matches, activeCount } = useFilters();
+  const [mapPoint, setMapPoint] = useState<{ lat: number; lng: number; label?: string } | null>(null);
   const segments = useMemo(
     () => segmentsRaw.filter(s => matches({ status: s.status, kmStart: s.kmStart })),
     [segmentsRaw, matches]
@@ -63,11 +65,10 @@ const Dashboard = () => {
           lng: m.lng,
           status: s.status as "critico" | "atencao" | "conforme",
           label: `${s.km} · ${s.tipo}`,
-          onClick: () => navigate(`/segmento/${s.id}`),
         };
       })
       .filter(Boolean) as { lat: number; lng: number; status: any; label: string; onClick: () => void }[];
-  }, [segments, kmMarkers, navigate]);
+  }, [segments, kmMarkers]);
 
   return (
     <>
@@ -151,9 +152,13 @@ const Dashboard = () => {
                     polyline={polyline}
                     markers={segmentMarkers}
                     fitBounds
+                    onPointSelect={(lat, lng, label) => setMapPoint({ lat, lng, label })}
                   />
                 </Suspense>
               </div>
+              <p className="text-[11px] text-muted-foreground mt-3">
+                Clique em qualquer ponto do mapa para ver clima local e insight da IA.
+              </p>
             </section>
 
             <section className="bg-surface-lowest rounded-xl p-6">
@@ -208,6 +213,11 @@ const Dashboard = () => {
           </aside>
         </div>
       </div>
+      <MapPointSheet
+        open={!!mapPoint}
+        point={mapPoint}
+        onClose={() => setMapPoint(null)}
+      />
     </>
   );
 };
