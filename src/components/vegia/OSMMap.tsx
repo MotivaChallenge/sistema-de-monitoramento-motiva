@@ -52,6 +52,12 @@ export const OSMMap = ({
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
+    // Clear any leftover Leaflet state on the container (StrictMode double-invoke / HMR)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((containerRef.current as any)._leaflet_id) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (containerRef.current as any)._leaflet_id = null;
+    }
     const centerLat = lat ?? markers?.[0]?.lat ?? polyline?.[0]?.[0] ?? -23.5505;
     const centerLng = lng ?? markers?.[0]?.lng ?? polyline?.[0]?.[1] ?? -46.6333;
     const map = L.map(containerRef.current, {
@@ -119,11 +125,7 @@ export const OSMMap = ({
     }
 
     return () => {
-      // Defer removal to next frame to avoid Leaflet `_leaflet_pos` race
-      // when the container is unmounted mid-animation.
-      requestAnimationFrame(() => {
-        try { map.remove(); } catch { /* ignore */ }
-      });
+      try { map.off(); map.remove(); } catch { /* ignore */ }
       mapRef.current = null;
     };
   }, [lat, lng, label, status, polyline, markers, zoom, fitBounds, onPointSelect]);
