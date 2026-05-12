@@ -38,6 +38,8 @@ type Props = {
   fitBounds?: boolean;
   /** Called when user clicks anywhere on the map or on a marker. */
   onPointSelect?: (lat: number, lng: number, label?: string) => void;
+  /** Initial base layer. Defaults to "satellite" (Google Hybrid). */
+  baseLayer?: "street" | "satellite" | "hybrid";
 };
 
 const statusColor = (s?: string) =>
@@ -45,7 +47,7 @@ const statusColor = (s?: string) =>
 
 export const OSMMap = ({
   lat, lng, label, status, className,
-  polyline, markers, zoom, fitBounds, onPointSelect,
+  polyline, markers, zoom, fitBounds, onPointSelect, baseLayer = "satellite",
 }: Props) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -68,9 +70,30 @@ export const OSMMap = ({
     });
     mapRef.current = map;
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    // Base layers: OSM (street), Google Satellite, Google Hybrid (satellite + labels/roads)
+    const street = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "&copy; OpenStreetMap",
-    }).addTo(map);
+      maxZoom: 19,
+    });
+    const satellite = L.tileLayer("https://mt{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}", {
+      subdomains: ["0", "1", "2", "3"],
+      attribution: "&copy; Google",
+      maxZoom: 21,
+    });
+    const hybrid = L.tileLayer("https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}", {
+      subdomains: ["0", "1", "2", "3"],
+      attribution: "&copy; Google",
+      maxZoom: 21,
+    });
+
+    const initial = baseLayer === "street" ? street : baseLayer === "satellite" ? satellite : hybrid;
+    initial.addTo(map);
+
+    L.control.layers(
+      { "Mapa": street, "Satélite": satellite, "Híbrido": hybrid },
+      undefined,
+      { position: "topright", collapsed: true },
+    ).addTo(map);
 
     if (polyline && polyline.length > 1) {
       L.polyline(polyline, {
@@ -128,7 +151,7 @@ export const OSMMap = ({
       try { map.off(); map.remove(); } catch { /* ignore */ }
       mapRef.current = null;
     };
-  }, [lat, lng, label, status, polyline, markers, zoom, fitBounds, onPointSelect]);
+  }, [lat, lng, label, status, polyline, markers, zoom, fitBounds, onPointSelect, baseLayer]);
 
   return <div ref={containerRef} className={className} style={{ position: "relative", zIndex: 0 }} />;
 };
