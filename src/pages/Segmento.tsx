@@ -38,8 +38,24 @@ const Segmento = () => {
     return best;
   }, [rocada, lat, lng]);
 
-  if (isLoading) return <div className="p-10 text-muted-foreground text-sm">Carregando segmento…</div>;
-  if (!seg) return <div className="p-10 text-muted-foreground text-sm">Segmento não encontrado.</div>;
+  if (isLoading) return (
+    <div className="p-10 space-y-4">
+      <Skeleton className="h-8 w-72" />
+      <Skeleton className="h-4 w-96" />
+      <div className="grid grid-cols-3 gap-4 pt-4">
+        <Skeleton className="h-28" /><Skeleton className="h-28" /><Skeleton className="h-28" />
+      </div>
+      <Skeleton className="h-[420px] w-full" />
+    </div>
+  );
+  if (!seg) return (
+    <div className="p-10 text-center text-muted-foreground text-sm">
+      <p className="mb-3">Segmento não encontrado.</p>
+      <button onClick={() => navigate("/dashboard")} className="px-4 py-2 rounded-lg border border-border hover:bg-surface-low text-foreground text-[12px] font-semibold uppercase tracking-wider">
+        Voltar ao mapa
+      </button>
+    </div>
+  );
 
   return (
     <>
