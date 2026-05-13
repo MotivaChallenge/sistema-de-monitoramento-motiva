@@ -51,13 +51,14 @@ export const OSMMap = ({
 }: Props) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
+  const layerGroupRef = useRef<L.LayerGroup | null>(null);
+  const onPointSelectRef = useRef(onPointSelect);
+  onPointSelectRef.current = onPointSelect;
 
+  // ---- Effect 1: initialize the map ONCE (only re-init if base layer changes)
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
-    // Clear any leftover Leaflet state on the container (StrictMode double-invoke / HMR)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if ((containerRef.current as any)._leaflet_id) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (containerRef.current as any)._leaflet_id = null;
     }
     const centerLat = lat ?? markers?.[0]?.lat ?? polyline?.[0]?.[0] ?? -23.5505;
@@ -70,7 +71,6 @@ export const OSMMap = ({
     });
     mapRef.current = map;
 
-    // Base layers: OSM (street), Google Satellite, Google Hybrid (satellite + labels/roads)
     const street = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "&copy; OpenStreetMap",
       maxZoom: 19,
@@ -95,12 +95,29 @@ export const OSMMap = ({
       { position: "topright", collapsed: true },
     ).addTo(map);
 
+    layerGroupRef.current = L.layerGroup().addTo(map);
+
+    map.on("click", (e: L.LeafletMouseEvent) => {
+      onPointSelectRef.current?.(e.latlng.lat, e.latlng.lng);
+    });
+
+    return () => {
+      try { map.off(); map.remove(); } catch { /* ignore */ }
+      mapRef.current = null;
+      layerGroupRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [baseLayer]);
+
+  // ---- Effect 2: redraw markers/polyline/single-point when data changes
+  useEffect(() => {
+    const map = mapRef.current;
+    const group = layerGroupRef.current;
+    if (!map || !group) return;
+    group.clearLayers();
+
     if (polyline && polyline.length > 1) {
-      L.polyline(polyline, {
-        color: "hsl(220 90% 55%)",
-        weight: 4,
-        opacity: 0.85,
-      }).addTo(map);
+      L.polyline(polyline, { color: "hsl(220 90% 55%)", weight: 4, opacity: 0.85 }).addTo(group);
     }
 
     if (markers && markers.length > 0) {
@@ -111,11 +128,11 @@ export const OSMMap = ({
           fillColor: statusColor(m.status),
           fillOpacity: 0.9,
           weight: 2,
-        }).addTo(map);
+        }).addTo(group);
         if (m.label) dot.bindPopup(`<strong>${m.label}</strong>`);
         dot.on("click", (e: L.LeafletMouseEvent) => {
           L.DomEvent.stopPropagation(e);
-          if (onPointSelect) onPointSelect(m.lat, m.lng, m.label);
+          if (onPointSelectRef.current) onPointSelectRef.current(m.lat, m.lng, m.label);
           else m.onClick?.();
         });
       });
@@ -125,16 +142,10 @@ export const OSMMap = ({
         color: statusColor(status),
         fillColor: statusColor(status),
         fillOpacity: 0.25,
-      }).addTo(map);
+      }).addTo(group);
       L.marker([lat, lng], { icon })
-        .addTo(map)
+        .addTo(group)
         .bindPopup(`<strong>${label ?? "Localização"}</strong><br/>${lat.toFixed(5)}, ${lng.toFixed(5)}`);
-    }
-
-    if (onPointSelect) {
-      map.on("click", (e: L.LeafletMouseEvent) => {
-        onPointSelect(e.latlng.lat, e.latlng.lng);
-      });
     }
 
     if (fitBounds) {
@@ -143,15 +154,10 @@ export const OSMMap = ({
         ...((markers ?? []).map(m => [m.lat, m.lng] as [number, number])),
       ];
       if (pts.length > 1) {
-        map.fitBounds(L.latLngBounds(pts), { padding: [20, 20] });
+        try { map.fitBounds(L.latLngBounds(pts), { padding: [20, 20] }); } catch { /* ignore */ }
       }
     }
-
-    return () => {
-      try { map.off(); map.remove(); } catch { /* ignore */ }
-      mapRef.current = null;
-    };
-  }, [lat, lng, label, status, polyline, markers, zoom, fitBounds, onPointSelect, baseLayer]);
+  }, [lat, lng, label, status, polyline, markers, fitBounds]);
 
   return <div ref={containerRef} className={className} style={{ position: "relative", zIndex: 0 }} />;
 };
