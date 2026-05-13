@@ -7,9 +7,12 @@ import {
 } from "@/hooks/useVegiaData";
 import { Sparkles, Wrench } from "lucide-react";
 import { useMemo } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useNavigate } from "react-router-dom";
 
 const AnaliseCV = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { data: seg, isLoading } = useSegment(id);
   const { data: reports = [] } = useInspectionReports();
   const latestReportId = reports[0]?.id;
@@ -42,8 +45,23 @@ const AnaliseCV = () => {
     return Array.from(counts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 3);
   }, [seg, rocada]);
 
-  if (isLoading) return <div className="p-10 text-muted-foreground text-sm">Carregando…</div>;
-  if (!seg) return <div className="p-10 text-muted-foreground text-sm">Segmento não encontrado.</div>;
+  if (isLoading) return (
+    <div className="p-10 space-y-4">
+      <Skeleton className="h-8 w-72" />
+      <div className="grid grid-cols-3 gap-4 pt-4">
+        <Skeleton className="h-28" /><Skeleton className="h-28" /><Skeleton className="h-28" />
+      </div>
+      <Skeleton className="h-[420px] w-full" />
+    </div>
+  );
+  if (!seg) return (
+    <div className="p-10 text-center text-muted-foreground text-sm">
+      <p className="mb-3">Segmento não encontrado.</p>
+      <button onClick={() => navigate("/dashboard")} className="px-4 py-2 rounded-lg border border-border hover:bg-surface-low text-foreground text-[12px] font-semibold uppercase tracking-wider">
+        Voltar ao mapa
+      </button>
+    </div>
+  );
   return (
     <>
       <TopHeader

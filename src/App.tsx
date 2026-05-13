@@ -19,6 +19,7 @@ const Relatorio = lazy(() => import("./pages/Relatorio"));
 const AnaliseCV = lazy(() => import("./pages/AnaliseCV"));
 const Configuracoes = lazy(() => import("./pages/Configuracoes"));
 const Alertas = lazy(() => import("./pages/Alertas"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 
 const RouteFallback = () => (
   <div className="min-h-[60vh] flex items-center justify-center text-muted-foreground text-sm">
@@ -54,6 +55,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/segmento/:id" element={<Segmento />} />
