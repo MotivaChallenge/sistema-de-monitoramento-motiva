@@ -1,5 +1,6 @@
 import { TopHeader } from "@/components/vegia/TopHeader";
 import { CVImageGrid } from "@/components/vegia/CVImageGrid";
+import { VisionAnalyzer } from "@/components/vegia/VisionAnalyzer";
 import { useParams } from "react-router-dom";
 import {
   useSegment, useInspectionReports, useInspectionMeasurements, useRocadaClassification,
@@ -68,6 +69,10 @@ const AnaliseCV = () => {
         </div>
 
         <CVImageGrid />
+
+        <div className="mt-10">
+          <VisionAnalyzer context={`Trecho ${seg.km}, KM ${seg.kmStart}–${seg.kmEnd}, tipo ${seg.tipo}.`} />
+        </div>
 
         {/* Real inspection measurements for this segment */}
         {segMeas.length > 0 && (
