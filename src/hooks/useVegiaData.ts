@@ -160,3 +160,116 @@ export const useInspectionMeasurements = (reportId?: number) =>
       return (data ?? []) as Measurement[];
     },
   });
+
+// ---------- NDVI history, teams, coverage ----------
+
+export interface NdviHistoryPoint { date: string; value: number }
+
+const formatDate = (iso: string) => {
+  const d = new Date(iso + "T00:00:00");
+  const meses = ["JAN","FEV","MAR","ABR","MAI","JUN","JUL","AGO","SET","OUT","NOV","DEZ"];
+  return `${String(d.getDate()).padStart(2,"0")} ${meses[d.getMonth()]}`;
+};
+
+export const useSegmentNdviHistory = (segmentId?: string) =>
+  useQuery({
+    queryKey: ["segment_ndvi_history", segmentId],
+    enabled: !!segmentId,
+    queryFn: async (): Promise<{ date: string; value: number }[]> => {
+      const { data, error } = await supabase
+        .from("segment_ndvi_history")
+        .select("data,altura_cm")
+        .eq("segment_id", segmentId!)
+        .order("data", { ascending: true })
+        .limit(7);
+      if (error) throw error;
+      const rows = (data ?? []) as { data: string; altura_cm: number }[];
+      return rows.map((r, i) => ({
+        date: i === rows.length - 1 ? "HOJE" : formatDate(r.data),
+        value: Number(r.altura_cm),
+      }));
+    },
+  });
+
+export const useNdviTrend = () =>
+  useQuery({
+    queryKey: ["ndvi_trend"],
+    queryFn: async (): Promise<{ label: string; value: number }[]> => {
+      const { data, error } = await supabase
+        .from("segment_ndvi_history")
+        .select("data,ndvi")
+        .order("data", { ascending: false })
+        .limit(2000);
+      if (error) throw error;
+      const byDate = new Map<string, { sum: number; n: number }>();
+      for (const r of (data ?? []) as { data: string; ndvi: number }[]) {
+        const acc = byDate.get(r.data) ?? { sum: 0, n: 0 };
+        acc.sum += Number(r.ndvi);
+        acc.n += 1;
+        byDate.set(r.data, acc);
+      }
+      const sortedDates = [...byDate.keys()].sort().slice(-6);
+      return sortedDates.map((d, i) => ({
+        label: `L${i + 1}`,
+        value: Number((byDate.get(d)!.sum / byDate.get(d)!.n).toFixed(2)),
+      }));
+    },
+  });
+
+export interface HeatmapBand { from: number; to: number; status: Status }
+
+export const useNdviHeatmap = () =>
+  useQuery({
+    queryKey: ["ndvi_heatmap"],
+    queryFn: async (): Promise<HeatmapBand[]> => {
+      const { data, error } = await supabase
+        .from("segments")
+        .select("km_start,km_end,status")
+        .order("km_start", { ascending: true });
+      if (error) throw error;
+      return (data ?? []).map((s: any) => ({
+        from: Number(s.km_start),
+        to: Number(s.km_end),
+        status: s.status as Status,
+      }));
+    },
+  });
+
+export interface SegmentTeam { nome: string; base_km: number; tempo_resposta_min: number }
+
+export const useSegmentTeam = (segmentId?: string) =>
+  useQuery({
+    queryKey: ["segment_team", segmentId],
+    enabled: !!segmentId,
+    queryFn: async (): Promise<SegmentTeam | null> => {
+      const { data, error } = await supabase
+        .from("segment_team_assignment")
+        .select("field_teams(nome,base_km,tempo_resposta_min)")
+        .eq("segment_id", segmentId!)
+        .maybeSingle();
+      if (error) throw error;
+      const t = (data as any)?.field_teams;
+      if (!t) return null;
+      return {
+        nome: t.nome,
+        base_km: Number(t.base_km),
+        tempo_resposta_min: t.tempo_resposta_min,
+      };
+    },
+  });
+
+export const useTotalCoverage = () =>
+  useQuery({
+    queryKey: ["total_coverage"],
+    queryFn: async (): Promise<number> => {
+      const { data, error } = await supabase
+        .from("segments")
+        .select("km_start,km_end");
+      if (error) throw error;
+      const rows = (data ?? []) as { km_start: number; km_end: number }[];
+      if (!rows.length) return 0;
+      const min = Math.min(...rows.map(r => Number(r.km_start)));
+      const max = Math.max(...rows.map(r => Number(r.km_end)));
+      return Number((max - min).toFixed(1));
+    },
+  });
