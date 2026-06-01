@@ -1,9 +1,17 @@
-import { ndviTrend } from "@/data/mock";
+import { useNdviTrend } from "@/hooks/useVegiaData";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const NDVIBarChart = () => {
   const max = 0.8;
+  const { data: ndviTrend = [], isLoading } = useNdviTrend();
+  if (isLoading) return <Skeleton className="h-[200px] w-full" />;
+  if (!ndviTrend.length) return (
+    <div className="h-[200px] flex items-center justify-center text-[12px] text-muted-foreground">
+      Sem leituras suficientes ainda.
+    </div>
+  );
   return (
-    <div className="grid grid-cols-6 gap-6 items-end h-[200px]">
+    <div className="grid gap-6 items-end h-[200px]" style={{ gridTemplateColumns: `repeat(${ndviTrend.length}, minmax(0, 1fr))` }}>
       {ndviTrend.map((d, i) => {
         const h = (d.value / max) * 100;
         const last = i === ndviTrend.length - 1;

@@ -1,18 +1,22 @@
-import { ndviHeatmap, segments } from "@/data/mock";
+import { useNdviHeatmap, useSegments } from "@/hooks/useVegiaData";
 import { useNavigate } from "react-router-dom";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const colorOf = (s: string) =>
   s === "critico" ? "hsl(var(--destructive))" : s === "atencao" ? "hsl(var(--tertiary))" : "hsl(var(--primary))";
 
-const TOTAL = 29.3;
 const markers = [0, 5, 10, 15, 20, 25, 29.3];
 
 export const NDVIHeatmapBar = () => {
   const navigate = useNavigate();
+  const { data: bands = [], isLoading } = useNdviHeatmap();
+  const { data: segments = [] } = useSegments();
+  if (isLoading) return <Skeleton className="h-3 w-full rounded-full" />;
+  const TOTAL = bands.length ? Math.max(...bands.map(b => b.to)) : 29.3;
   return (
     <div className="w-full">
       <div className="relative h-3 w-full flex gap-[2px] rounded-full overflow-hidden bg-surface-high">
-        {ndviHeatmap.map((s, i) => {
+        {bands.map((s, i) => {
           const w = ((s.to - s.from) / TOTAL) * 100;
           return (
             <div
