@@ -1,7 +1,7 @@
 import { TopHeader } from "@/components/vegia/TopHeader";
 import { MetricCard } from "@/components/vegia/MetricCard";
 import { AlertCard } from "@/components/vegia/AlertCard";
-import { useSegments, useKmMarkers } from "@/hooks/useVegiaData";
+import { useSegments, useKmMarkers, useTotalCoverage } from "@/hooks/useVegiaData";
 import { WeatherForecast } from "@/components/vegia/WeatherForecast";
 import { AIInsightsPanel } from "@/components/vegia/AIInsightsPanel";
 import { IRCPanel } from "@/components/vegia/IRCPanel";
@@ -24,6 +24,7 @@ const NDVIBarChart = lazy(() => import("@/components/vegia/NDVIBarChart").then(m
 const Dashboard = () => {
   const { data: segmentsRaw = [], isLoading, isError: segmentsError } = useSegments();
   const { data: kmMarkers = [] } = useKmMarkers();
+  const { data: coverage = 0 } = useTotalCoverage();
   const { data: weather } = useWeather();
   const qc = useQueryClient();
   const navigate = useNavigate();
@@ -105,7 +106,7 @@ const Dashboard = () => {
           </div>
         )}
         <div className="grid grid-cols-4 gap-5">
-          <MetricCard label="Cobertura Total" value="29,3" unit="km" footer={<div className="h-1.5 rounded-full bg-surface-high"><div className="h-full w-full rounded-full bg-primary" /></div>} />
+          <MetricCard label="Cobertura Total" value={coverage.toFixed(1).replace(".", ",")} unit="km" footer={<div className="h-1.5 rounded-full bg-surface-high"><div className="h-full w-full rounded-full bg-primary" /></div>} />
           <MetricCard label="Trechos Críticos" value={String(criticos)} unit={`de ${total} segmentos`} variant="danger" footer={
             <div className="h-1.5 rounded-full bg-surface-high">
               <div className="h-full rounded-full bg-destructive" style={{ width: `${total ? (criticos/total)*100 : 0}%` }} />

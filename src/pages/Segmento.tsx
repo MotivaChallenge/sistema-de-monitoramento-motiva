@@ -1,8 +1,7 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { lazy, Suspense, useMemo } from "react";
 import { TopHeader } from "@/components/vegia/TopHeader";
-import { segmentEvolution } from "@/data/mock";
-import { useSegment, useKmMarkers, useRocadaClassification } from "@/hooks/useVegiaData";
+import { useSegment, useKmMarkers, useRocadaClassification, useSegmentNdviHistory, useSegmentTeam } from "@/hooks/useVegiaData";
 import { MonoClause } from "@/components/vegia/MonoClause";
 import { AIInsightBubble } from "@/components/vegia/AIInsightBubble";
 import { ArrowUpRight, Download, AlertTriangle, Users } from "lucide-react";
@@ -20,6 +19,8 @@ const Segmento = () => {
   const { data: seg, isLoading } = useSegment(id);
   const { data: kmMarkers = [] } = useKmMarkers();
   const { data: rocada = [] } = useRocadaClassification();
+  const { data: evolution = [] } = useSegmentNdviHistory(id);
+  const { data: team } = useSegmentTeam(id);
 
   // Resolve real lat/lng from km_markers (fallback to street.lat/lng or São Paulo)
   const marker = seg ? kmMarkers.find(m => Math.round(m.km) === Math.round(seg.kmStart)) : undefined;
@@ -122,7 +123,7 @@ const Segmento = () => {
             <section className="bg-surface-lowest rounded-xl p-6">
               <h3 className="text-[14px] font-semibold tracking-wider uppercase mb-4">Evolução de Crescimento (30 dias)</h3>
               <Suspense fallback={<Skeleton className="h-64 w-full" />}>
-                <NDVILineChart data={segmentEvolution} threshold={30} thresholdLabel="THRESHOLD (30cm)" />
+                <NDVILineChart data={evolution} threshold={30} thresholdLabel="THRESHOLD (30cm)" />
               </Suspense>
             </section>
 
@@ -195,8 +196,10 @@ const Segmento = () => {
                   <Users className="h-4 w-4" />
                 </div>
                 <div>
-                  <div className="text-[14px] font-semibold">Consórcio SP-Verde</div>
-                  <div className="text-[12px] text-muted-foreground">Base KM 12 · 15min de distância</div>
+                  <div className="text-[14px] font-semibold">{team?.nome ?? "Não atribuída"}</div>
+                  <div className="text-[12px] text-muted-foreground">
+                    {team ? `Base KM ${team.base_km} · ${team.tempo_resposta_min}min de distância` : "Aguardando atribuição"}
+                  </div>
                 </div>
               </div>
             </div>
