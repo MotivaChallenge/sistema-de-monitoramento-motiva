@@ -79,6 +79,30 @@ export type Database = {
         }
         Relationships: []
       }
+      field_teams: {
+        Row: {
+          base_km: number
+          created_at: string
+          id: string
+          nome: string
+          tempo_resposta_min: number
+        }
+        Insert: {
+          base_km: number
+          created_at?: string
+          id?: string
+          nome: string
+          tempo_resposta_min?: number
+        }
+        Update: {
+          base_km?: number
+          created_at?: string
+          id?: string
+          nome?: string
+          tempo_resposta_min?: number
+        }
+        Relationships: []
+      }
       inspection_measurements: {
         Row: {
           created_at: string
@@ -270,6 +294,33 @@ export type Database = {
         }
         Relationships: []
       }
+      segment_ndvi_history: {
+        Row: {
+          altura_cm: number
+          created_at: string
+          data: string
+          id: number
+          ndvi: number
+          segment_id: string
+        }
+        Insert: {
+          altura_cm: number
+          created_at?: string
+          data: string
+          id?: number
+          ndvi: number
+          segment_id: string
+        }
+        Update: {
+          altura_cm?: number
+          created_at?: string
+          data?: string
+          id?: number
+          ndvi?: number
+          segment_id?: string
+        }
+        Relationships: []
+      }
       segment_observations: {
         Row: {
           autor: string | null
@@ -296,6 +347,32 @@ export type Database = {
           texto?: string
         }
         Relationships: []
+      }
+      segment_team_assignment: {
+        Row: {
+          created_at: string
+          segment_id: string
+          team_id: string
+        }
+        Insert: {
+          created_at?: string
+          segment_id: string
+          team_id: string
+        }
+        Update: {
+          created_at?: string
+          segment_id?: string
+          team_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "segment_team_assignment_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "field_teams"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       segments: {
         Row: {
