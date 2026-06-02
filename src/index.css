@@ -82,6 +82,40 @@
     -webkit-font-smoothing: antialiased;
   }
   .font-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+
+  /* A11y: foco visível consistente para navegação por teclado */
+  :focus { outline: none; }
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  /* Skip link — visível ao receber foco via teclado */
+  .skip-link {
+    position: absolute;
+    left: 1rem;
+    top: -3rem;
+    z-index: 100;
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    padding: 0.5rem 0.875rem;
+    border-radius: 0.5rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    transition: top 120ms ease;
+  }
+  .skip-link:focus { top: 1rem; }
+
+  /* Respeita usuários que reduzem movimento */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
 
 @layer utilities {

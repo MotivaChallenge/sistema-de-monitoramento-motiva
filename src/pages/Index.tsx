@@ -38,6 +38,7 @@ const Index = () => {
 
   return (
     <main className="min-h-screen bg-background text-foreground">
+      <a href="#conteudo" className="skip-link">Pular para o conteúdo</a>
       <header className="px-8 md:px-14 py-6 flex items-center justify-between max-w-[1200px] mx-auto">
         <div className="flex items-center gap-3">
           <img src={logoMotiva} alt="Motiva Rodovias" className="h-9 w-9 rounded-full" />
@@ -54,12 +55,12 @@ const Index = () => {
         </nav>
       </header>
 
-      <section className="px-8 md:px-14 max-w-[1200px] mx-auto pt-12 pb-20 md:pt-20 md:pb-28 grid md:grid-cols-2 gap-12 items-center">
+      <section id="conteudo" aria-labelledby="hero-title" className="px-8 md:px-14 max-w-[1200px] mx-auto pt-12 pb-20 md:pt-20 md:pb-28 grid md:grid-cols-2 gap-12 items-center">
         <div>
           <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary-container text-secondary-on-container text-[11px] font-semibold tracking-wider uppercase mb-5">
-            <Leaf className="h-3 w-3" /> Conformidade ARTESP em tempo real
+            <Leaf className="h-3 w-3" aria-hidden="true" /> Conformidade ARTESP em tempo real
           </span>
-          <h1 className="text-[40px] md:text-[54px] font-bold tracking-tight leading-[1.05]">
+          <h1 id="hero-title" className="text-[40px] md:text-[54px] font-bold tracking-tight leading-[1.05]">
             Monitoramento de vegetação rodoviária com IA e satélite.
           </h1>
           <p className="mt-5 text-[16px] text-muted-foreground leading-relaxed max-w-[520px]">
