@@ -70,26 +70,28 @@ const Segmento = () => {
           </span>
         }
       />
-      <div className="px-10 pb-12">
-        <div className="flex items-start justify-between mb-8">
+      <div className="px-4 md:px-8 lg:px-10 pt-2 pb-12">
+        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-[34px] font-bold tracking-tight">Detalhamento de Segmento</h1>
-            <p className="text-muted-foreground mt-1">Análise granulométrica de saúde vegetal via sensoriamento remoto.</p>
+            <h1 className="text-[28px] md:text-[34px] font-bold tracking-tight">Detalhamento de Segmento</h1>
+            <p className="text-muted-foreground mt-1 text-[14px]">Análise granulométrica de saúde vegetal via sensoriamento remoto.</p>
           </div>
-          <div className="bg-destructive/10 rounded-xl px-6 py-4 text-right">
-            <div className="label-md text-destructive/80">Estado Crítico</div>
-            <div className="text-destructive text-[22px] font-bold flex items-center gap-2 justify-end mt-1">
-              <AlertTriangle className="h-5 w-5" /> 48h para Resolução
+          {seg.status === "critico" && (
+            <div className="bg-destructive/10 border border-destructive/20 rounded-xl px-5 py-4 md:text-right shadow-card">
+              <div className="label-md text-destructive/80">Estado Crítico</div>
+              <div className="text-destructive text-[18px] md:text-[22px] font-bold flex items-center gap-2 md:justify-end mt-1">
+                <AlertTriangle className="h-5 w-5 animate-pulse" /> 48h para Resolução
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
-        <div className="grid grid-cols-[1fr_360px] gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6">
           <div className="space-y-6">
-            <section className="bg-surface-lowest rounded-xl p-6">
+            <section className="bg-surface-lowest rounded-xl p-4 md:p-6 border border-border/40 shadow-card">
               <div className="flex items-center justify-between mb-5">
                 <h3 className="text-[14px] font-semibold tracking-wider uppercase">Métricas de Fiscalização</h3>
-                <span className="label-md">REF: UTM-23S_E521_N734</span>
+                <span className="label-md font-mono">REF: UTM-23S_E521_N734</span>
               </div>
               <dl className="divide-y divide-border/40">
                 <Row label="Índice NDVI (Vegetação)" value={<span className="text-primary">{seg.ndvi.toFixed(2)} <span className="text-muted-foreground text-[12px] font-normal">vigente</span></span>} />
@@ -120,7 +122,7 @@ const Segmento = () => {
               </div>
             </section>
 
-            <section className="bg-surface-lowest rounded-xl p-6">
+            <section className="bg-surface-lowest rounded-xl p-4 md:p-6 border border-border/40 shadow-card">
               <h3 className="text-[14px] font-semibold tracking-wider uppercase mb-4">Evolução de Crescimento (30 dias)</h3>
               <Suspense fallback={<Skeleton className="h-64 w-full" />}>
                 <NDVILineChart data={evolution} threshold={30} thresholdLabel="THRESHOLD (30cm)" />

@@ -21,11 +21,11 @@ export const TopHeader = ({ breadcrumb = [{ label: "RODOANEL SP-021" }], current
   const qc = useQueryClient();
   const refresh = () => { qc.invalidateQueries(); toast.success("Atualizando dados…"); };
   return (
-    <header className="h-[72px] px-6 flex items-center justify-between gap-4 bg-background">
+    <header className="h-[72px] px-4 md:px-6 flex items-center justify-between gap-4 bg-background/85 backdrop-blur-md sticky top-0 z-30 border-b border-border/40">
       <div className="flex items-center gap-2 text-[12px] tracking-wider min-w-0 shrink">
         {breadcrumb.map((b, i) => (
           <span key={i} className="text-muted-foreground uppercase font-medium whitespace-nowrap truncate">
-            {b.to ? <Link to={b.to} className="hover:text-foreground">{b.label}</Link> : b.label}
+            {b.to ? <Link to={b.to} className="hover:text-foreground transition-smooth">{b.label}</Link> : b.label}
             <span className="mx-2 text-border">/</span>
           </span>
         ))}

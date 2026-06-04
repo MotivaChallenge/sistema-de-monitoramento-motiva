@@ -20,7 +20,7 @@ export const AppLayout = () => {
           <SheetTrigger asChild>
             <button
               aria-label="Abrir menu"
-              className="md:hidden fixed top-3 left-3 z-40 h-9 w-9 rounded-full bg-surface-low border border-border flex items-center justify-center text-foreground shadow-md"
+              className="md:hidden fixed top-4 right-4 z-50 h-10 w-10 rounded-full bg-surface-lowest border border-border flex items-center justify-center text-foreground shadow-elegant hover:bg-surface-low transition-smooth"
             >
               <Menu className="h-4 w-4" />
             </button>
