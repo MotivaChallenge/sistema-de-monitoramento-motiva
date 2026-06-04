@@ -1,6 +1,7 @@
 import { Segment } from "@/data/mock";
 import { ComplianceBadge } from "./ComplianceBadge";
 import { useNavigate } from "react-router-dom";
+import { ChevronRight } from "lucide-react";
 
 export const AlertCard = ({ alert }: { alert: Segment }) => {
   const navigate = useNavigate();
@@ -9,11 +10,14 @@ export const AlertCard = ({ alert }: { alert: Segment }) => {
   return (
     <button
       onClick={() => navigate(`/segmento/${alert.id}`)}
-      className="w-full text-left relative bg-surface-low hover:bg-surface-high rounded-lg p-4 pl-5 transition-colors animate-fade-in"
+      className="group w-full text-left relative bg-surface-low hover:bg-surface-lowest hover:shadow-elegant rounded-lg p-4 pl-5 transition-smooth animate-fade-in border border-transparent hover:border-border/60"
     >
       <span className={`absolute left-0 top-3 bottom-3 w-[3px] rounded-r ${accent}`} />
-      <div className="flex items-start justify-between mb-3">
-        <div className="font-semibold text-[14px]">{alert.km}</div>
+      <div className="flex items-start justify-between mb-3 gap-2">
+        <div className="flex items-center gap-1.5 font-semibold text-[14px]">
+          {alert.km}
+          <ChevronRight className="h-3.5 w-3.5 text-muted-foreground opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-smooth" aria-hidden="true" />
+        </div>
         <ComplianceBadge status={alert.status} />
       </div>
       <div className="grid grid-cols-2 gap-3 mb-3">
