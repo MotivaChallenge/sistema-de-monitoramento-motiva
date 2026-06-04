@@ -7,7 +7,7 @@ import { AIInsightsPanel } from "@/components/vegia/AIInsightsPanel";
 import { IRCPanel } from "@/components/vegia/IRCPanel";
 import { useWeather } from "@/hooks/useWeather";
 import { ircForSegment } from "@/lib/irc";
-import { RefreshCw, Inbox } from "lucide-react";
+import { RefreshCw, Inbox, Activity, AlertTriangle, Leaf, Gauge } from "lucide-react";
 import { useQueryClient, useIsFetching } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -99,28 +99,29 @@ const Dashboard = () => {
           </>
         }
       />
-      <div className="px-10 pb-12 space-y-6">
+      <div className="px-4 md:px-8 lg:px-10 pt-2 pb-12 space-y-6">
         {activeCount > 0 && (
-          <div className="text-[12px] text-muted-foreground bg-surface-low rounded-lg px-3 py-2 inline-block">
+          <div className="text-[12px] text-muted-foreground bg-surface-low border border-border/40 rounded-lg px-3 py-2 inline-flex items-center gap-2 animate-fade-in">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
             Mostrando {segments.length} de {segmentsRaw.length} segmentos com filtros ativos.
           </div>
         )}
-        <div className="grid grid-cols-4 gap-5">
-          <MetricCard label="Cobertura Total" value={coverage.toFixed(1).replace(".", ",")} unit="km" footer={<div className="h-1.5 rounded-full bg-surface-high"><div className="h-full w-full rounded-full bg-primary" /></div>} />
-          <MetricCard label="Trechos Críticos" value={String(criticos)} unit={`de ${total} segmentos`} variant="danger" footer={
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5">
+          <MetricCard icon={Activity} label="Cobertura Total" value={coverage.toFixed(1).replace(".", ",")} unit="km" footer={<div className="h-1.5 rounded-full bg-surface-high overflow-hidden"><div className="h-full w-full rounded-full bg-gradient-primary" /></div>} />
+          <MetricCard icon={AlertTriangle} label="Trechos Críticos" value={String(criticos)} unit={`de ${total} segmentos`} variant="danger" footer={
             <div className="h-1.5 rounded-full bg-surface-high">
-              <div className="h-full rounded-full bg-destructive" style={{ width: `${total ? (criticos/total)*100 : 0}%` }} />
+              <div className="h-full rounded-full bg-destructive transition-smooth" style={{ width: `${total ? (criticos/total)*100 : 0}%` }} />
             </div>
           } />
-          <MetricCard label="NDVI Médio" value={ndviAvg.toFixed(2).replace(".", ",")} unit="global" footer={
+          <MetricCard icon={Leaf} label="NDVI Médio" value={ndviAvg.toFixed(2).replace(".", ",")} unit="global" footer={
             <div className="flex h-1.5 gap-0.5 rounded-full overflow-hidden">
               <div className="flex-1 bg-destructive/30" /><div className="flex-1 bg-tertiary/40" /><div className="flex-[2] bg-primary" />
             </div>
           } />
-          <MetricCard label="IRC Médio" value={String(ircAvg)} unit="/ 100" variant={ircAvg >= 75 ? "danger" : undefined} footer={
+          <MetricCard icon={Gauge} label="IRC Médio" value={String(ircAvg)} unit="/ 100" variant={ircAvg >= 75 ? "danger" : undefined} footer={
             <div className="h-1.5 rounded-full bg-surface-high">
               <div
-                className="h-full rounded-full"
+                className="h-full rounded-full transition-smooth"
                 style={{
                   width: `${ircAvg}%`,
                   background:
@@ -135,21 +136,21 @@ const Dashboard = () => {
           } />
         </div>
 
-        <div className="grid grid-cols-[1fr_360px] gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6">
           <div className="space-y-6">
-            <section className="bg-surface-lowest rounded-xl p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-[15px] font-semibold tracking-wide uppercase">Rodoanel SP-021 — Mapa NDVI em Tempo Real</h3>
-                <div className="flex items-center gap-4 text-[12px] text-muted-foreground">
+            <section className="bg-surface-lowest rounded-xl p-4 md:p-6 border border-border/40 shadow-card">
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
+                <h3 className="text-[14px] md:text-[15px] font-semibold tracking-wide uppercase">Rodoanel SP-021 — Mapa NDVI em Tempo Real</h3>
+                <div className="flex flex-wrap items-center gap-3 md:gap-4 text-[12px] text-muted-foreground">
                   <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-primary" /> Saudável</span>
                   <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-tertiary" /> Atenção</span>
                   <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-destructive" /> Crítico</span>
                 </div>
               </div>
-              <div className="rounded-lg overflow-hidden">
+              <div className="rounded-lg overflow-hidden border border-border/40">
                 <Suspense fallback={<Skeleton className="w-full h-[420px]" />}>
                   <OSMMap
-                    className="w-full h-[420px]"
+                    className="w-full h-[320px] md:h-[420px]"
                     polyline={polyline}
                     markers={segmentMarkers}
                     fitBounds
@@ -157,15 +158,16 @@ const Dashboard = () => {
                   />
                 </Suspense>
               </div>
-              <p className="text-[11px] text-muted-foreground mt-3">
+              <p className="text-[11px] text-muted-foreground mt-3 flex items-center gap-1.5">
+                <span className="h-1 w-1 rounded-full bg-primary" />
                 Clique em qualquer ponto do mapa para ver clima local e insight da IA.
               </p>
             </section>
 
-            <section className="bg-surface-lowest rounded-xl p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-[15px] font-semibold tracking-wide uppercase">Tendência NDVI (últimas 6 leituras)</h3>
-                <span className="text-[12px] text-muted-foreground bg-surface-high px-3 py-1.5 rounded-full">Período: Junho – Agosto 2024</span>
+            <section className="bg-surface-lowest rounded-xl p-4 md:p-6 border border-border/40 shadow-card">
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-5">
+                <h3 className="text-[14px] md:text-[15px] font-semibold tracking-wide uppercase">Tendência NDVI (últimas 6 leituras)</h3>
+                <span className="text-[11px] text-muted-foreground bg-surface-high px-3 py-1.5 rounded-full">Junho – Agosto 2024</span>
               </div>
               <Suspense fallback={<Skeleton className="h-72 w-full" />}>
                 <NDVIBarChart />
@@ -179,10 +181,13 @@ const Dashboard = () => {
             <AIInsightsPanel />
           </div>
 
-          <aside className="bg-surface-lowest rounded-xl p-5 h-fit">
+          <aside className="bg-surface-lowest rounded-xl p-5 h-fit border border-border/40 shadow-card xl:sticky xl:top-[88px]">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-[14px] font-semibold tracking-wider uppercase">Alertas Ativos</h3>
-              <span className="text-[11px] px-2 py-1 rounded-full bg-destructive/10 text-destructive font-semibold">{totalAlerts} total</span>
+              <h3 className="text-[14px] font-semibold tracking-wider uppercase flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-destructive animate-pulse" />
+                Alertas Ativos
+              </h3>
+              <span className="text-[11px] px-2 py-1 rounded-full bg-destructive/10 text-destructive font-semibold tabular-nums">{totalAlerts}</span>
             </div>
             <div className="space-y-3">
               {isLoading && (
@@ -193,21 +198,25 @@ const Dashboard = () => {
                 </>
               )}
               {!isLoading && segmentsError && (
-                <div className="text-[12px] text-destructive bg-destructive/10 rounded-lg p-3">
-                  Não foi possível carregar os alertas. Tente novamente.
+                <div className="text-[12px] text-destructive bg-destructive/10 border border-destructive/20 rounded-lg p-3 flex items-start gap-2">
+                  <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+                  <div>Não foi possível carregar os alertas. Tente novamente.</div>
                 </div>
               )}
               {!isLoading && !segmentsError && alerts.length === 0 && (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Inbox className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                  <p className="text-[12px]">Nenhum alerta ativo. Tudo conforme.</p>
+                <div className="text-center py-10 text-muted-foreground">
+                  <div className="h-12 w-12 mx-auto mb-3 rounded-full bg-turquoise/10 text-turquoise flex items-center justify-center">
+                    <Inbox className="h-5 w-5" />
+                  </div>
+                  <p className="text-[13px] font-semibold text-foreground">Tudo conforme</p>
+                  <p className="text-[11px] mt-1">Nenhum alerta ativo neste momento.</p>
                 </div>
               )}
               {alerts.map(a => <AlertCard key={a.id} alert={a} />)}
             </div>
             <button
               onClick={() => navigate("/relatorio")}
-              className="w-full mt-4 py-3 rounded-lg border border-border text-[12px] font-semibold tracking-wider uppercase text-foreground hover:bg-surface-low"
+              className="w-full mt-4 py-3 rounded-lg border border-border text-[12px] font-semibold tracking-wider uppercase text-foreground hover:bg-surface-low hover:border-primary/40 transition-smooth"
             >
               Ver todos os alertas
             </button>
