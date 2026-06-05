@@ -7,7 +7,7 @@ import { AIInsightsPanel } from "@/components/vegia/AIInsightsPanel";
 import { IRCPanel } from "@/components/vegia/IRCPanel";
 import { useWeather } from "@/hooks/useWeather";
 import { ircForSegment } from "@/lib/irc";
-import { RefreshCw, Inbox, Activity, AlertTriangle, Leaf, Gauge } from "lucide-react";
+import { RefreshCw, Inbox, Activity, AlertTriangle, Leaf, Gauge, DollarSign, TrendingDown, Users, CalendarCheck } from "lucide-react";
 import { useQueryClient, useIsFetching } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -48,6 +48,13 @@ const Dashboard = () => {
   const ircAvg = total
     ? Math.round(segments.reduce((a, s) => a + ircForSegment(s, rain5d).score, 0) / total)
     : 0;
+
+  // KPIs executivos derivados (mock parametrizado a partir dos segmentos)
+  const intervencoesProgramadas = segments.filter(s => s.status !== "conforme").length;
+  const economiaAnual = Math.round(coverage * 4200 * 12 * 0.28); // R$ economizados com modelo ORION
+  const custosEvitados = Math.round(economiaAnual * 0.35);
+  const equipesDisponiveis = 3;
+  const fmtBRL = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0, notation: "compact" });
 
   // Build OSM data from real km markers and segments
   const polyline = useMemo<[number, number][]>(
@@ -134,6 +141,42 @@ const Dashboard = () => {
               />
             </div>
           } />
+        </div>
+
+        {/* Linha executiva — KPIs financeiros e operacionais para diretoria */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5">
+          <div className="bg-surface-lowest rounded-xl p-5 border border-border/40 shadow-card hover-lift">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Economia estimada/ano</span>
+              <DollarSign className="h-4 w-4 text-turquoise" />
+            </div>
+            <div className="text-[22px] font-bold tabular-nums text-turquoise">{fmtBRL(economiaAnual)}</div>
+            <div className="text-[11px] text-muted-foreground mt-1">vs. modelo tradicional</div>
+          </div>
+          <div className="bg-surface-lowest rounded-xl p-5 border border-border/40 shadow-card hover-lift">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Custos evitados</span>
+              <TrendingDown className="h-4 w-4 text-primary-glow" />
+            </div>
+            <div className="text-[22px] font-bold tabular-nums">{fmtBRL(custosEvitados)}</div>
+            <div className="text-[11px] text-muted-foreground mt-1">multas + deslocamentos</div>
+          </div>
+          <div className="bg-surface-lowest rounded-xl p-5 border border-border/40 shadow-card hover-lift">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Intervenções programadas</span>
+              <CalendarCheck className="h-4 w-4 text-tertiary" />
+            </div>
+            <div className="text-[22px] font-bold tabular-nums">{intervencoesProgramadas}</div>
+            <div className="text-[11px] text-muted-foreground mt-1">próximos 14 dias</div>
+          </div>
+          <div className="bg-surface-lowest rounded-xl p-5 border border-border/40 shadow-card hover-lift">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Equipes disponíveis</span>
+              <Users className="h-4 w-4 text-primary" />
+            </div>
+            <div className="text-[22px] font-bold tabular-nums">{equipesDisponiveis}<span className="text-[12px] text-muted-foreground ml-1">/ 5</span></div>
+            <div className="text-[11px] text-muted-foreground mt-1">prontas para deslocamento</div>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6">
