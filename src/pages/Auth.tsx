@@ -108,8 +108,8 @@ const Auth = () => {
             <Leaf className="h-5 w-5" aria-hidden />
           </div>
           <div>
-            <h1 className="text-[20px] font-bold tracking-tight">Vegia</h1>
-            <p className="text-[12px] text-muted-foreground tracking-wider uppercase">Motiva · Monitoramento ARTESP</p>
+            <h1 className="text-[20px] font-bold tracking-tight">ORION</h1>
+            <p className="text-[12px] text-muted-foreground tracking-wider uppercase">Roadside Intelligence Platform</p>
           </div>
         </div>
 
