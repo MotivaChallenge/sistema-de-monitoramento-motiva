@@ -20,6 +20,10 @@ const AnaliseCV = lazy(() => import("./pages/AnaliseCV"));
 const Configuracoes = lazy(() => import("./pages/Configuracoes"));
 const Alertas = lazy(() => import("./pages/Alertas"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const Previsoes = lazy(() => import("./pages/Previsoes"));
+const Planejamento = lazy(() => import("./pages/Planejamento"));
+const Equipes = lazy(() => import("./pages/Equipes"));
+const ROI = lazy(() => import("./pages/ROI"));
 
 const RouteFallback = () => (
   <div className="min-h-[60vh] flex items-center justify-center text-muted-foreground text-sm">
@@ -58,6 +62,11 @@ const App = () => (
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/mapa" element={<Dashboard />} />
+              <Route path="/previsoes" element={<Previsoes />} />
+              <Route path="/planejamento" element={<Planejamento />} />
+              <Route path="/equipes" element={<Equipes />} />
+              <Route path="/roi" element={<ROI />} />
               <Route path="/segmento/:id" element={<Segmento />} />
               <Route path="/relatorio" element={<Relatorio />} />
               <Route path="/alertas" element={<Alertas />} />
