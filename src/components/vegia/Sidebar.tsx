@@ -1,13 +1,16 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { Map, Bell, BarChart3, Settings, LogOut, User } from "lucide-react";
+import { LayoutDashboard, Map, TrendingUp, CalendarDays, Users, BarChart3, Settings, LogOut, User, DollarSign } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import logoMotiva from "@/assets/motiva-logo.png";
 import { useAlertsFeed } from "@/hooks/useAlertsFeed";
 
 const items = [
-  { to: "/dashboard", label: "Mapa", icon: Map, match: ["/segmento"] },
-  { to: "/alertas", label: "Alertas", icon: Bell, badgeKey: "alerts" as const },
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, badgeKey: "alerts" as const },
+  { to: "/mapa", label: "Mapa Operacional", icon: Map, match: ["/segmento"] },
+  { to: "/previsoes", label: "Previsões", icon: TrendingUp },
+  { to: "/planejamento", label: "Planejamento", icon: CalendarDays },
+  { to: "/equipes", label: "Equipes", icon: Users },
   { to: "/relatorio", label: "Relatórios", icon: BarChart3 },
+  { to: "/roi", label: "Simulador ROI", icon: DollarSign },
   { to: "/configuracoes", label: "Configurações", icon: Settings },
 ];
 
@@ -22,13 +25,15 @@ export const SidebarBody = ({ onNavigate }: SidebarBodyProps) => {
     <div className="w-[220px] h-full bg-gradient-sidebar text-sidebar-foreground flex flex-col border-r border-sidebar-border/50">
       <div className="px-6 pt-7 pb-10 flex items-center gap-3">
         <div className="relative">
-          <img src={logoMotiva} alt="Motiva" className="h-10 w-10 rounded-full ring-2 ring-primary/30" />
+          <div className="h-10 w-10 rounded-lg bg-gradient-primary flex items-center justify-center text-primary-foreground font-extrabold text-[15px] ring-2 ring-primary/30 shadow-glow">
+            O
+          </div>
           <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-turquoise ring-2 ring-sidebar" aria-label="Sistema online" />
         </div>
         <div>
-          <div className="text-[18px] font-extrabold leading-none tracking-tight">Motiva</div>
+          <div className="text-[18px] font-extrabold leading-none tracking-tight">ORION</div>
           <div className="text-[10px] uppercase tracking-[0.18em] text-sidebar-foreground/60 mt-1">
-            Rodovias · Vegia
+            Roadside Intelligence
           </div>
         </div>
       </div>
