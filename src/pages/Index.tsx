@@ -1,7 +1,15 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Leaf, Satellite, Brain, ShieldCheck, ArrowRight, Lock, CloudRain, Flame, Eye, TrendingDown, Route } from "lucide-react";
-import logoMotiva from "@/assets/motiva-logo.png";
+
+const BrandMark = ({ size = 36 }: { size?: number }) => (
+  <div
+    style={{ width: size, height: size }}
+    className="rounded-lg bg-gradient-primary text-primary-foreground font-extrabold flex items-center justify-center shadow-glow"
+  >
+    <span style={{ fontSize: size * 0.46 }}>O</span>
+  </div>
+);
 
 const Feature = ({ icon: Icon, title, desc }: { icon: any; title: string; desc: string }) => (
   <div className="bg-surface-lowest rounded-2xl p-6 border border-border/40">
@@ -41,10 +49,10 @@ const Index = () => {
       <a href="#conteudo" className="skip-link">Pular para o conteúdo</a>
       <header className="px-8 md:px-14 py-6 flex items-center justify-between max-w-[1200px] mx-auto">
         <div className="flex items-center gap-3">
-          <img src={logoMotiva} alt="Motiva Rodovias" className="h-9 w-9 rounded-full" />
+          <BrandMark size={36} />
           <div className="leading-tight">
-            <div className="text-[16px] font-extrabold tracking-tight">Vegia</div>
-            <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Motiva Rodovias</div>
+            <div className="text-[16px] font-extrabold tracking-tight">ORION</div>
+            <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Roadside Intelligence</div>
           </div>
         </div>
         <nav className="flex items-center gap-3">
@@ -58,21 +66,21 @@ const Index = () => {
       <section id="conteudo" aria-labelledby="hero-title" className="px-8 md:px-14 max-w-[1200px] mx-auto pt-12 pb-20 md:pt-20 md:pb-28 grid md:grid-cols-2 gap-12 items-center">
         <div>
           <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary-container text-secondary-on-container text-[11px] font-semibold tracking-wider uppercase mb-5">
-            <Leaf className="h-3 w-3" aria-hidden="true" /> Conformidade ARTESP em tempo real
+            <Leaf className="h-3 w-3" aria-hidden="true" /> Inteligência operacional para concessionárias
           </span>
           <h1 id="hero-title" className="text-[40px] md:text-[54px] font-bold tracking-tight leading-[1.05]">
-            Monitoramento de vegetação rodoviária com IA e satélite.
+            Gestão preditiva de vegetação rodoviária.
           </h1>
           <p className="mt-5 text-[16px] text-muted-foreground leading-relaxed max-w-[520px]">
-            O Vegia une imagens Sentinel-2, visão computacional e dados de campo para
-            antecipar roçadas, reduzir custos operacionais e garantir conformidade
-            contratual em toda a malha da Motiva Rodovias.
+            ORION substitui o calendário fixo de roçada por decisão baseada em dados: NDVI,
+            clima, criticidade e planejamento automático de equipes — em toda a malha da
+            concessionária.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <Link to={cta} className="px-5 h-11 inline-flex items-center gap-2 rounded-lg bg-gradient-to-b from-primary to-primary-glow text-primary-foreground text-[13px] font-semibold tracking-wider uppercase">
               {ctaLabel} <ArrowRight className="h-4 w-4" />
             </Link>
-            <a href="mailto:contato@motiva.com.br?subject=Vegia%20-%20Solicitar%20acesso" className="px-5 h-11 inline-flex items-center rounded-lg border border-border text-[13px] font-semibold tracking-wider uppercase hover:bg-surface-low">
+            <a href="mailto:contato@orion.app?subject=ORION%20-%20Solicitar%20demonstra%C3%A7%C3%A3o" className="px-5 h-11 inline-flex items-center rounded-lg border border-border text-[13px] font-semibold tracking-wider uppercase hover:bg-surface-low">
               Solicitar acesso
             </a>
           </div>
@@ -86,7 +94,7 @@ const Index = () => {
           <div className="aspect-[4/3] rounded-2xl bg-gradient-to-br from-primary/30 via-surface-low to-tertiary/20 border border-border/40 p-1">
             <div className="w-full h-full rounded-xl bg-surface-lowest p-6 flex flex-col gap-3">
               <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-muted-foreground">
-                <span className="h-2 w-2 rounded-full bg-primary animate-pulse" /> Painel ao vivo · Rodoanel SP-021
+                <span className="h-2 w-2 rounded-full bg-primary animate-pulse" /> Centro de operações ORION
               </div>
               <div className="grid grid-cols-3 gap-3">
                 {[
@@ -124,7 +132,7 @@ const Index = () => {
               <TrendingDown className="h-3 w-3" /> Impacto operacional
             </span>
             <h2 className="text-[24px] md:text-[30px] font-bold tracking-tight">Decisão baseada em dados, não em calendário.</h2>
-            <p className="text-[14px] text-muted-foreground mt-2 max-w-[640px]">Roçadas são planejadas hoje em 13 a 18 ciclos anuais fixos. O Vegia substitui esse calendário por gatilhos dinâmicos de NDVI, clima e criticidade — eliminando intervenções desnecessárias e antecipando as urgentes.</p>
+            <p className="text-[14px] text-muted-foreground mt-2 max-w-[640px]">Roçadas são planejadas hoje em 13 a 18 ciclos anuais fixos. O ORION substitui esse calendário por gatilhos dinâmicos de NDVI, clima e criticidade — eliminando intervenções desnecessárias e antecipando as urgentes.</p>
           </div>
         </div>
         <div className="grid md:grid-cols-4 gap-4">
@@ -152,7 +160,7 @@ const Index = () => {
               <Lock className="h-3 w-3" /> Compliance by design
             </span>
             <h2 className="text-[24px] md:text-[30px] font-bold tracking-tight">Sem câmeras da rodovia. Sem risco LGPD.</h2>
-            <p className="text-[14px] text-muted-foreground mt-3 leading-relaxed">As câmeras de monitoramento de tráfego capturam placas, rostos e veículos — dados pessoais sensíveis sob a LGPD. O Vegia é arquitetado para nunca tocar nessa base. Toda inteligência vem de:</p>
+            <p className="text-[14px] text-muted-foreground mt-3 leading-relaxed">As câmeras de monitoramento de tráfego capturam placas, rostos e veículos — dados pessoais sensíveis sob a LGPD. O ORION é arquitetado para nunca tocar nessa base. Toda inteligência vem de:</p>
             <ul className="mt-5 space-y-3 text-[13px]">
               <li className="flex gap-3"><Satellite className="h-4 w-4 text-primary mt-0.5 shrink-0" /><span><b>Imagens de satélite Sentinel-2</b> (ESA) — domínio público, resolução de 10 m, revisita de 5 dias.</span></li>
               <li className="flex gap-3"><Brain className="h-4 w-4 text-primary mt-0.5 shrink-0" /><span><b>Visão computacional em imagens de inspeção</b> capturadas por equipes próprias, com governança total do dado.</span></li>
@@ -165,7 +173,7 @@ const Index = () => {
             <div className="space-y-4">
               {[
                 { k: "Modelo atual", v: "Calendário fixo · auditoria por amostragem · envio reativo de equipes" },
-                { k: "Camada Vegia", v: "NDVI por KM · classificação Nível 1/2/3 · IRC com clima e tráfego" },
+                { k: "Camada ORION", v: "NDVI por KM · classificação Nível 1/2/3 · IRC com clima e tráfego" },
                 { k: "Resultado", v: "Priorização por criticidade · roteirização inteligente · auditoria fotográfica automática" },
               ].map((r, i) => (
                 <div key={r.k} className="flex gap-4">
@@ -184,8 +192,8 @@ const Index = () => {
       <section className="px-8 md:px-14 max-w-[1200px] mx-auto pb-20">
         <h2 className="text-[24px] md:text-[30px] font-bold tracking-tight mb-8">Perguntas frequentes</h2>
         <div className="grid md:grid-cols-2 gap-4">
-          <FAQItem q="Vocês usam as câmeras já instaladas na rodovia?" a="Não. Por restrição da LGPD e sensibilidade dos dados, o Vegia não consome imagens das câmeras de tráfego. Trabalhamos exclusivamente com satélite Sentinel-2 e visão computacional sobre fotos de inspeção própria." />
-          <FAQItem q="Como o Vegia lida com baixa volumetria de dados históricos?" a="O modelo foi pensado para operar com incerteza: hipóteses explícitas, premissas auditáveis e fallback determinístico via classificação ARTESP. Conforme novos dados chegam, o IRC se recalibra automaticamente." />
+          <FAQItem q="Vocês usam as câmeras já instaladas na rodovia?" a="Não. Por restrição da LGPD e sensibilidade dos dados, o ORION não consome imagens das câmeras de tráfego. Trabalhamos exclusivamente com satélite Sentinel-2 e visão computacional sobre fotos de inspeção própria." />
+          <FAQItem q="Como o ORION lida com baixa volumetria de dados históricos?" a="O modelo foi pensado para operar com incerteza: hipóteses explícitas, premissas auditáveis e fallback determinístico via classificação ARTESP. Conforme novos dados chegam, o índice de criticidade se recalibra automaticamente." />
           <FAQItem q="O custo de roçada varia muito. Como vocês estimam economia?" a="Usamos faixas referenciais (R$ 0,10–0,23/m² mecânica · R$ 0,20–0,40/m² manual) parametrizáveis por trecho. A economia vem de eliminar intervenções desnecessárias quando o NDVI ainda está dentro do limite contratual." />
           <FAQItem q="O clima é considerado nas recomendações?" a="Sim. Cada trecho tem previsão climática integrada (chuva, temperatura, umidade) que ajusta a janela ideal de roçada e antecipa picos de crescimento pós-chuva." />
           <FAQItem q="Como funciona a auditoria automatizada?" a="A inspeção em campo é registrada com geotag, foto e medições. O módulo de Análise CV classifica automaticamente cobertura, altura e conformidade, gerando relatório PDF auditável alinhado às exigências do Poder Concedente." />
@@ -196,12 +204,12 @@ const Index = () => {
       <footer className="border-t border-border/50">
         <div className="px-8 md:px-14 max-w-[1200px] mx-auto py-8 flex flex-col md:flex-row items-center justify-between gap-3 text-[12px] text-muted-foreground">
           <div className="flex items-center gap-2">
-            <img src={logoMotiva} alt="" className="h-5 w-5 rounded-full" />
-            <span>© {new Date().getFullYear()} Motiva Rodovias · Vegia</span>
+            <BrandMark size={20} />
+            <span>© {new Date().getFullYear()} ORION · Roadside Intelligence Platform</span>
           </div>
           <div className="flex items-center gap-4">
             <Link to="/auth" className="hover:text-foreground">Entrar</Link>
-            <a href="mailto:contato@motiva.com.br" className="hover:text-foreground">Contato</a>
+            <a href="mailto:contato@orion.app" className="hover:text-foreground">Contato</a>
           </div>
         </div>
       </footer>
