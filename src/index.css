@@ -4,80 +4,80 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Motiva design system — Anil + apoio (violeta, laranja, turquesa) */
+/* ORION design system — Verde corporativo + Azul navy, apoio laranja (atenção) e vermelho (crítico) */
 @layer base {
   :root {
-    --background: 240 30% 98%;            /* near-white com leve anil */
-    --foreground: 250 35% 12%;            /* texto escuro anil */
+    --background: 210 25% 98%;            /* cinza claro corporativo */
+    --foreground: 215 35% 12%;            /* navy escuro */
 
-    --surface-low: 245 35% 96%;
-    --surface-high: 245 25% 92%;
+    --surface-low: 210 25% 96%;
+    --surface-high: 215 20% 92%;
     --surface-lowest: 0 0% 100%;
 
     --card: 0 0% 100%;
-    --card-foreground: 250 35% 12%;
+    --card-foreground: 215 35% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 250 35% 12%;
+    --popover-foreground: 215 35% 12%;
 
-    /* Anil — cor primária Motiva */
-    --primary: 252 83% 58%;               /* #5A2BEE aprox */
+    /* Verde escuro corporativo — primária ORION */
+    --primary: 158 64% 26%;               /* deep forest */
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 258 90% 68%;          /* anil-glow */
+    --primary-glow: 158 55% 40%;
 
-    --secondary: 245 35% 96%;
-    --secondary-foreground: 250 35% 12%;
+    --secondary: 210 25% 96%;
+    --secondary-foreground: 215 35% 12%;
 
-    /* Apoio: violeta */
-    --secondary-container: 270 90% 92%;
-    --on-secondary-container: 270 70% 30%;
+    /* Apoio: azul navy executivo */
+    --secondary-container: 215 60% 92%;
+    --on-secondary-container: 215 70% 22%;
 
-    --muted: 245 25% 94%;
-    --muted-foreground: 250 12% 42%;
+    --muted: 215 20% 94%;
+    --muted-foreground: 215 14% 40%;
 
-    --accent: 245 25% 92%;
-    --accent-foreground: 250 35% 12%;
+    --accent: 215 20% 92%;
+    --accent-foreground: 215 35% 12%;
 
-    /* Apoio: laranja (atenção) */
+    /* Apoio: laranja — alto risco */
     --tertiary: 25 95% 53%;               /* #F97316 */
     --tertiary-container: 30 100% 94%;
 
-    /* Apoio: turquesa */
-    --turquoise: 178 78% 41%;             /* #14B8A6 */
+    /* Apoio: turquesa — seguro */
+    --turquoise: 168 72% 38%;
     --turquoise-foreground: 0 0% 100%;
 
     --destructive: 354 78% 52%;
     --destructive-foreground: 0 0% 100%;
     --error-container: 354 90% 95%;
 
-    --border: 245 20% 88%;
-    --input: 245 25% 92%;
-    --ring: 252 83% 58%;
+    --border: 215 18% 88%;
+    --input: 215 20% 92%;
+    --ring: 158 64% 26%;
 
     --radius: 0.875rem;
 
-    --sidebar-background: 250 45% 14%;    /* anil profundo */
-    --sidebar-foreground: 245 30% 92%;
-    --sidebar-primary: 252 83% 58%;
+    --sidebar-background: 215 45% 12%;    /* navy profundo */
+    --sidebar-foreground: 210 25% 92%;
+    --sidebar-primary: 158 64% 38%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 250 40% 20%;
-    --sidebar-accent-foreground: 245 30% 96%;
-    --sidebar-border: 250 35% 22%;
-    --sidebar-ring: 252 83% 58%;
+    --sidebar-accent: 215 40% 18%;
+    --sidebar-accent-foreground: 210 25% 96%;
+    --sidebar-border: 215 35% 20%;
+    --sidebar-ring: 158 64% 38%;
 
     /* Sombras e gradientes — usar em cards e elementos elevados */
-    --shadow-card: 0 1px 2px hsl(250 35% 12% / 0.04), 0 1px 3px hsl(250 35% 12% / 0.04);
-    --shadow-elegant: 0 4px 16px -4px hsl(252 83% 58% / 0.08), 0 2px 6px hsl(250 35% 12% / 0.04);
+    --shadow-card: 0 1px 2px hsl(215 35% 12% / 0.04), 0 1px 3px hsl(215 35% 12% / 0.04);
+    --shadow-elegant: 0 4px 16px -4px hsl(215 45% 18% / 0.10), 0 2px 6px hsl(215 35% 12% / 0.04);
     --shadow-glow: 0 0 0 1px hsl(var(--primary) / 0.08), 0 8px 24px -8px hsl(var(--primary) / 0.18);
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary-glow)) 100%);
     --gradient-surface: linear-gradient(180deg, hsl(var(--surface-lowest)) 0%, hsl(var(--surface-low)) 100%);
-    --gradient-sidebar: linear-gradient(180deg, hsl(250 45% 14%) 0%, hsl(252 50% 11%) 100%);
+    --gradient-sidebar: linear-gradient(180deg, hsl(215 45% 12%) 0%, hsl(215 50% 8%) 100%);
     --transition-smooth: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .dark { /* same — dark mode disabled visually */
-    --background: 240 30% 98%;
-    --foreground: 250 35% 12%;
+    --background: 210 25% 98%;
+    --foreground: 215 35% 12%;
   }
 }
 
