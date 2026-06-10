@@ -1,7 +1,7 @@
 import { TopHeader } from "@/components/vegia/TopHeader";
 import { MetricCard } from "@/components/vegia/MetricCard";
 import { AlertCard } from "@/components/vegia/AlertCard";
-import { useSegments, useKmMarkers, useTotalCoverage } from "@/hooks/useVegiaData";
+import { useSegments, useTotalCoverage } from "@/hooks/useVegiaData";
 import { WeatherForecast } from "@/components/vegia/WeatherForecast";
 import { AIInsightsPanel } from "@/components/vegia/AIInsightsPanel";
 import { IRCPanel } from "@/components/vegia/IRCPanel";
@@ -15,15 +15,12 @@ import { useMemo, useState, lazy, Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useFilters } from "@/contexts/FiltersContext";
 import { GlobalFilters } from "@/components/vegia/GlobalFilters";
-import { MapPointSheet } from "@/components/vegia/MapPointSheet";
 
-// Code splitting: mapa Leaflet e gráficos Recharts são pesados — carrega só quando precisa.
-const OSMMap = lazy(() => import("@/components/vegia/OSMMap").then(m => ({ default: m.OSMMap })));
 const NDVIBarChart = lazy(() => import("@/components/vegia/NDVIBarChart").then(m => ({ default: m.NDVIBarChart })));
+
 
 const Dashboard = () => {
   const { data: segmentsRaw = [], isLoading, isError: segmentsError } = useSegments();
-  const { data: kmMarkers = [] } = useKmMarkers();
   const { data: coverage = 0 } = useTotalCoverage();
   const { data: weather } = useWeather();
   const qc = useQueryClient();
@@ -31,7 +28,6 @@ const Dashboard = () => {
   const fetching = useIsFetching();
   const [refreshing, setRefreshing] = useState(false);
   const { matches, activeCount } = useFilters();
-  const [mapPoint, setMapPoint] = useState<{ lat: number; lng: number; label?: string } | null>(null);
   const segments = useMemo(
     () => segmentsRaw.filter(s => matches({ status: s.status, kmStart: s.kmStart })),
     [segmentsRaw, matches]
@@ -56,27 +52,6 @@ const Dashboard = () => {
   const equipesDisponiveis = 3;
   const fmtBRL = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0, notation: "compact" });
 
-  // Build OSM data from real km markers and segments
-  const polyline = useMemo<[number, number][]>(
-    () => kmMarkers.map(m => [m.lat, m.lng] as [number, number]),
-    [kmMarkers]
-  );
-  const segmentMarkers = useMemo(() => {
-    if (!kmMarkers.length) return [];
-    const byKm = new Map(kmMarkers.map(m => [Math.round(m.km), m] as const));
-    return segments
-      .map(s => {
-        const m = byKm.get(Math.round(s.kmStart));
-        if (!m) return null;
-        return {
-          lat: m.lat,
-          lng: m.lng,
-          status: s.status as "critico" | "atencao" | "conforme",
-          label: `${s.km} · ${s.tipo}`,
-        };
-      })
-      .filter(Boolean) as { lat: number; lng: number; status: any; label: string; onClick: () => void }[];
-  }, [segments, kmMarkers]);
 
   return (
     <>
@@ -181,31 +156,6 @@ const Dashboard = () => {
 
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6">
           <div className="space-y-6">
-            <section className="bg-surface-lowest rounded-xl p-4 md:p-6 border border-border/40 shadow-card">
-              <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
-                <h3 className="text-[14px] md:text-[15px] font-semibold tracking-wide uppercase">Rodoanel SP-021 — Mapa NDVI em Tempo Real</h3>
-                <div className="flex flex-wrap items-center gap-3 md:gap-4 text-[12px] text-muted-foreground">
-                  <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-primary" /> Saudável</span>
-                  <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-tertiary" /> Atenção</span>
-                  <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-destructive" /> Crítico</span>
-                </div>
-              </div>
-              <div className="rounded-lg overflow-hidden border border-border/40">
-                <Suspense fallback={<Skeleton className="w-full h-[420px]" />}>
-                  <OSMMap
-                    className="w-full h-[320px] md:h-[420px]"
-                    polyline={polyline}
-                    markers={segmentMarkers}
-                    fitBounds
-                    onPointSelect={(lat, lng, label) => setMapPoint({ lat, lng, label })}
-                  />
-                </Suspense>
-              </div>
-              <p className="text-[11px] text-muted-foreground mt-3 flex items-center gap-1.5">
-                <span className="h-1 w-1 rounded-full bg-primary" />
-                Clique em qualquer ponto do mapa para ver clima local e insight da IA.
-              </p>
-            </section>
 
             <section className="bg-surface-lowest rounded-xl p-4 md:p-6 border border-border/40 shadow-card">
               <div className="flex flex-wrap items-center justify-between gap-2 mb-5">
@@ -266,11 +216,6 @@ const Dashboard = () => {
           </aside>
         </div>
       </div>
-      <MapPointSheet
-        open={!!mapPoint}
-        point={mapPoint}
-        onClose={() => setMapPoint(null)}
-      />
     </>
   );
 };

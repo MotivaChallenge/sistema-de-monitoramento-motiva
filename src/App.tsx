@@ -25,6 +25,7 @@ const Planejamento = lazy(() => import("./pages/Planejamento"));
 const Equipes = lazy(() => import("./pages/Equipes"));
 const ROI = lazy(() => import("./pages/ROI"));
 const Integracoes = lazy(() => import("./pages/Integracoes"));
+const Mapa = lazy(() => import("./pages/Mapa"));
 
 const RouteFallback = () => (
   <div className="min-h-[60vh] flex items-center justify-center text-muted-foreground text-sm">
@@ -63,7 +64,7 @@ const App = () => (
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
               <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/mapa" element={<Dashboard />} />
+              <Route path="/mapa" element={<Mapa />} />
               <Route path="/previsoes" element={<Previsoes />} />
               <Route path="/planejamento" element={<Planejamento />} />
               <Route path="/equipes" element={<Equipes />} />
