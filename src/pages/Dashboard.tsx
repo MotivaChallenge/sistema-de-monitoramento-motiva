@@ -21,7 +21,6 @@ const NDVIBarChart = lazy(() => import("@/components/vegia/NDVIBarChart").then(m
 
 const Dashboard = () => {
   const { data: segmentsRaw = [], isLoading, isError: segmentsError } = useSegments();
-  const { data: kmMarkers = [] } = useKmMarkers();
   const { data: coverage = 0 } = useTotalCoverage();
   const { data: weather } = useWeather();
   const qc = useQueryClient();
@@ -29,7 +28,6 @@ const Dashboard = () => {
   const fetching = useIsFetching();
   const [refreshing, setRefreshing] = useState(false);
   const { matches, activeCount } = useFilters();
-  const [mapPoint, setMapPoint] = useState<{ lat: number; lng: number; label?: string } | null>(null);
   const segments = useMemo(
     () => segmentsRaw.filter(s => matches({ status: s.status, kmStart: s.kmStart })),
     [segmentsRaw, matches]
