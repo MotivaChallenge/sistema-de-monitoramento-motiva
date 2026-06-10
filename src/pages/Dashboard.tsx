@@ -15,11 +15,9 @@ import { useMemo, useState, lazy, Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useFilters } from "@/contexts/FiltersContext";
 import { GlobalFilters } from "@/components/vegia/GlobalFilters";
-import { MapPointSheet } from "@/components/vegia/MapPointSheet";
 
-// Code splitting: mapa Leaflet e gráficos Recharts são pesados — carrega só quando precisa.
-const OSMMap = lazy(() => import("@/components/vegia/OSMMap").then(m => ({ default: m.OSMMap })));
 const NDVIBarChart = lazy(() => import("@/components/vegia/NDVIBarChart").then(m => ({ default: m.NDVIBarChart })));
+
 
 const Dashboard = () => {
   const { data: segmentsRaw = [], isLoading, isError: segmentsError } = useSegments();
