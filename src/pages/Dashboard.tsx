@@ -1,7 +1,7 @@
 import { TopHeader } from "@/components/vegia/TopHeader";
 import { MetricCard } from "@/components/vegia/MetricCard";
 import { AlertCard } from "@/components/vegia/AlertCard";
-import { useSegments, useKmMarkers, useTotalCoverage } from "@/hooks/useVegiaData";
+import { useSegments, useTotalCoverage } from "@/hooks/useVegiaData";
 import { WeatherForecast } from "@/components/vegia/WeatherForecast";
 import { AIInsightsPanel } from "@/components/vegia/AIInsightsPanel";
 import { IRCPanel } from "@/components/vegia/IRCPanel";
