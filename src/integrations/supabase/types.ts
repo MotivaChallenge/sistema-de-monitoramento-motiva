@@ -82,24 +82,42 @@ export type Database = {
       field_teams: {
         Row: {
           base_km: number
+          capacidade_dia: number
           created_at: string
+          eficiencia: number
+          funcionarios: number
           id: string
           nome: string
+          regiao: string
+          status: Database["public"]["Enums"]["team_status"]
           tempo_resposta_min: number
+          updated_at: string
         }
         Insert: {
           base_km: number
+          capacidade_dia?: number
           created_at?: string
+          eficiencia?: number
+          funcionarios?: number
           id?: string
           nome: string
+          regiao?: string
+          status?: Database["public"]["Enums"]["team_status"]
           tempo_resposta_min?: number
+          updated_at?: string
         }
         Update: {
           base_km?: number
+          capacidade_dia?: number
           created_at?: string
+          eficiencia?: number
+          funcionarios?: number
           id?: string
           nome?: string
+          regiao?: string
+          status?: Database["public"]["Enums"]["team_status"]
           tempo_resposta_min?: number
+          updated_at?: string
         }
         Relationships: []
       }
@@ -518,6 +536,72 @@ export type Database = {
         }
         Relationships: []
       }
+      work_orders: {
+        Row: {
+          code: string
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          notes: string | null
+          priority: Database["public"]["Enums"]["work_order_priority"]
+          scheduled_for: string | null
+          segment_id: string
+          started_at: string | null
+          status: Database["public"]["Enums"]["work_order_status"]
+          team_id: string | null
+          tipo_servico: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          priority?: Database["public"]["Enums"]["work_order_priority"]
+          scheduled_for?: string | null
+          segment_id: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["work_order_status"]
+          team_id?: string | null
+          tipo_servico?: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          priority?: Database["public"]["Enums"]["work_order_priority"]
+          scheduled_for?: string | null
+          segment_id?: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["work_order_status"]
+          team_id?: string | null
+          tipo_servico?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_orders_segment_id_fkey"
+            columns: ["segment_id"]
+            isOneToOne: false
+            referencedRelation: "segments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_orders_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "field_teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -534,6 +618,9 @@ export type Database = {
     Enums: {
       app_role: "admin" | "operator" | "viewer"
       segment_status: "critico" | "atencao" | "conforme"
+      team_status: "disponivel" | "campo" | "manutencao" | "afastada"
+      work_order_priority: "baixa" | "media" | "alta" | "critica"
+      work_order_status: "pendente" | "em_andamento" | "concluida" | "cancelada"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -663,6 +750,9 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "operator", "viewer"],
       segment_status: ["critico", "atencao", "conforme"],
+      team_status: ["disponivel", "campo", "manutencao", "afastada"],
+      work_order_priority: ["baixa", "media", "alta", "critica"],
+      work_order_status: ["pendente", "em_andamento", "concluida", "cancelada"],
     },
   },
 } as const
