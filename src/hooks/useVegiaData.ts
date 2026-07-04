@@ -273,3 +273,75 @@ export const useTotalCoverage = () =>
       return Number((max - min).toFixed(1));
     },
   });
+
+// ---------- Field teams (CRUD) ----------
+
+export type TeamStatus = "disponivel" | "campo" | "manutencao" | "afastada";
+
+export interface FieldTeam {
+  id: string;
+  nome: string;
+  base_km: number;
+  tempo_resposta_min: number;
+  funcionarios: number;
+  capacidade_dia: number;
+  regiao: string;
+  status: TeamStatus;
+  eficiencia: number;
+}
+
+export const useFieldTeams = () =>
+  useQuery({
+    queryKey: ["field_teams"],
+    queryFn: async (): Promise<FieldTeam[]> => {
+      const { data, error } = await supabase
+        .from("field_teams")
+        .select("*")
+        .order("nome");
+      if (error) throw error;
+      return (data ?? []).map((r: any) => ({
+        id: r.id,
+        nome: r.nome,
+        base_km: Number(r.base_km),
+        tempo_resposta_min: r.tempo_resposta_min,
+        funcionarios: r.funcionarios,
+        capacidade_dia: r.capacidade_dia,
+        regiao: r.regiao,
+        status: r.status as TeamStatus,
+        eficiencia: r.eficiencia,
+      }));
+    },
+  });
+
+// ---------- Work orders ----------
+
+export type WorkOrderStatus = "pendente" | "em_andamento" | "concluida" | "cancelada";
+export type WorkOrderPriority = "baixa" | "media" | "alta" | "critica";
+
+export interface WorkOrder {
+  id: string;
+  code: string;
+  segment_id: string;
+  team_id: string | null;
+  tipo_servico: string;
+  priority: WorkOrderPriority;
+  status: WorkOrderStatus;
+  scheduled_for: string | null;
+  started_at: string | null;
+  completed_at: string | null;
+  notes: string | null;
+  created_at: string;
+}
+
+export const useWorkOrders = () =>
+  useQuery({
+    queryKey: ["work_orders"],
+    queryFn: async (): Promise<WorkOrder[]> => {
+      const { data, error } = await supabase
+        .from("work_orders")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as WorkOrder[];
+    },
+  });
