@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { LayoutDashboard, Map, TrendingUp, CalendarDays, Users, BarChart3, Settings, LogOut, User, DollarSign, Plug } from "lucide-react";
+import { LayoutDashboard, Map, TrendingUp, CalendarDays, Users, BarChart3, Settings, LogOut, User, DollarSign, Plug, ClipboardList } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAlertsFeed } from "@/hooks/useAlertsFeed";
 
@@ -9,6 +9,7 @@ const items = [
   { to: "/previsoes", label: "Previsões", icon: TrendingUp },
   { to: "/planejamento", label: "Planejamento", icon: CalendarDays },
   { to: "/equipes", label: "Equipes", icon: Users },
+  { to: "/ordens", label: "Ordens de Serviço", icon: ClipboardList },
   { to: "/relatorio", label: "Relatórios", icon: BarChart3 },
   { to: "/roi", label: "Simulador ROI", icon: DollarSign },
   { to: "/integracoes", label: "Integrações", icon: Plug },
