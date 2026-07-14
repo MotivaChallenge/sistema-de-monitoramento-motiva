@@ -88,6 +88,20 @@ export const useCvResults = () =>
 // ---------- Real-data hooks (km_markers, rocada, reports, measurements) ----------
 
 export interface KmMarker { km: number; lat: number; lng: number }
+export interface Highway {
+  code: string;
+  nome: string;
+  concessao: string;
+  uf_inicio: string;
+  uf_fim: string;
+  km_inicio: number;
+  km_fim: number;
+  start_lat: number;
+  start_lng: number;
+  end_lat: number;
+  end_lng: number;
+  cor: string;
+}
 export interface RocadaClass {
   id: number; classe: string; lat: number; lng: number;
   area_m2: number | null; km_approx: number | null;
@@ -102,12 +116,40 @@ export interface Measurement {
   km_offset: number; nivel: number | null; na: boolean;
 }
 
-export const useKmMarkers = () =>
+export const useHighways = () =>
   useQuery({
-    queryKey: ["km_markers"],
-    queryFn: async (): Promise<KmMarker[]> => {
+    queryKey: ["highways"],
+    queryFn: async (): Promise<Highway[]> => {
       const { data, error } = await supabase
-        .from("km_markers").select("km_value,lat,lng").order("km_value");
+        .from("highways")
+        .select("*")
+        .order("concessao")
+        .order("nome");
+      if (error) throw error;
+      return (data ?? []).map((r: any) => ({
+        code: r.code,
+        nome: r.nome,
+        concessao: r.concessao,
+        uf_inicio: r.uf_inicio,
+        uf_fim: r.uf_fim,
+        km_inicio: Number(r.km_inicio),
+        km_fim: Number(r.km_fim),
+        start_lat: Number(r.start_lat),
+        start_lng: Number(r.start_lng),
+        end_lat: Number(r.end_lat),
+        end_lng: Number(r.end_lng),
+        cor: r.cor,
+      }));
+    },
+  });
+
+export const useKmMarkers = (rodovia?: string) =>
+  useQuery({
+    queryKey: ["km_markers", rodovia ?? "all"],
+    queryFn: async (): Promise<KmMarker[]> => {
+      let q = supabase.from("km_markers").select("km_value,lat,lng,rodovia").order("km_value");
+      if (rodovia) q = q.eq("rodovia", rodovia);
+      const { data, error } = await q;
       if (error) throw error;
       return (data ?? []).map((r: any) => ({
         km: Number(r.km_value), lat: Number(r.lat), lng: Number(r.lng),
