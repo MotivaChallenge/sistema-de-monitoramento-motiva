@@ -121,6 +121,57 @@ export type Database = {
         }
         Relationships: []
       }
+      highways: {
+        Row: {
+          code: string
+          concessao: string
+          cor: string
+          created_at: string
+          end_lat: number
+          end_lng: number
+          km_fim: number
+          km_inicio: number
+          nome: string
+          start_lat: number
+          start_lng: number
+          uf_fim: string
+          uf_inicio: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          concessao: string
+          cor?: string
+          created_at?: string
+          end_lat: number
+          end_lng: number
+          km_fim: number
+          km_inicio: number
+          nome: string
+          start_lat: number
+          start_lng: number
+          uf_fim: string
+          uf_inicio: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          concessao?: string
+          cor?: string
+          created_at?: string
+          end_lat?: number
+          end_lng?: number
+          km_fim?: number
+          km_inicio?: number
+          nome?: string
+          start_lat?: number
+          start_lng?: number
+          uf_fim?: string
+          uf_inicio?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       inspection_measurements: {
         Row: {
           created_at: string
@@ -223,7 +274,15 @@ export type Database = {
           lng?: number
           rodovia?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "km_markers_rodovia_fkey"
+            columns: ["rodovia"]
+            isOneToOne: false
+            referencedRelation: "highways"
+            referencedColumns: ["code"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -409,6 +468,7 @@ export type Database = {
           limite: number
           ndvi: number
           notification_id: string | null
+          rodovia: string | null
           status: Database["public"]["Enums"]["segment_status"]
           street: Json | null
           tipo: string
@@ -431,6 +491,7 @@ export type Database = {
           limite?: number
           ndvi: number
           notification_id?: string | null
+          rodovia?: string | null
           status: Database["public"]["Enums"]["segment_status"]
           street?: Json | null
           tipo: string
@@ -453,13 +514,22 @@ export type Database = {
           limite?: number
           ndvi?: number
           notification_id?: string | null
+          rodovia?: string | null
           status?: Database["public"]["Enums"]["segment_status"]
           street?: Json | null
           tipo?: string
           ultima_rocada?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "segments_rodovia_fkey"
+            columns: ["rodovia"]
+            isOneToOne: false
+            referencedRelation: "highways"
+            referencedColumns: ["code"]
+          },
+        ]
       }
       user_roles: {
         Row: {
