@@ -1,65 +1,118 @@
 import { TopHeader } from "@/components/vegia/TopHeader";
-import { useSegments } from "@/hooks/useVegiaData";
+import { useSegments, useFieldTeams, FieldTeam } from "@/hooks/useVegiaData";
 import { useWeather } from "@/hooks/useWeather";
 import { ircForSegment } from "@/lib/irc";
 import { useMemo, useState } from "react";
-import { CalendarDays, Users, Gauge, MapPin } from "lucide-react";
+import { CalendarDays, Users, Gauge, MapPin, Loader2, ClipboardPlus } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-
-const TEAMS = [
-  { id: "t1", nome: "Brigada Norte Rodoanel", capacidadeDia: 4, regiao: "Norte" },
-  { id: "t2", nome: "Consórcio SP-Verde", capacidadeDia: 6, regiao: "Centro" },
-  { id: "t3", nome: "Equipe Sul Conservação", capacidadeDia: 5, regiao: "Sul" },
-];
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "@/hooks/use-toast";
 
 const DAYS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 
+const priorityFromScore = (score: number): "critica" | "alta" | "media" | "baixa" =>
+  score >= 75 ? "critica" : score >= 55 ? "alta" : score >= 35 ? "media" : "baixa";
+
+const addBusinessDays = (base: Date, offset: number): string => {
+  const d = new Date(base);
+  let added = 0;
+  while (added < offset) {
+    d.setDate(d.getDate() + 1);
+    const wd = d.getDay();
+    if (wd !== 0 && wd !== 6) added++;
+  }
+  return d.toISOString().slice(0, 10);
+};
+
 const Planejamento = () => {
   const { data: segmentsRaw = [], isLoading } = useSegments();
+  const { data: teamsRaw = [], isLoading: teamsLoading } = useFieldTeams();
   const { data: weather } = useWeather();
   const rain5d = weather?.summary.totalRainMm ?? 8;
   const [horizonte, setHorizonte] = useState<"semana" | "mes">("semana");
+  const qc = useQueryClient();
+
+  const teams: FieldTeam[] = useMemo(
+    () => teamsRaw.filter(t => t.status === "disponivel" || t.status === "campo"),
+    [teamsRaw]
+  );
 
   // Prioriza trechos por IRC, distribui por equipe round-robin respeitando capacidade
   const plan = useMemo(() => {
+    if (!teams.length) return {} as Record<string, Array<{ s: any; dia: number }>>;
     const sorted = [...segmentsRaw]
       .map(s => ({ ...s, _score: ircForSegment(s, rain5d).score }))
       .sort((a, b) => b._score - a._score);
 
     const slots = horizonte === "semana" ? 5 : 22; // dias úteis
-    const totalCap = TEAMS.reduce((a, t) => a + t.capacidadeDia, 0);
+    const totalCap = teams.reduce((a, t) => a + t.capacidade_dia, 0);
     const limit = Math.min(sorted.length, slots * totalCap);
 
-    const buckets: Record<string, Array<{ s: typeof sorted[number]; dia: number }>> = Object.fromEntries(TEAMS.map(t => [t.id, []]));
+    const buckets: Record<string, Array<{ s: typeof sorted[number]; dia: number }>> = Object.fromEntries(teams.map(t => [t.id, []]));
     let day = 0;
-    let perDayCount: Record<string, number> = Object.fromEntries(TEAMS.map(t => [t.id, 0]));
+    let perDayCount: Record<string, number> = Object.fromEntries(teams.map(t => [t.id, 0]));
     let tIdx = 0;
 
     for (let i = 0; i < limit; i++) {
       const seg = sorted[i];
       // achar próxima equipe com capacidade disponível no dia atual
       let tries = 0;
-      while (perDayCount[TEAMS[tIdx].id] >= TEAMS[tIdx].capacidadeDia && tries < TEAMS.length) {
-        tIdx = (tIdx + 1) % TEAMS.length;
+      while (perDayCount[teams[tIdx].id] >= teams[tIdx].capacidade_dia && tries < teams.length) {
+        tIdx = (tIdx + 1) % teams.length;
         tries++;
       }
-      if (tries >= TEAMS.length) {
+      if (tries >= teams.length) {
         // avança o dia
         day++;
         if (day >= slots) break;
-        perDayCount = Object.fromEntries(TEAMS.map(t => [t.id, 0]));
+        perDayCount = Object.fromEntries(teams.map(t => [t.id, 0]));
         tIdx = 0;
       }
-      buckets[TEAMS[tIdx].id].push({ s: seg, dia: day });
-      perDayCount[TEAMS[tIdx].id]++;
-      tIdx = (tIdx + 1) % TEAMS.length;
+      buckets[teams[tIdx].id].push({ s: seg, dia: day });
+      perDayCount[teams[tIdx].id]++;
+      tIdx = (tIdx + 1) % teams.length;
     }
 
     return buckets;
-  }, [segmentsRaw, rain5d, horizonte]);
+  }, [segmentsRaw, rain5d, horizonte, teams]);
 
   const totalProgramado = Object.values(plan).reduce((a, b) => a + b.length, 0);
   const slotsLabel = horizonte === "semana" ? 5 : 22;
+
+  const generateOS = useMutation({
+    mutationFn: async () => {
+      const today = new Date();
+      const rows: any[] = [];
+      const suffix = Date.now().toString(36).toUpperCase().slice(-4);
+      let seq = 1;
+      for (const [teamId, items] of Object.entries(plan)) {
+        for (const it of items) {
+          rows.push({
+            code: `OS-${suffix}-${String(seq++).padStart(3, "0")}`,
+            segment_id: it.s.id,
+            team_id: teamId,
+            tipo_servico: "rocada",
+            priority: priorityFromScore(it.s._score),
+            status: "pendente",
+            scheduled_for: addBusinessDays(today, it.dia),
+          });
+        }
+      }
+      if (!rows.length) throw new Error("Nada para gerar");
+      const { error } = await supabase.from("work_orders").insert(rows);
+      if (error) throw error;
+      return rows.length;
+    },
+    onSuccess: (n) => {
+      qc.invalidateQueries({ queryKey: ["work_orders"] });
+      toast({ title: "Ordens geradas", description: `${n} ordens de serviço criadas com base no plano atual.` });
+    },
+    onError: (e: any) => {
+      toast({ title: "Falha ao gerar OS", description: e.message ?? "Erro inesperado", variant: "destructive" });
+    },
+  });
 
   return (
     <>
@@ -75,16 +128,29 @@ const Planejamento = () => {
               capacidade diária e região atendida.
             </p>
           </div>
-          <div className="inline-flex bg-surface-high rounded-md p-0.5">
-            {(["semana", "mes"] as const).map(h => (
-              <button
-                key={h}
-                onClick={() => setHorizonte(h)}
-                className={`px-4 h-8 rounded text-[12px] font-semibold tracking-wider uppercase transition-smooth ${horizonte === h ? "bg-surface-lowest shadow-sm" : "text-muted-foreground"}`}
-              >
-                {h === "semana" ? "Semanal" : "Mensal"}
-              </button>
-            ))}
+          <div className="flex items-center gap-2">
+            <div className="inline-flex bg-surface-high rounded-md p-0.5">
+              {(["semana", "mes"] as const).map(h => (
+                <button
+                  key={h}
+                  onClick={() => setHorizonte(h)}
+                  className={`px-4 h-8 rounded text-[12px] font-semibold tracking-wider uppercase transition-smooth ${horizonte === h ? "bg-surface-lowest shadow-sm" : "text-muted-foreground"}`}
+                >
+                  {h === "semana" ? "Semanal" : "Mensal"}
+                </button>
+              ))}
+            </div>
+            <Button
+              size="sm"
+              onClick={() => generateOS.mutate()}
+              disabled={generateOS.isPending || totalProgramado === 0}
+              className="h-8"
+            >
+              {generateOS.isPending
+                ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                : <ClipboardPlus className="h-3.5 w-3.5 mr-1.5" />}
+              Gerar ordens de serviço
+            </Button>
           </div>
         </header>
 
@@ -95,11 +161,11 @@ const Planejamento = () => {
           </div>
           <div className="bg-surface-lowest rounded-xl p-5 border border-border/40 shadow-card">
             <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Equipes alocadas</div>
-            <div className="text-[28px] font-bold tabular-nums mt-1">{TEAMS.length}</div>
+            <div className="text-[28px] font-bold tabular-nums mt-1">{teams.length}</div>
           </div>
           <div className="bg-surface-lowest rounded-xl p-5 border border-border/40 shadow-card">
             <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Capacidade total/dia</div>
-            <div className="text-[28px] font-bold tabular-nums mt-1">{TEAMS.reduce((a, t) => a + t.capacidadeDia, 0)}</div>
+            <div className="text-[28px] font-bold tabular-nums mt-1">{teams.reduce((a, t) => a + t.capacidade_dia, 0)}</div>
           </div>
           <div className="bg-surface-lowest rounded-xl p-5 border border-border/40 shadow-card">
             <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Dias úteis</div>
@@ -107,13 +173,17 @@ const Planejamento = () => {
           </div>
         </div>
 
-        {isLoading ? (
+        {isLoading || teamsLoading ? (
           <Skeleton className="h-72 w-full" />
+        ) : teams.length === 0 ? (
+          <div className="bg-surface-lowest rounded-xl border border-border/40 p-8 text-center text-[13px] text-muted-foreground">
+            Nenhuma equipe disponível cadastrada. Cadastre equipes em <b>Equipes</b> para gerar o planejamento.
+          </div>
         ) : (
           <div className="space-y-5">
-            {TEAMS.map(team => {
+            {teams.map(team => {
               const assigned = plan[team.id] || [];
-              const carga = Math.round((assigned.length / (slotsLabel * team.capacidadeDia)) * 100);
+              const carga = Math.round((assigned.length / (slotsLabel * team.capacidade_dia)) * 100);
               return (
                 <section key={team.id} className="bg-surface-lowest rounded-xl border border-border/40 shadow-card overflow-hidden">
                   <div className="px-5 py-4 border-b border-border/40 flex flex-wrap items-center justify-between gap-3 bg-gradient-surface">
@@ -124,7 +194,7 @@ const Planejamento = () => {
                       <div>
                         <div className="text-[14px] font-semibold">{team.nome}</div>
                         <div className="text-[11px] text-muted-foreground flex items-center gap-2">
-                          <MapPin className="h-3 w-3" /> Região {team.regiao} · {team.capacidadeDia} trechos/dia
+                          <MapPin className="h-3 w-3" /> Região {team.regiao} · {team.capacidade_dia} trechos/dia
                         </div>
                       </div>
                     </div>
