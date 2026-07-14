@@ -133,7 +133,11 @@ const Mapa = () => {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <div className="text-[20px] font-bold tabular-nums">{coverage.toFixed(1).replace(".", ",")}</div>
+                <div className="text-[20px] font-bold tabular-nums">
+                  {currentHighway
+                    ? (currentHighway.km_fim - currentHighway.km_inicio).toFixed(1).replace(".", ",")
+                    : coverage.toFixed(1).replace(".", ",")}
+                </div>
                 <div className="text-[10px] text-muted-foreground">km monitorados</div>
               </div>
               <div>
