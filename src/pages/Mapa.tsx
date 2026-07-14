@@ -33,7 +33,7 @@ const Mapa = () => {
   const segments = useMemo(
     () =>
       segmentsRaw
-        .filter(s => ((s as any).rodovia ?? "SP-021") === selectedHighway)
+        .filter(s => (s.rodovia ?? "SP-021") === selectedHighway)
         .filter(s => matches({ status: s.status, kmStart: s.kmStart })),
     [segmentsRaw, matches, selectedHighway]
   );
