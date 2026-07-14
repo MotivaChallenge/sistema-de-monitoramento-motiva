@@ -1,26 +1,41 @@
 import { TopHeader } from "@/components/vegia/TopHeader";
-import { useSegments, useKmMarkers, useTotalCoverage } from "@/hooks/useVegiaData";
+import { useSegments, useKmMarkers, useTotalCoverage, useHighways } from "@/hooks/useVegiaData";
 import { useFilters } from "@/contexts/FiltersContext";
 import { GlobalFilters } from "@/components/vegia/GlobalFilters";
 import { MapPointSheet } from "@/components/vegia/MapPointSheet";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertTriangle, Leaf, Activity, Inbox, Eye, Layers, Crosshair, Route } from "lucide-react";
+import { AlertTriangle, Activity, Inbox, Eye, Layers, Crosshair, Route, Network } from "lucide-react";
 import { useState, useMemo, lazy, Suspense } from "react";
 
 const OSMMap = lazy(() => import("@/components/vegia/OSMMap").then(m => ({ default: m.OSMMap })));
 
 const Mapa = () => {
+  const { data: highways = [] } = useHighways();
+  const [selectedHighway, setSelectedHighway] = useState<string>("SP-021");
   const { data: segmentsRaw = [] } = useSegments();
-  const { data: kmMarkers = [] } = useKmMarkers();
+  const { data: kmMarkers = [] } = useKmMarkers(selectedHighway);
   const { data: coverage = 0 } = useTotalCoverage();
   const { matches, activeCount } = useFilters();
   const [mapPoint, setMapPoint] = useState<{ lat: number; lng: number; label?: string } | null>(null);
   const [baseLayer, setBaseLayer] = useState<"street" | "satellite" | "hybrid">("hybrid");
   const [showPolyline, setShowPolyline] = useState(true);
 
+  const currentHighway = highways.find(h => h.code === selectedHighway);
+  const highwaysByConcession = useMemo(() => {
+    const map = new Map<string, typeof highways>();
+    highways.forEach(h => {
+      if (!map.has(h.concessao)) map.set(h.concessao, [] as any);
+      map.get(h.concessao)!.push(h);
+    });
+    return Array.from(map.entries());
+  }, [highways]);
+
   const segments = useMemo(
-    () => segmentsRaw.filter(s => matches({ status: s.status, kmStart: s.kmStart })),
-    [segmentsRaw, matches]
+    () =>
+      segmentsRaw
+        .filter(s => ((s as any).rodovia ?? "SP-021") === selectedHighway)
+        .filter(s => matches({ status: s.status, kmStart: s.kmStart })),
+    [segmentsRaw, matches, selectedHighway]
   );
 
   const total = segments.length;
