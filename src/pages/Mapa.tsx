@@ -90,6 +90,42 @@ const Mapa = () => {
 
         {/* Floating overlay: KPIs (top-left) */}
         <div className="absolute top-4 left-4 z-[400] flex flex-col gap-3">
+          {/* Concession + highway selector */}
+          <div className="bg-background/90 backdrop-blur-md border border-border/50 rounded-xl p-4 shadow-card w-[280px]">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Concessão · Rodovia</span>
+              <Network className="h-3.5 w-3.5 text-primary" />
+            </div>
+            <select
+              value={selectedHighway}
+              onChange={(e) => setSelectedHighway(e.target.value)}
+              className="w-full bg-surface-low border border-border/50 rounded-lg px-3 py-2 text-[12px] font-medium focus:outline-none focus:border-primary/50"
+            >
+              {highwaysByConcession.map(([concessao, list]) => (
+                <optgroup key={concessao} label={concessao}>
+                  {list.map(h => (
+                    <option key={h.code} value={h.code}>
+                      {h.code} · {h.nome}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+            {currentHighway && (
+              <div className="mt-2 text-[10px] text-muted-foreground leading-relaxed">
+                <span className="font-semibold text-foreground">{currentHighway.concessao}</span> ·
+                {" "}km {currentHighway.km_inicio.toFixed(1).replace(".", ",")} → {currentHighway.km_fim.toFixed(1).replace(".", ",")}
+                {" "}· {currentHighway.uf_inicio}
+                {currentHighway.uf_fim !== currentHighway.uf_inicio ? `→${currentHighway.uf_fim}` : ""}
+                {currentHighway.code !== "SP-021" && (
+                  <div className="mt-1 text-[10px] text-tertiary">
+                    Traçado aproximado — georreferência oficial pendente.
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
           <div className="bg-background/90 backdrop-blur-md border border-border/50 rounded-xl p-4 shadow-card w-[240px]">
             <div className="flex items-center justify-between mb-3">
               <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Resumo da malha</span>
