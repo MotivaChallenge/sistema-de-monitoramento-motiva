@@ -13,6 +13,7 @@ export interface Segment {
   clausula: string;
   clauseFull: string;
   ultimaRocada: string;
+  rodovia?: string;
   deadline?: string;
   deadlineUrgent?: boolean;
   notificationId?: string;

@@ -1,26 +1,41 @@
 import { TopHeader } from "@/components/vegia/TopHeader";
-import { useSegments, useKmMarkers, useTotalCoverage } from "@/hooks/useVegiaData";
+import { useSegments, useKmMarkers, useTotalCoverage, useHighways } from "@/hooks/useVegiaData";
 import { useFilters } from "@/contexts/FiltersContext";
 import { GlobalFilters } from "@/components/vegia/GlobalFilters";
 import { MapPointSheet } from "@/components/vegia/MapPointSheet";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertTriangle, Leaf, Activity, Inbox, Eye, Layers, Crosshair, Route } from "lucide-react";
+import { AlertTriangle, Activity, Inbox, Eye, Layers, Crosshair, Route, Network } from "lucide-react";
 import { useState, useMemo, lazy, Suspense } from "react";
 
 const OSMMap = lazy(() => import("@/components/vegia/OSMMap").then(m => ({ default: m.OSMMap })));
 
 const Mapa = () => {
+  const { data: highways = [] } = useHighways();
+  const [selectedHighway, setSelectedHighway] = useState<string>("SP-021");
   const { data: segmentsRaw = [] } = useSegments();
-  const { data: kmMarkers = [] } = useKmMarkers();
+  const { data: kmMarkers = [] } = useKmMarkers(selectedHighway);
   const { data: coverage = 0 } = useTotalCoverage();
   const { matches, activeCount } = useFilters();
   const [mapPoint, setMapPoint] = useState<{ lat: number; lng: number; label?: string } | null>(null);
   const [baseLayer, setBaseLayer] = useState<"street" | "satellite" | "hybrid">("hybrid");
   const [showPolyline, setShowPolyline] = useState(true);
 
+  const currentHighway = highways.find(h => h.code === selectedHighway);
+  const highwaysByConcession = useMemo(() => {
+    const map = new Map<string, typeof highways>();
+    highways.forEach(h => {
+      if (!map.has(h.concessao)) map.set(h.concessao, [] as any);
+      map.get(h.concessao)!.push(h);
+    });
+    return Array.from(map.entries());
+  }, [highways]);
+
   const segments = useMemo(
-    () => segmentsRaw.filter(s => matches({ status: s.status, kmStart: s.kmStart })),
-    [segmentsRaw, matches]
+    () =>
+      segmentsRaw
+        .filter(s => (s.rodovia ?? "SP-021") === selectedHighway)
+        .filter(s => matches({ status: s.status, kmStart: s.kmStart })),
+    [segmentsRaw, matches, selectedHighway]
   );
 
   const total = segments.length;
@@ -75,6 +90,42 @@ const Mapa = () => {
 
         {/* Floating overlay: KPIs (top-left) */}
         <div className="absolute top-4 left-4 z-[400] flex flex-col gap-3">
+          {/* Concession + highway selector */}
+          <div className="bg-background/90 backdrop-blur-md border border-border/50 rounded-xl p-4 shadow-card w-[280px]">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Concessão · Rodovia</span>
+              <Network className="h-3.5 w-3.5 text-primary" />
+            </div>
+            <select
+              value={selectedHighway}
+              onChange={(e) => setSelectedHighway(e.target.value)}
+              className="w-full bg-surface-low border border-border/50 rounded-lg px-3 py-2 text-[12px] font-medium focus:outline-none focus:border-primary/50"
+            >
+              {highwaysByConcession.map(([concessao, list]) => (
+                <optgroup key={concessao} label={concessao}>
+                  {list.map(h => (
+                    <option key={h.code} value={h.code}>
+                      {h.code} · {h.nome}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+            {currentHighway && (
+              <div className="mt-2 text-[10px] text-muted-foreground leading-relaxed">
+                <span className="font-semibold text-foreground">{currentHighway.concessao}</span> ·
+                {" "}km {currentHighway.km_inicio.toFixed(1).replace(".", ",")} → {currentHighway.km_fim.toFixed(1).replace(".", ",")}
+                {" "}· {currentHighway.uf_inicio}
+                {currentHighway.uf_fim !== currentHighway.uf_inicio ? `→${currentHighway.uf_fim}` : ""}
+                {currentHighway.code !== "SP-021" && (
+                  <div className="mt-1 text-[10px] text-tertiary">
+                    Traçado aproximado — georreferência oficial pendente.
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
           <div className="bg-background/90 backdrop-blur-md border border-border/50 rounded-xl p-4 shadow-card w-[240px]">
             <div className="flex items-center justify-between mb-3">
               <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Resumo da malha</span>
@@ -82,7 +133,11 @@ const Mapa = () => {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <div className="text-[20px] font-bold tabular-nums">{coverage.toFixed(1).replace(".", ",")}</div>
+                <div className="text-[20px] font-bold tabular-nums">
+                  {currentHighway
+                    ? (currentHighway.km_fim - currentHighway.km_inicio).toFixed(1).replace(".", ",")
+                    : coverage.toFixed(1).replace(".", ",")}
+                </div>
                 <div className="text-[10px] text-muted-foreground">km monitorados</div>
               </div>
               <div>

@@ -1,56 +1,73 @@
 
-# Fechamento das pendências ORION
+# Cadastro das rodovias Motiva no Mapa Operacional
 
-Após auditoria dos arquivos, restam três frentes para o sistema ficar 100% conectado ao Lovable Cloud (sem quebrar o que já funciona).
+Hoje o sistema só tem uma rodovia: **SP-021 (Rodoanel Oeste)**, com 30 marcadores de km em `km_markers`. `segments` não tem coluna de rodovia. Precisamos suportar as 8 concessões Motiva (~20 rodovias) e deixá-las selecionáveis no mapa.
 
-## 1. Planejamento Operacional conectado ao DB
+## 1. Modelo de dados (migration)
 
-Hoje `src/pages/Planejamento.tsx` usa um array `TEAMS` hardcoded. Já existe a tabela `field_teams` no banco.
+- Nova tabela `public.highways`:
+  - `code` (ex: `SP-348`, `BR-116-DUTRA`) — PK
+  - `nome` (ex: "Rodovia dos Bandeirantes")
+  - `concessao` (ex: "Motiva Autoban")
+  - `uf_inicio`, `uf_fim`
+  - `km_inicio`, `km_fim` (numeric)
+  - `start_lat`, `start_lng`, `end_lat`, `end_lng`
+  - `cor` (token semântico p/ legenda, ex: `primary`, `tertiary`, `turquoise`…)
+- Alterar `km_markers`:
+  - `rodovia` já existe (text). Adicionar FK → `highways.code` (com `ON DELETE CASCADE`).
+- Alterar `segments`:
+  - Adicionar `rodovia text` FK → `highways.code` (nullable, default `'SP-021'` para as linhas atuais).
+- GRANTs + RLS: leitura pública em `highways`; escrita só `admin`/`operator` (mesmo padrão de `segments`).
 
-- Substituir `TEAMS` por `useFieldTeams()`.
-- Considerar `capacidade_dia` e `regiao` reais das equipes cadastradas.
-- Ignorar equipes com status `manutencao`/`afastada` na distribuição.
-- Loading state (Skeleton) enquanto equipes carregam.
+## 2. Seed das concessões
 
-## 2. Persistir plano gerado (opcional dentro desta rodada)
+Inserir as 20 rodovias descritas pelo usuário no `INSERT` inicial. Cobertura por concessão:
 
-Salvar o plano gerado como ordens de serviço em `work_orders`:
+- **RioSP**: BR-116 Dutra (km 230,6 SP → 163,0 RJ), BR-101 Rio-Santos (km 52,1 → 380,8).
+- **Autoban**: SP-348 Bandeirantes (13→173), SP-330 Anhanguera (11→158,5), SP-300 (62→101,1), SP-360 (61,9→81,1).
+- **Minas_SP**: BR-381 Fernão Dias (0→562,1).
+- **Sorocabana**: SP-270 Raposo (34→115,5), SP-075 Castelinho (0→15,1), SP-280 Marginais Castello.
+- **SPVias**: SP-280 Castello (129,6→315), SP-270 Raposo (168,2→295,4), SP-127 (105,9→213,1), SP-255 (237,7→288,1), SP-258 (222,8→342,4).
+- **ViaSul**: BR-101 RS (0→89,7), BR-290 Freeway (0→96,6), BR-386 (0→444,5), BR-448 (0→22,3).
+- **ViaCosteira**: BR-101 SC (244,6→465,1).
+- **RodoAnel**: SP-021 (0→29,3) — já existe.
 
-- Botão "Gerar ordens de serviço" no topo da página.
-- Cria uma OS por trecho planejado com `team_id`, `segment_id`, `scheduled_for` (data calculada a partir do "dia") e `priority` derivada do IRC.
-- Usa `useMutation` + invalidação de `work_orders`.
+Lat/lng dos endpoints preenchidos a partir das cidades citadas (São Paulo, Rio, Ubatuba, Torres, Osório, Palhoça, Belo Horizonte etc.). Serão coordenadas aproximadas das cidades-âncora.
 
-## 3. Alertas persistentes
+## 3. Marcadores de km sintéticos
 
-`useAlertsFeed` hoje é apenas in-memory (toasts). A tabela `alerts` já existe e é usada no dashboard.
+Como não temos geometria real das rodovias, gerar `km_markers` por interpolação linear entre `start` e `end` de cada rodovia, um marcador a cada N km (configurável, N=5 para rodovias longas, N=1 p/ curtas). Assim o mapa desenha uma polyline reta representativa e a lista lateral funciona.
 
-- Novo hook `useCreateAlert` para gravar alertas de novos trechos críticos.
-- Página `/alertas` já lê de `useAlerts` — validar que continua funcionando com os alertas gravados aqui.
-- Não mudar comportamento visual dos toasts; só espelhar no DB.
+Isto será **explicitamente sinalizado** no card da concessão como "traçado aproximado — georreferência real virá de dados oficiais". Nada de alegar geometria real quando é reta.
 
-## 4. Limpeza final dos mocks residuais
+## 4. Filtro por concessão/rodovia no Mapa Operacional
 
-- `src/data/mock.ts`: verificar se ainda exporta dados usados. Remover exports não-tipo.
-- `src/pages/Dashboard.tsx`: remover comentário "mock parametrizado" — o cálculo já é derivado de segments reais, só ajustar wording.
-- `src/pages/Previsoes.tsx`: manter (é modelo determinístico legítimo baseado em segments + clima reais), mas trocar o comentário `mock determinístico` por `heurístico determinístico` para não induzir erro na leitura do código.
+- Novo overlay no topo (ou dentro do painel "Camadas"): dropdown "Concessão" + dropdown "Rodovia".
+- Ao selecionar, `Mapa.tsx` filtra `km_markers` e (opcionalmente) `segments` daquela rodovia e chama `fitBounds`.
+- Adicionar `useHighways()` em `useVegiaData.ts`.
+- `useKmMarkers(rodovia?)` aceita filtro opcional por rodovia.
+- Card "Resumo da malha" passa a mostrar nome da rodovia + concessão selecionada.
 
-## Fora do escopo desta rodada
+## 5. `GlobalFilters` (opcional, cross-page)
 
-- `ROI.tsx`: é uma calculadora paramétrica (usuário ajusta km/custo/redução). Continua como está.
-- `AnaliseCV.tsx` já lê `cv_results` do DB.
-- Substituir Groq/regras por ML real (mencionado no audit) — depende de infra externa.
+- Adicionar filtro global "Concessão" no `FiltersContext` para propagar Dashboard/Planejamento/Previsões. Se preferir escopo menor, deixamos apenas no Mapa nesta primeira leva.
+
+## Fora do escopo
+
+- Importar geometria real (KML/GeoJSON DNIT/Arteris) — grande, requer dados externos. Fica anotado como próximo passo.
+- Segmentar automaticamente cada rodovia em trechos com IRC/altura/NDVI reais. Manteremos os segmentos atuais no SP-021 e deixaremos as demais rodovias "sem segmentos" até que sejam cadastrados/importados.
+- Alterar Dashboard/Planejamento para consolidar por concessão (dependeria do item anterior).
 
 ## Ordem de execução
 
-1. Trocar `TEAMS` por hook em `Planejamento.tsx`.
-2. Adicionar geração de OS a partir do plano.
-3. Espelhar alertas críticos em `alerts` via `useCreateAlert`.
-4. Limpar comentários enganosos e checar `data/mock.ts`.
-5. Build automático valida a integração.
+1. `supabase--migration`: criar `highways`, colunas novas em `km_markers` e `segments`, RLS, GRANT.
+2. `supabase--insert`: seed `highways` (20 linhas) + `km_markers` interpolados.
+3. `useVegiaData.ts`: `useHighways`, ampliar `useKmMarkers(rodovia?)`.
+4. `Mapa.tsx`: seletor de concessão/rodovia, refazer filtragem.
+5. Ajustar `Sidebar`/`TopHeader` se necessário para mostrar rodovia ativa.
+6. Verificar build.
 
-## Detalhes técnicos
+## Confirmar antes de implementar
 
-- Nenhuma migração nova é necessária: `field_teams`, `work_orders` e `alerts` já existem com as colunas requeridas.
-- Priority mapping: IRC ≥ 75 → `critica`, ≥ 55 → `alta`, ≥ 35 → `media`, senão `baixa`.
-- `scheduled_for`: `hoje + dia (índice)` em ISO date.
-- Round-robin de equipes continua igual, só que iterando sobre `data ?? []` do hook.
+- Coordenadas de endpoints ficarão como aproximação de cidade (sem geometria real). OK?
+- Escopo do filtro: só no Mapa (rápido) ou global via `FiltersContext` (mais trabalho)?
