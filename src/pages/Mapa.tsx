@@ -192,6 +192,14 @@ const Mapa = () => {
                 )}
               </div>
             )}
+            <button
+              onClick={exportGeoJSON}
+              disabled={!currentHighway || kmMarkers.length === 0}
+              className="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-[12px] font-medium bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-smooth disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <Download className="h-3.5 w-3.5" />
+              Exportar GeoJSON
+            </button>
           </div>
 
           <div className="bg-background/90 backdrop-blur-md border border-border/50 rounded-xl p-4 shadow-card w-[240px]">
