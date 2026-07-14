@@ -156,8 +156,8 @@ const Mapa = () => {
           </Suspense>
         </div>
 
-        {/* Floating overlay: KPIs (top-left) */}
-        <div className="absolute top-4 left-4 z-[400] flex flex-col gap-3">
+        {/* Floating overlay: KPIs + Camadas + Legenda (left column, scrollable) */}
+        <div className="absolute top-4 left-4 bottom-6 z-[400] flex flex-col gap-3 overflow-y-auto pr-1 pb-1 [scrollbar-width:thin]">
           {/* Concession + highway selector */}
           <div className="bg-background/90 backdrop-blur-md border border-border/50 rounded-xl p-4 shadow-card w-[280px]">
             <div className="flex items-center justify-between mb-3">
