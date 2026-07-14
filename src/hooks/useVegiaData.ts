@@ -25,6 +25,7 @@ const mapSegment = (r: any): Segment => ({
   clausula: r.clausula,
   clauseFull: r.clause_full,
   ultimaRocada: r.ultima_rocada,
+  rodovia: r.rodovia ?? undefined,
   deadline: r.deadline ?? undefined,
   deadlineUrgent: r.deadline_urgent ?? false,
   notificationId: r.notification_id ?? undefined,
