@@ -8,8 +8,8 @@ import { TrendingUp, AlertTriangle, CalendarClock, Sparkles } from "lucide-react
 import { Skeleton } from "@/components/ui/skeleton";
 
 /**
- * Modelo preditivo (mock determinístico):
- * crescimento diário ~ baseline + chuva5d * fator + temperatura * fator
+ * Modelo preditivo (heurístico determinístico sobre dados reais de segments + clima):
+ * crescimento diário ~ baseline + chuva5d * fator + IRC * fator
  * probabilidade de criticidade = sigmoide(score IRC + dias passados * 0.6)
  */
 const HORIZONS = [7, 15, 30, 90] as const;
