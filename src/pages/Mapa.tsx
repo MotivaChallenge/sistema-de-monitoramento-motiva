@@ -156,10 +156,10 @@ const Mapa = () => {
           </Suspense>
         </div>
 
-        {/* Floating overlay: KPIs (top-left) */}
-        <div className="absolute top-4 left-4 z-[400] flex flex-col gap-3">
+        {/* Floating overlay: KPIs + Camadas + Legenda (left column, scrollable) */}
+        <div className="absolute top-4 left-4 bottom-6 z-[400] flex flex-col gap-3 overflow-y-auto pr-1 pb-1 [scrollbar-width:thin]">
           {/* Concession + highway selector */}
-          <div className="bg-background/90 backdrop-blur-md border border-border/50 rounded-xl p-4 shadow-card w-[280px]">
+          <div className="bg-background/90 backdrop-blur-md border border-border/50 rounded-xl p-4 shadow-card w-[280px] shrink-0">
             <div className="flex items-center justify-between mb-3">
               <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Concessão · Rodovia</span>
               <Network className="h-3.5 w-3.5 text-primary" />
@@ -202,7 +202,7 @@ const Mapa = () => {
             </button>
           </div>
 
-          <div className="bg-background/90 backdrop-blur-md border border-border/50 rounded-xl p-4 shadow-card w-[240px]">
+          <div className="bg-background/90 backdrop-blur-md border border-border/50 rounded-xl p-4 shadow-card w-[240px] shrink-0">
             <div className="flex items-center justify-between mb-3">
               <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Resumo da malha</span>
               <Route className="h-3.5 w-3.5 text-primary" />
@@ -257,11 +257,8 @@ const Mapa = () => {
               Mostrando {segments.length} de {segmentsRaw.length} segmentos filtrados.
             </div>
           )}
-        </div>
 
-        {/* Floating overlay: Legend & Layer controls (bottom-left) */}
-        <div className="absolute bottom-6 left-4 z-[400] flex flex-col gap-3">
-          <div className="bg-background/90 backdrop-blur-md border border-border/50 rounded-xl p-4 shadow-card w-[240px]">
+          <div className="bg-background/90 backdrop-blur-md border border-border/50 rounded-xl p-4 shadow-card w-[240px] shrink-0">
             <div className="flex items-center gap-2 mb-3 text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
               <Layers className="h-3.5 w-3.5" /> Camadas
             </div>
@@ -301,7 +298,7 @@ const Mapa = () => {
             </div>
           </div>
 
-          <div className="bg-background/90 backdrop-blur-md border border-border/50 rounded-xl p-4 shadow-card w-[240px]">
+          <div className="bg-background/90 backdrop-blur-md border border-border/50 rounded-xl p-4 shadow-card w-[240px] shrink-0">
             <div className="flex items-center gap-2 mb-3 text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
               <Activity className="h-3.5 w-3.5" /> Legenda
             </div>
