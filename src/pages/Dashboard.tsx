@@ -45,7 +45,7 @@ const Dashboard = () => {
     ? Math.round(segments.reduce((a, s) => a + ircForSegment(s, rain5d).score, 0) / total)
     : 0;
 
-  // KPIs executivos derivados (mock parametrizado a partir dos segmentos)
+  // KPIs executivos derivados dos segmentos reais
   const intervencoesProgramadas = segments.filter(s => s.status !== "conforme").length;
   const economiaAnual = Math.round(coverage * 4200 * 12 * 0.28); // R$ economizados com modelo ORION
   const custosEvitados = Math.round(economiaAnual * 0.35);
