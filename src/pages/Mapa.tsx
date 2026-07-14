@@ -4,7 +4,7 @@ import { useFilters } from "@/contexts/FiltersContext";
 import { GlobalFilters } from "@/components/vegia/GlobalFilters";
 import { MapPointSheet } from "@/components/vegia/MapPointSheet";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertTriangle, Activity, Inbox, Eye, Layers, Crosshair, Route, Network } from "lucide-react";
+import { AlertTriangle, Activity, Inbox, Eye, Layers, Crosshair, Route, Network, Download } from "lucide-react";
 import { useState, useMemo, lazy, Suspense } from "react";
 
 const OSMMap = lazy(() => import("@/components/vegia/OSMMap").then(m => ({ default: m.OSMMap })));
@@ -21,6 +21,74 @@ const Mapa = () => {
   const [showPolyline, setShowPolyline] = useState(true);
 
   const currentHighway = highways.find(h => h.code === selectedHighway);
+
+  const exportGeoJSON = () => {
+    if (!currentHighway) return;
+    const features: any[] = [];
+    if (kmMarkers.length > 1) {
+      features.push({
+        type: "Feature",
+        geometry: {
+          type: "LineString",
+          coordinates: kmMarkers.map(m => [m.lng, m.lat]),
+        },
+        properties: {
+          kind: "traçado",
+          rodovia: currentHighway.code,
+          nome: currentHighway.nome,
+          concessao: currentHighway.concessao,
+          km_inicio: currentHighway.km_inicio,
+          km_fim: currentHighway.km_fim,
+        },
+      });
+    }
+    kmMarkers.forEach(m => {
+      features.push({
+        type: "Feature",
+        geometry: { type: "Point", coordinates: [m.lng, m.lat] },
+        properties: { kind: "waypoint", rodovia: currentHighway.code, km: m.km },
+      });
+    });
+    segmentsRaw
+      .filter(s => (s.rodovia ?? "SP-021") === selectedHighway)
+      .forEach(s => {
+        const marker = kmMarkers.find(m => Math.round(m.km) === Math.round(s.kmStart));
+        if (!marker) return;
+        features.push({
+          type: "Feature",
+          geometry: { type: "Point", coordinates: [marker.lng, marker.lat] },
+          properties: {
+            kind: "segmento",
+            id: s.id,
+            km: s.km,
+            km_start: s.kmStart,
+            km_end: s.kmEnd,
+            tipo: s.tipo,
+            status: s.status,
+            ndvi: s.ndvi,
+            altura_cm: s.altura,
+            limite_cm: s.limite,
+            clausula: s.clausula,
+            ultima_rocada: s.ultimaRocada,
+          },
+        });
+      });
+    const geojson = {
+      type: "FeatureCollection",
+      name: `${currentHighway.code} - ${currentHighway.nome}`,
+      features,
+    };
+    const blob = new Blob([JSON.stringify(geojson, null, 2)], { type: "application/geo+json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${currentHighway.code}.geojson`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
   const highwaysByConcession = useMemo(() => {
     const map = new Map<string, typeof highways>();
     highways.forEach(h => {
@@ -124,6 +192,14 @@ const Mapa = () => {
                 )}
               </div>
             )}
+            <button
+              onClick={exportGeoJSON}
+              disabled={!currentHighway || kmMarkers.length === 0}
+              className="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-[12px] font-medium bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-smooth disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <Download className="h-3.5 w-3.5" />
+              Exportar GeoJSON
+            </button>
           </div>
 
           <div className="bg-background/90 backdrop-blur-md border border-border/50 rounded-xl p-4 shadow-card w-[240px]">
