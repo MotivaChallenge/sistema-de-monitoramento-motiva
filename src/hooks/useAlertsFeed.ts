@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Status } from "@/data/mock";
+import { Status } from "@/types/domain";
 
 export interface AlertFeedItem {
   id: string;

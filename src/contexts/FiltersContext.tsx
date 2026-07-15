@@ -1,5 +1,5 @@
 import { createContext, useContext, useMemo, useState, ReactNode, useCallback } from "react";
-import { Status } from "@/data/mock";
+import { Status } from "@/types/domain";
 
 export type StatusFilter = Status; // "critico" | "atencao" | "conforme"
 

@@ -1,4 +1,4 @@
-import type { Segment } from "@/data/mock";
+import type { Segment } from "@/types/domain";
 
 /**
  * IRC — Índice de Risco de Crescimento (0–100)

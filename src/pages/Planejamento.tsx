@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 const DAYS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 
@@ -107,10 +107,10 @@ const Planejamento = () => {
     },
     onSuccess: (n) => {
       qc.invalidateQueries({ queryKey: ["work_orders"] });
-      toast({ title: "Ordens geradas", description: `${n} ordens de serviço criadas com base no plano atual.` });
+      toast.success("Ordens geradas", { description: `${n} ordens de serviço criadas com base no plano atual.` });
     },
     onError: (e: any) => {
-      toast({ title: "Falha ao gerar OS", description: e.message ?? "Erro inesperado", variant: "destructive" });
+      toast.error("Falha ao gerar OS", { description: e.message ?? "Erro inesperado" });
     },
   });
 

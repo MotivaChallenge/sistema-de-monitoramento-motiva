@@ -1,4 +1,4 @@
-import { Status } from "@/data/mock";
+import { Status } from "@/types/domain";
 
 const map: Record<Status, { bg: string; text: string; label: string; dot: string }> = {
   critico:  { bg: "bg-destructive/10", text: "text-destructive", label: "CRÍTICO", dot: "bg-destructive" },
