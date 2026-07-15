@@ -327,6 +327,26 @@ const Mapa = () => {
                   Traçado da rodovia
                   <span className={`ml-auto h-2 w-2 rounded-full ${showPolyline ? "bg-primary" : "bg-muted"}`} />
                 </button>
+                {showPolyline && kmMarkers.length >= 2 && (
+                  <div className="px-1 pt-1 text-[10px] leading-relaxed">
+                    {routeLoading || routeFetching ? (
+                      <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+                        <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                        Ajustando traçado à malha viária…
+                      </span>
+                    ) : routeSource === "osrm" ? (
+                      <span className="inline-flex items-center gap-1.5 text-primary">
+                        <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                        Traçado alinhado à pista (OSRM).
+                      </span>
+                    ) : routeSource === "fallback" ? (
+                      <span className="inline-flex items-center gap-1.5 text-tertiary">
+                        <span className="h-1.5 w-1.5 rounded-full bg-tertiary" />
+                        Roteamento indisponível — exibindo waypoints interpolados.
+                      </span>
+                    ) : null}
+                  </div>
+                )}
               </div>
             </div>
           </div>
