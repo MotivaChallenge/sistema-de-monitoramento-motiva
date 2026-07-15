@@ -15,10 +15,12 @@ const Mapa = () => {
   const [selectedHighway, setSelectedHighway] = useState<string>("SP-021");
   const { data: segmentsRaw = [] } = useSegments();
   const { data: kmMarkers = [] } = useKmMarkers(selectedHighway);
-  const { data: routedLine } = useRoadRoute(
+  const { data: routed, isLoading: routeLoading, isFetching: routeFetching } = useRoadRoute(
     selectedHighway,
     useMemo(() => kmMarkers.map(m => ({ lat: m.lat, lng: m.lng })), [kmMarkers])
   );
+  const routedLine = routed?.line;
+  const routeSource = routed?.source;
   const { data: coverage = 0 } = useTotalCoverage();
   const { matches, activeCount } = useFilters();
   const [mapPoint, setMapPoint] = useState<{ lat: number; lng: number; label?: string } | null>(null);
