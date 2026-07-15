@@ -2,6 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 
 export interface Waypoint { lat: number; lng: number }
 
+export interface RoadRouteResult {
+  line: [number, number][];
+  source: "osrm" | "fallback";
+}
+
 /**
  * Snaps a sequence of waypoints to the actual road network using the public
  * OSRM demo server. Returns the routed geometry as [lat,lng] pairs, or the raw
@@ -17,7 +22,7 @@ export function useRoadRoute(code: string | undefined, waypoints: Waypoint[]) {
     staleTime: 1000 * 60 * 60,
     gcTime: 1000 * 60 * 60 * 6,
     retry: 1,
-    queryFn: async (): Promise<[number, number][]> => {
+    queryFn: async (): Promise<RoadRouteResult> => {
       const CHUNK = 80;
       const out: [number, number][] = [];
       try {
@@ -37,9 +42,12 @@ export function useRoadRoute(code: string | undefined, waypoints: Waypoint[]) {
           out.push(...line);
         }
         if (!out.length) throw new Error("no segments routed");
-        return out;
+        return { line: out, source: "osrm" };
       } catch {
-        return waypoints.map(w => [w.lat, w.lng] as [number, number]);
+        return {
+          line: waypoints.map(w => [w.lat, w.lng] as [number, number]),
+          source: "fallback",
+        };
       }
     },
   });
