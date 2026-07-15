@@ -1,5 +1,6 @@
 import { TopHeader } from "@/components/vegia/TopHeader";
 import { useSegments, useKmMarkers, useTotalCoverage, useHighways } from "@/hooks/useVegiaData";
+import { useRoadRoute } from "@/hooks/useRoadRoute";
 import { useFilters } from "@/contexts/FiltersContext";
 import { GlobalFilters } from "@/components/vegia/GlobalFilters";
 import { MapPointSheet } from "@/components/vegia/MapPointSheet";
@@ -14,6 +15,10 @@ const Mapa = () => {
   const [selectedHighway, setSelectedHighway] = useState<string>("SP-021");
   const { data: segmentsRaw = [] } = useSegments();
   const { data: kmMarkers = [] } = useKmMarkers(selectedHighway);
+  const { data: routedLine } = useRoadRoute(
+    selectedHighway,
+    useMemo(() => kmMarkers.map(m => ({ lat: m.lat, lng: m.lng })), [kmMarkers])
+  );
   const { data: coverage = 0 } = useTotalCoverage();
   const { matches, activeCount } = useFilters();
   const [mapPoint, setMapPoint] = useState<{ lat: number; lng: number; label?: string } | null>(null);
@@ -113,20 +118,46 @@ const Mapa = () => {
   const conformidadePct = total ? Math.round((conformes / total) * 100) : 0;
 
   const polyline = useMemo<[number, number][]>(
-    () => (showPolyline ? kmMarkers.map(m => [m.lat, m.lng] as [number, number]) : []),
-    [kmMarkers, showPolyline]
+    () =>
+      showPolyline
+        ? (routedLine && routedLine.length > 1
+            ? routedLine
+            : kmMarkers.map(m => [m.lat, m.lng] as [number, number]))
+        : [],
+    [kmMarkers, routedLine, showPolyline]
   );
 
   const segmentMarkers = useMemo(() => {
     if (!kmMarkers.length) return [];
-    const byKm = new Map(kmMarkers.map(m => [Math.round(m.km), m] as const));
+    // For each segment, find the closest km_marker (by km value) and
+    // interpolate a lat/lng between it and its neighbor so every segment
+    // renders on the road even when km values don't align exactly.
+    const sorted = [...kmMarkers].sort((a, b) => a.km - b.km);
+    const locate = (km: number) => {
+      if (!sorted.length) return null;
+      if (km <= sorted[0].km) return { lat: sorted[0].lat, lng: sorted[0].lng };
+      if (km >= sorted[sorted.length - 1].km)
+        return { lat: sorted[sorted.length - 1].lat, lng: sorted[sorted.length - 1].lng };
+      for (let i = 0; i < sorted.length - 1; i++) {
+        const a = sorted[i];
+        const b = sorted[i + 1];
+        if (km >= a.km && km <= b.km) {
+          const t = b.km === a.km ? 0 : (km - a.km) / (b.km - a.km);
+          return {
+            lat: a.lat + (b.lat - a.lat) * t,
+            lng: a.lng + (b.lng - a.lng) * t,
+          };
+        }
+      }
+      return null;
+    };
     return segments
       .map(s => {
-        const m = byKm.get(Math.round(s.kmStart));
-        if (!m) return null;
+        const p = locate(s.kmStart);
+        if (!p) return null;
         return {
-          lat: m.lat,
-          lng: m.lng,
+          lat: p.lat,
+          lng: p.lng,
           status: s.status as "critico" | "atencao" | "conforme",
           label: `${s.km} · ${s.tipo}`,
         };
