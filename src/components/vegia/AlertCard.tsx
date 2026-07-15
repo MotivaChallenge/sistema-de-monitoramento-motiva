@@ -1,4 +1,4 @@
-import { Segment } from "@/data/mock";
+import { Segment } from "@/types/domain";
 import { ComplianceBadge } from "./ComplianceBadge";
 import { useNavigate } from "react-router-dom";
 import { ChevronRight } from "lucide-react";

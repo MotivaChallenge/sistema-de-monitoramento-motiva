@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Segment, Status } from "@/data/mock";
+import { Segment, Status } from "@/types/domain";
 import { StatusDot } from "./ComplianceBadge";
 import { ClausePill } from "./MonoClause";
 import { Search, ArrowUpDown, Download, X } from "lucide-react";
