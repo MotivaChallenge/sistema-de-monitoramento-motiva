@@ -1,73 +1,83 @@
+## Situação atual
 
-# Cadastro das rodovias Motiva no Mapa Operacional
+Já concluídos nos últimos ciclos:
+- `src/data/mock.ts` → `src/types/domain.ts` (imports migrados)
+- `canonical` / `og:url` atualizados para `sistema-de-monitoramento-motiva.lovable.app`
+- `Planejamento.tsx` padronizado em `sonner`
 
-Hoje o sistema só tem uma rodovia: **SP-021 (Rodoanel Oeste)**, com 30 marcadores de km em `km_markers`. `segments` não tem coluna de rodovia. Precisamos suportar as 8 concessões Motiva (~20 rodovias) e deixá-las selecionáveis no mapa.
+Este plano trata os itens **restantes** do QA, em ordem de impacto.
 
-## 1. Modelo de dados (migration)
+## Fase 1 — Acessibilidade e estados de erro (rápido, alto valor)
 
-- Nova tabela `public.highways`:
-  - `code` (ex: `SP-348`, `BR-116-DUTRA`) — PK
-  - `nome` (ex: "Rodovia dos Bandeirantes")
-  - `concessao` (ex: "Motiva Autoban")
-  - `uf_inicio`, `uf_fim`
-  - `km_inicio`, `km_fim` (numeric)
-  - `start_lat`, `start_lng`, `end_lat`, `end_lng`
-  - `cor` (token semântico p/ legenda, ex: `primary`, `tertiary`, `turquoise`…)
-- Alterar `km_markers`:
-  - `rodovia` já existe (text). Adicionar FK → `highways.code` (com `ON DELETE CASCADE`).
-- Alterar `segments`:
-  - Adicionar `rodovia text` FK → `highways.code` (nullable, default `'SP-021'` para as linhas atuais).
-- GRANTs + RLS: leitura pública em `highways`; escrita só `admin`/`operator` (mesmo padrão de `segments`).
+1. **`aria-label` em botões-ícone** nos componentes:
+   - `Sidebar.tsx`, `TopHeader.tsx`, `MapPointSheet.tsx`, `Mapa.tsx` (toggles de camada, close, expand), `NotificationsPanel.tsx`, `AlertCard.tsx`.
+2. **Estados de erro visuais** nas páginas que hoje só têm `Skeleton`:
+   - `Alertas.tsx`, `Previsoes.tsx`, `ROI.tsx`, `Relatorio.tsx`, `Equipes.tsx`, `OrdensServico.tsx`.
+   - Criar componente reutilizável `src/components/vegia/QueryErrorState.tsx` (mensagem + botão "Tentar novamente" chamando `refetch`).
+3. **Remover `console.log`** residuais em código de produção (varredura com `rg "console\."`).
 
-## 2. Seed das concessões
+## Fase 2 — OSRM proxy com cache
 
-Inserir as 20 rodovias descritas pelo usuário no `INSERT` inicial. Cobertura por concessão:
+4. Edge function `road-route`:
+   - Recebe `{ code, waypoints }`.
+   - Consulta cache em nova tabela `road_route_cache` (colunas: `code`, `waypoints_hash`, `line jsonb`, `source`, `updated_at`).
+   - Miss → chama OSRM demo, grava, retorna. Hit → retorna direto.
+5. Atualizar `useRoadRoute.ts` para chamar `supabase.functions.invoke("road-route", …)` em vez do fetch direto. Fallback (waypoints interpolados) mantido.
+6. Migração SQL com `GRANT` + RLS (leitura pública/auth; escrita só service role).
 
-- **RioSP**: BR-116 Dutra (km 230,6 SP → 163,0 RJ), BR-101 Rio-Santos (km 52,1 → 380,8).
-- **Autoban**: SP-348 Bandeirantes (13→173), SP-330 Anhanguera (11→158,5), SP-300 (62→101,1), SP-360 (61,9→81,1).
-- **Minas_SP**: BR-381 Fernão Dias (0→562,1).
-- **Sorocabana**: SP-270 Raposo (34→115,5), SP-075 Castelinho (0→15,1), SP-280 Marginais Castello.
-- **SPVias**: SP-280 Castello (129,6→315), SP-270 Raposo (168,2→295,4), SP-127 (105,9→213,1), SP-255 (237,7→288,1), SP-258 (222,8→342,4).
-- **ViaSul**: BR-101 RS (0→89,7), BR-290 Freeway (0→96,6), BR-386 (0→444,5), BR-448 (0→22,3).
-- **ViaCosteira**: BR-101 SC (244,6→465,1).
-- **RodoAnel**: SP-021 (0→29,3) — já existe.
+## Fase 3 — Tipagem e consistência
 
-Lat/lng dos endpoints preenchidos a partir das cidades citadas (São Paulo, Rio, Ubatuba, Torres, Osório, Palhoça, Belo Horizonte etc.). Serão coordenadas aproximadas das cidades-âncora.
+7. Substituir `any` restantes por tipos concretos em:
+   - `useVegiaData.ts` (mapeadores `mapSegment`, `mapCv`, `mapReport`…),
+   - `Planejamento.tsx`, `Mapa.tsx`, `VisionAnalyzer.tsx`.
+8. Padronizar demais toasts em `sonner` (auditar `@/hooks/use-toast` fora dos shims shadcn).
 
-## 3. Marcadores de km sintéticos
+## Fase 4 — Landing e Configurações
 
-Como não temos geometria real das rodovias, gerar `km_markers` por interpolação linear entre `start` e `end` de cada rodovia, um marcador a cada N km (configurável, N=5 para rodovias longas, N=1 p/ curtas). Assim o mapa desenha uma polyline reta representativa e a lista lateral funciona.
+9. `src/pages/Index.tsx`: rotular explicitamente KPIs demo (`Badge "Demonstração"`) OU trocar por agregações reais das tabelas (`segments`, `alerts`, `work_orders`). Preferência: rotular como demo — é landing institucional.
+10. `Configuracoes.tsx`: remover toggle "Resumo diário por e-mail (Em breve)" até existir edge function de e-mail, para não prometer feature inexistente.
 
-Isto será **explicitamente sinalizado** no card da concessão como "traçado aproximado — georreferência real virá de dados oficiais". Nada de alegar geometria real quando é reta.
+## Fase 5 — Testes mínimos
 
-## 4. Filtro por concessão/rodovia no Mapa Operacional
+11. Adicionar em `src/test/`:
+    - `auth.test.tsx` — render + fluxo básico (Testing Library, mocks do supabase).
+    - `mapa.test.tsx` — render sem crash, presença de KPIs.
+    - `ordens-servico.test.tsx` — criar OS (form submit mockado).
+12. Sem cobertura E2E real (Playwright) nesta fase — apenas smoke tests unit/integration com Vitest.
 
-- Novo overlay no topo (ou dentro do painel "Camadas"): dropdown "Concessão" + dropdown "Rodovia".
-- Ao selecionar, `Mapa.tsx` filtra `km_markers` e (opcionalmente) `segments` daquela rodovia e chama `fitBounds`.
-- Adicionar `useHighways()` em `useVegiaData.ts`.
-- `useKmMarkers(rodovia?)` aceita filtro opcional por rodovia.
-- Card "Resumo da malha" passa a mostrar nome da rodovia + concessão selecionada.
+## Fase 6 — Polimento (opcional)
 
-## 5. `GlobalFilters` (opcional, cross-page)
+13. `NotFound.tsx`: adicionar link "Voltar ao Mapa" e `console.warn` da rota inválida.
+14. Gerar `sitemap.xml` no build via `scripts/generate-sitemap.ts` (rotas públicas: `/`, `/auth`).
+15. `Integracoes.tsx`: mover roadmap estático para tabela `integrations_roadmap` (com RLS + GRANTs).
 
-- Adicionar filtro global "Concessão" no `FiltersContext` para propagar Dashboard/Planejamento/Previsões. Se preferir escopo menor, deixamos apenas no Mapa nesta primeira leva.
+## Fora de escopo deste plano
 
-## Fora do escopo
+- Importar shapefiles oficiais DER-SP/ANTT (depende de fonte de dados externa — abrir tarefa separada quando o usuário disponibilizar arquivos).
+- Bulk export PDF em `Relatorio` (feature nova, não QA).
+- Paginação server-side em `Equipes` / `OrdensServico` (não necessário no volume atual).
 
-- Importar geometria real (KML/GeoJSON DNIT/Arteris) — grande, requer dados externos. Fica anotado como próximo passo.
-- Segmentar automaticamente cada rodovia em trechos com IRC/altura/NDVI reais. Manteremos os segmentos atuais no SP-021 e deixaremos as demais rodovias "sem segmentos" até que sejam cadastrados/importados.
-- Alterar Dashboard/Planejamento para consolidar por concessão (dependeria do item anterior).
+## Detalhes técnicos
 
-## Ordem de execução
+- **Cache OSRM**: hash `sha256(JSON.stringify(waypoints))` truncado em 16 chars como chave; TTL não necessário (traçado de rodovia é estável).
+- **QueryErrorState**: props `{ error: unknown, onRetry: () => void, message?: string }`, usa `AlertTriangle` do lucide + botão `outline`.
+- **Migração `road_route_cache`**:
+  ```sql
+  CREATE TABLE public.road_route_cache (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    code text NOT NULL,
+    waypoints_hash text NOT NULL,
+    line jsonb NOT NULL,
+    source text NOT NULL,
+    updated_at timestamptz NOT NULL DEFAULT now(),
+    UNIQUE(code, waypoints_hash)
+  );
+  GRANT SELECT ON public.road_route_cache TO authenticated, anon;
+  GRANT ALL ON public.road_route_cache TO service_role;
+  ALTER TABLE public.road_route_cache ENABLE ROW LEVEL SECURITY;
+  CREATE POLICY "public read" ON public.road_route_cache FOR SELECT USING (true);
+  ```
 
-1. `supabase--migration`: criar `highways`, colunas novas em `km_markers` e `segments`, RLS, GRANT.
-2. `supabase--insert`: seed `highways` (20 linhas) + `km_markers` interpolados.
-3. `useVegiaData.ts`: `useHighways`, ampliar `useKmMarkers(rodovia?)`.
-4. `Mapa.tsx`: seletor de concessão/rodovia, refazer filtragem.
-5. Ajustar `Sidebar`/`TopHeader` se necessário para mostrar rodovia ativa.
-6. Verificar build.
+## Sequência sugerida de execução
 
-## Confirmar antes de implementar
-
-- Coordenadas de endpoints ficarão como aproximação de cidade (sem geometria real). OK?
-- Escopo do filtro: só no Mapa (rápido) ou global via `FiltersContext` (mais trabalho)?
+Fase 1 → Fase 2 → Fase 3 → Fase 4 → Fase 5 → Fase 6. Fase 1 sozinha já entrega muito valor perceptível ao usuário.
