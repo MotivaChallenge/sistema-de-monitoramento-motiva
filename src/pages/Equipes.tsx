@@ -42,7 +42,7 @@ const emptyForm: FormState = {
 };
 
 const Equipes = () => {
-  const { data: teams = [], isLoading } = useFieldTeams();
+  const { data: teams = [], isLoading, isError, refetch } = useFieldTeams();
   const { canEdit, isAdmin } = useAuth();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
@@ -146,6 +146,16 @@ const Equipes = () => {
               <tbody className="divide-y divide-border/40">
                 {isLoading && (
                   <tr><td colSpan={canEdit ? 8 : 7} className="px-5 py-6 text-center text-muted-foreground">Carregando…</td></tr>
+                )}
+                {isError && (
+                  <tr><td colSpan={canEdit ? 8 : 7} className="px-5 py-6 text-center">
+                    <button
+                      onClick={() => refetch()}
+                      className="inline-flex items-center gap-2 text-destructive hover:underline text-[12px] font-semibold"
+                    >
+                      Falha ao carregar equipes — tentar novamente
+                    </button>
+                  </td></tr>
                 )}
                 {!isLoading && teams.length === 0 && (
                   <tr><td colSpan={canEdit ? 8 : 7} className="px-5 py-6 text-center text-muted-foreground">Nenhuma equipe cadastrada.</td></tr>
