@@ -6,14 +6,15 @@ import { useSegments, useInspectionReports, useInspectionMeasurements } from "@/
 import { FileDown, ShieldCheck, FileX } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
+import { QueryErrorState } from "@/components/vegia/QueryErrorState";
 import { useFilters } from "@/contexts/FiltersContext";
 import { GlobalFilters } from "@/components/vegia/GlobalFilters";
 import { generateConformityPdf } from "@/lib/pdf-export";
 import { useAuth } from "@/hooks/useAuth";
 
 const Relatorio = () => {
-  const { data: segmentsRaw = [], isLoading: loadingSegs } = useSegments();
-  const { data: reports = [], isLoading: loadingReports } = useInspectionReports();
+  const { data: segmentsRaw = [], isLoading: loadingSegs, isError: errorSegs, refetch: refetchSegs } = useSegments();
+  const { data: reports = [], isLoading: loadingReports, isError: errorReports, refetch: refetchReports } = useInspectionReports();
   const { matches } = useFilters();
   const { user } = useAuth();
   const segments = useMemo(
@@ -122,7 +123,12 @@ const Relatorio = () => {
         </div>
       </div>
 
-      {loadingReports || loadingSegs ? (
+      {errorSegs || errorReports ? (
+        <QueryErrorState
+          onRetry={() => { refetchSegs(); refetchReports(); }}
+          message="Não conseguimos carregar os relatórios de conformidade."
+        />
+      ) : loadingReports || loadingSegs ? (
         <div className="space-y-5">
           <div className="grid grid-cols-4 gap-5"><Skeleton className="h-28" /><Skeleton className="h-28" /><Skeleton className="h-28" /><Skeleton className="h-28" /></div>
           <Skeleton className="h-96 w-full" />
