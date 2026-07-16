@@ -47,6 +47,7 @@ export const NotificationsPanel = () => {
       <PopoverTrigger asChild>
         <button
           title="Notificações"
+          aria-label="Notificações"
           className="relative h-9 w-9 rounded-full hover:bg-surface-high flex items-center justify-center text-muted-foreground"
         >
           <Bell className="h-[18px] w-[18px]" />
