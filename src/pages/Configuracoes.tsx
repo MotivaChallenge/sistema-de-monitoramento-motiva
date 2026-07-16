@@ -206,9 +206,6 @@ const Configuracoes = () => {
               <Field label="Alertas de trechos em atenção">
                 <Switch checked={draft.notify_atencao} onCheckedChange={v => setDraft({ ...draft, notify_atencao: v })} />
               </Field>
-              <Field label="Receber resumo diário por e-mail" hint="Em breve. Por enquanto serve apenas como preferência registrada.">
-                <Switch checked={draft.notify_email} onCheckedChange={v => setDraft({ ...draft, notify_email: v })} />
-              </Field>
             </Section>
           </div>
         )}
