@@ -123,7 +123,12 @@ const Index = () => {
                 <Radio className="h-3 w-3 text-primary motion-safe:animate-pulse" />
                 Centro de operações ORION
               </div>
-              <div className="text-[10px] font-mono text-sidebar-foreground/40">v2.4</div>
+              <div className="flex items-center gap-2">
+                <span className="text-[9px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-tertiary/20 text-tertiary border border-tertiary/30">
+                  Demonstração
+                </span>
+                <div className="text-[10px] font-mono text-sidebar-foreground/40">v2.4</div>
+              </div>
             </div>
 
             <div className="p-5 space-y-4">
