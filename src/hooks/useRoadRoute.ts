@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface Waypoint { lat: number; lng: number }
 
@@ -8,12 +9,9 @@ export interface RoadRouteResult {
 }
 
 /**
- * Snaps a sequence of waypoints to the actual road network using the public
- * OSRM demo server. Returns the routed geometry as [lat,lng] pairs, or the raw
- * waypoints if the routing service is unavailable.
- *
- * OSRM accepts up to ~100 coordinates per request. We chunk with a 1-point
- * overlap so consecutive legs join seamlessly.
+ * Snaps waypoints to the road network via the `road-route` edge function,
+ * which caches OSRM results in the database so subsequent loads (and users)
+ * don't hit the public OSRM demo. Falls back to raw waypoints on error.
  */
 export function useRoadRoute(code: string | undefined, waypoints: Waypoint[]) {
   return useQuery({
@@ -23,26 +21,15 @@ export function useRoadRoute(code: string | undefined, waypoints: Waypoint[]) {
     gcTime: 1000 * 60 * 60 * 6,
     retry: 1,
     queryFn: async (): Promise<RoadRouteResult> => {
-      const CHUNK = 80;
-      const out: [number, number][] = [];
       try {
-        for (let i = 0; i < waypoints.length - 1; i += CHUNK - 1) {
-          const slice = waypoints.slice(i, i + CHUNK);
-          if (slice.length < 2) break;
-          const coords = slice.map(w => `${w.lng},${w.lat}`).join(";");
-          const url = `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`;
-          const res = await fetch(url);
-          if (!res.ok) throw new Error(`OSRM ${res.status}`);
-          const json = await res.json();
-          const line: [number, number][] | undefined = json?.routes?.[0]?.geometry?.coordinates?.map(
-            (c: [number, number]) => [c[1], c[0]] as [number, number]
-          );
-          if (!line?.length) throw new Error("empty route");
-          if (out.length && line.length) line.shift(); // avoid duplicate join point
-          out.push(...line);
-        }
-        if (!out.length) throw new Error("no segments routed");
-        return { line: out, source: "osrm" };
+        const { data, error } = await supabase.functions.invoke("road-route", {
+          body: { code, waypoints },
+        });
+        if (error) throw error;
+        const line = (data?.line ?? []) as [number, number][];
+        const source = (data?.source ?? "fallback") as "osrm" | "fallback";
+        if (!line.length) throw new Error("empty route");
+        return { line, source };
       } catch {
         return {
           line: waypoints.map(w => [w.lat, w.lng] as [number, number]),
