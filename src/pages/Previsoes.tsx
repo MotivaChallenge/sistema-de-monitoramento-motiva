@@ -6,6 +6,7 @@ import { useMemo } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, BarChart, Bar, Legend } from "recharts";
 import { TrendingUp, AlertTriangle, CalendarClock, Sparkles } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { QueryErrorState } from "@/components/vegia/QueryErrorState";
 
 /**
  * Modelo preditivo (heurístico determinístico sobre dados reais de segments + clima):
@@ -22,7 +23,7 @@ function projectGrowth(baseHeightCm: number, days: number, rain5d: number, ircSc
 }
 
 const Previsoes = () => {
-  const { data: segmentsRaw = [], isLoading } = useSegments();
+  const { data: segmentsRaw = [], isLoading, isError, refetch } = useSegments();
   const { data: weather } = useWeather();
   const rain5d = weather?.summary.totalRainMm ?? 8;
 
@@ -96,7 +97,9 @@ const Previsoes = () => {
             <h2 className="text-[14px] font-semibold tracking-wide uppercase">Curva de crescimento e probabilidade de criticidade (90 dias)</h2>
             <span className="text-[11px] text-muted-foreground bg-surface-high px-3 py-1.5 rounded-full">Recalibrado com chuva acumulada · {rain5d.toFixed(0)} mm</span>
           </div>
-          {isLoading ? <Skeleton className="h-72 w-full" /> : (
+          {isError ? (
+            <QueryErrorState onRetry={() => refetch()} message="Falha ao carregar dados dos segmentos para projeção." />
+          ) : isLoading ? <Skeleton className="h-72 w-full" /> : (
             <ResponsiveContainer width="100%" height={320}>
               <LineChart data={timeline}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />

@@ -52,7 +52,7 @@ const emptyForm: FormState = {
 const nextCode = () => `OS-${Date.now().toString(36).toUpperCase().slice(-6)}`;
 
 const OrdensServico = () => {
-  const { data: orders = [], isLoading } = useWorkOrders();
+  const { data: orders = [], isLoading, isError, refetch } = useWorkOrders();
   const { data: teams = [] } = useFieldTeams();
   const { data: segments = [] } = useSegments();
   const { canEdit, isAdmin, user } = useAuth();
@@ -174,6 +174,12 @@ const OrdensServico = () => {
               </thead>
               <tbody className="divide-y divide-border/40">
                 {isLoading && <tr><td colSpan={8} className="px-5 py-6 text-center text-muted-foreground">Carregando…</td></tr>}
+                {isError && <tr><td colSpan={8} className="px-5 py-6 text-center">
+                  <button
+                    onClick={() => refetch()}
+                    className="inline-flex items-center gap-2 text-destructive hover:underline text-[12px] font-semibold"
+                  >Falha ao carregar ordens de serviço — tentar novamente</button>
+                </td></tr>}
                 {!isLoading && orders.length === 0 && <tr><td colSpan={8} className="px-5 py-6 text-center text-muted-foreground">Nenhuma OS emitida.</td></tr>}
                 {orders.map(o => {
                   const seg = segMap.get(o.segment_id);

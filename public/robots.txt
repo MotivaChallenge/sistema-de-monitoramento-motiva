@@ -13,4 +13,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://vegiamap-conformance-hub.lovable.app/sitemap.xml
+Sitemap: https://sistema-de-monitoramento-motiva.lovable.app/sitemap.xml

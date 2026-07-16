@@ -5,12 +5,13 @@ import { useAlertsFeed, markAllSeen } from "@/hooks/useAlertsFeed";
 import { useFilters } from "@/contexts/FiltersContext";
 import { ComplianceBadge } from "@/components/vegia/ComplianceBadge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { QueryErrorState } from "@/components/vegia/QueryErrorState";
 import { useNavigate } from "react-router-dom";
 import { BellRing, CheckCheck } from "lucide-react";
 import { useEffect } from "react";
 
 const Alertas = () => {
-  const { data: feed = [], isLoading } = useAlertsFeed();
+  const { data: feed = [], isLoading, isError, refetch } = useAlertsFeed();
   const { matches } = useFilters();
   const navigate = useNavigate();
 
@@ -50,7 +51,9 @@ const Alertas = () => {
         <GlobalFilters />
 
         <div className="rounded-xl border border-border bg-surface-low overflow-hidden">
-          {isLoading ? (
+          {isError ? (
+            <QueryErrorState onRetry={() => refetch()} message="Não conseguimos carregar os alertas em tempo real." />
+          ) : isLoading ? (
             <div className="p-4 space-y-2">
               {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-14 w-full" />)}
             </div>

@@ -308,6 +308,36 @@ export type Database = {
         }
         Relationships: []
       }
+      road_route_cache: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          line: Json
+          source: string
+          updated_at: string
+          waypoints_hash: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          line: Json
+          source: string
+          updated_at?: string
+          waypoints_hash: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          line?: Json
+          source?: string
+          updated_at?: string
+          waypoints_hash?: string
+        }
+        Relationships: []
+      }
       rocada_classification: {
         Row: {
           area_m2: number | null
