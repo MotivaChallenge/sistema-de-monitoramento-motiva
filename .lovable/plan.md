@@ -1,83 +1,58 @@
-## Situação atual
+## Objetivo
 
-Já concluídos nos últimos ciclos:
-- `src/data/mock.ts` → `src/types/domain.ts` (imports migrados)
-- `canonical` / `og:url` atualizados para `sistema-de-monitoramento-motiva.lovable.app`
-- `Planejamento.tsx` padronizado em `sonner`
+Aumentar densidade e realismo dos dados operacionais no mapa, cobrindo todas as 20 rodovias das 8 concessões Motiva com segmentos, marcos KM e traçados refinados.
 
-Este plano trata os itens **restantes** do QA, em ordem de impacto.
+## Escopo por rodovia
 
-## Fase 1 — Acessibilidade e estados de erro (rápido, alto valor)
+Para cada uma das 20 rodovias (incluindo Rodoanel SP-021):
 
-1. **`aria-label` em botões-ícone** nos componentes:
-   - `Sidebar.tsx`, `TopHeader.tsx`, `MapPointSheet.tsx`, `Mapa.tsx` (toggles de camada, close, expand), `NotificationsPanel.tsx`, `AlertCard.tsx`.
-2. **Estados de erro visuais** nas páginas que hoje só têm `Skeleton`:
-   - `Alertas.tsx`, `Previsoes.tsx`, `ROI.tsx`, `Relatorio.tsx`, `Equipes.tsx`, `OrdensServico.tsx`.
-   - Criar componente reutilizável `src/components/vegia/QueryErrorState.tsx` (mensagem + botão "Tentar novamente" chamando `refetch`).
-3. **Remover `console.log`** residuais em código de produção (varredura com `rg "console\."`).
+- **Segmentos**: passar de ~5 para **15–20 segmentos** distribuídos ao longo da extensão (kmStart/kmEnd interpolados entre `km_inicio` e `km_fim`)
+- **km_markers**: gerar marcos a cada **5 km** com lat/lng interpolados no traçado
+- **Waypoints**: adicionar 4–8 pontos intermediários adicionais em cada rodovia (hoje 2–3), para o OSRM produzir curvas mais fiéis à pista antes do snapping
 
-## Fase 2 — OSRM proxy com cache
+## Perfil por concessão (balanceado)
 
-4. Edge function `road-route`:
-   - Recebe `{ code, waypoints }`.
-   - Consulta cache em nova tabela `road_route_cache` (colunas: `code`, `waypoints_hash`, `line jsonb`, `source`, `updated_at`).
-   - Miss → chama OSRM demo, grava, retorna. Hit → retorna direto.
-5. Atualizar `useRoadRoute.ts` para chamar `supabase.functions.invoke("road-route", …)` em vez do fetch direto. Fallback (waypoints interpolados) mantido.
-6. Migração SQL com `GRANT` + RLS (leitura pública/auth; escrita só service role).
+Cada concessão recebe uma "personalidade" operacional distinta:
 
-## Fase 3 — Tipagem e consistência
+| Concessão | Perfil | Distribuição aproximada |
+|---|---|---|
+| Motiva RioSP (Dutra, Rio-Santos) | Alta densidade urbana, mais crítico | 50% conforme / 30% atenção / 20% crítico |
+| Motiva SPVias | Interior estável | 75% conforme / 20% atenção / 5% crítico |
+| Motiva AutoBAn (Bandeirantes/Anhanguera) | Referência operacional | 80% conforme / 15% atenção / 5% crítico |
+| Motiva Litoral Sul (Imigrantes/Anchieta) | Mata Atlântica, crescimento rápido | 45% conforme / 35% atenção / 20% crítico |
+| Motiva Centrovias | Padrão | 65% conforme / 25% atenção / 10% crítico |
+| Motiva Intervias | Rural moderado | 70% conforme / 22% atenção / 8% crítico |
+| Motiva ViaOeste (Castello/Raposo) | Metropolitano | 60% conforme / 28% atenção / 12% crítico |
+| Rodoanel (SP-021) | Preserva reais + expande faixas ainda não cobertas | mantém reais, adiciona ~10 novos |
 
-7. Substituir `any` restantes por tipos concretos em:
-   - `useVegiaData.ts` (mapeadores `mapSegment`, `mapCv`, `mapReport`…),
-   - `Planejamento.tsx`, `Mapa.tsx`, `VisionAnalyzer.tsx`.
-8. Padronizar demais toasts em `sonner` (auditar `@/hooks/use-toast` fora dos shims shadcn).
+Cada segmento recebe: `tipo` (Gramínea/Arbusto/Trepadeira/Palha), `ndvi` coerente com status, `altura` vs `limite`, `clausula` (5.2.1, 5.2.3, 6.1.2, etc.), `ultima_rocada`, `deadline` (quando crítico).
 
-## Fase 4 — Landing e Configurações
+## Dados relacionados
 
-9. `src/pages/Index.tsx`: rotular explicitamente KPIs demo (`Badge "Demonstração"`) OU trocar por agregações reais das tabelas (`segments`, `alerts`, `work_orders`). Preferência: rotular como demo — é landing institucional.
-10. `Configuracoes.tsx`: remover toggle "Resumo diário por e-mail (Em breve)" até existir edge function de e-mail, para não prometer feature inexistente.
+- **rocada_classification**: gerar 40–60 polígonos mockados distribuídos pelas concessões (classes: "Realizada", "Programada", "Atrasada")
+- **segment_ndvi_history**: 7 pontos históricos para cada novo segmento crítico/atenção (para o gráfico de tendência funcionar)
 
-## Fase 5 — Testes mínimos
+## Entregáveis técnicos
 
-11. Adicionar em `src/test/`:
-    - `auth.test.tsx` — render + fluxo básico (Testing Library, mocks do supabase).
-    - `mapa.test.tsx` — render sem crash, presença de KPIs.
-    - `ordens-servico.test.tsx` — criar OS (form submit mockado).
-12. Sem cobertura E2E real (Playwright) nesta fase — apenas smoke tests unit/integration com Vitest.
+1. **Migração de dados** (`supabase--insert`) em blocos por concessão:
+   - INSERT em `highways` (atualização de waypoints via coluna dedicada, se existir — senão apenas re-seed dos segments/markers)
+   - INSERT em `segments` (novos ~300 registros no total)
+   - INSERT em `km_markers` (~800 marcos, a cada 5 km)
+   - INSERT em `segment_ndvi_history` (~500 pontos)
+   - INSERT em `rocada_classification` (~50 polígonos)
 
-## Fase 6 — Polimento (opcional)
+2. **Ajuste de waypoints intermediários** em `src/pages/Mapa.tsx` (ou hook que constrói o input do OSRM): adicionar pontos por rodovia para melhorar o traçado quando OSRM cai em fallback.
 
-13. `NotFound.tsx`: adicionar link "Voltar ao Mapa" e `console.warn` da rota inválida.
-14. Gerar `sitemap.xml` no build via `scripts/generate-sitemap.ts` (rotas públicas: `/`, `/auth`).
-15. `Integracoes.tsx`: mover roadmap estático para tabela `integrations_roadmap` (com RLS + GRANTs).
+3. **Sem mudança de schema** — apenas dados. Sem mudanças de UI além dos waypoints.
 
-## Fora de escopo deste plano
+## Preservação
 
-- Importar shapefiles oficiais DER-SP/ANTT (depende de fonte de dados externa — abrir tarefa separada quando o usuário disponibilizar arquivos).
-- Bulk export PDF em `Relatorio` (feature nova, não QA).
-- Paginação server-side em `Equipes` / `OrdensServico` (não necessário no volume atual).
+- Dados reais do Rodoanel (SP-021) permanecem intactos; novos apenas complementam faixas ainda não cobertas.
+- Estruturas de tabela e RLS não mudam.
+- IDs gerados com prefixo por rodovia para facilitar rollback (`seed-{code}-{n}`).
 
-## Detalhes técnicos
+## Validação pós-execução
 
-- **Cache OSRM**: hash `sha256(JSON.stringify(waypoints))` truncado em 16 chars como chave; TTL não necessário (traçado de rodovia é estável).
-- **QueryErrorState**: props `{ error: unknown, onRetry: () => void, message?: string }`, usa `AlertTriangle` do lucide + botão `outline`.
-- **Migração `road_route_cache`**:
-  ```sql
-  CREATE TABLE public.road_route_cache (
-    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    code text NOT NULL,
-    waypoints_hash text NOT NULL,
-    line jsonb NOT NULL,
-    source text NOT NULL,
-    updated_at timestamptz NOT NULL DEFAULT now(),
-    UNIQUE(code, waypoints_hash)
-  );
-  GRANT SELECT ON public.road_route_cache TO authenticated, anon;
-  GRANT ALL ON public.road_route_cache TO service_role;
-  ALTER TABLE public.road_route_cache ENABLE ROW LEVEL SECURITY;
-  CREATE POLICY "public read" ON public.road_route_cache FOR SELECT USING (true);
-  ```
-
-## Sequência sugerida de execução
-
-Fase 1 → Fase 2 → Fase 3 → Fase 4 → Fase 5 → Fase 6. Fase 1 sozinha já entrega muito valor perceptível ao usuário.
+- `SELECT rodovia, COUNT(*) FROM segments GROUP BY rodovia` → todas com 15–20
+- Visualizar cada concessão no `/mapa` e confirmar pontos ao longo do traçado
+- Confirmar que filtro por concessão/rodovia continua funcionando
