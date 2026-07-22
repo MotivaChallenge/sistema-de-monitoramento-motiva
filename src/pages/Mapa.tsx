@@ -5,7 +5,7 @@ import { useFilters } from "@/contexts/FiltersContext";
 import { GlobalFilters } from "@/components/vegia/GlobalFilters";
 import { MapPointSheet } from "@/components/vegia/MapPointSheet";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertTriangle, Activity, Inbox, Eye, Layers, Crosshair, Route, Network, Download } from "lucide-react";
+import { AlertTriangle, Activity, Inbox, Eye, Layers, Crosshair, Route, Network, Download, Building2, Leaf, ShieldCheck } from "lucide-react";
 import { useState, useMemo, lazy, Suspense } from "react";
 
 const OSMMap = lazy(() => import("@/components/vegia/OSMMap").then(m => ({ default: m.OSMMap })));
@@ -28,6 +28,46 @@ const Mapa = () => {
   const [showPolyline, setShowPolyline] = useState(true);
 
   const currentHighway = highways.find(h => h.code === selectedHighway);
+  const currentConcession = currentHighway?.concessao;
+
+  const concessionHighways = useMemo(
+    () => highways.filter(h => h.concessao === currentConcession),
+    [highways, currentConcession]
+  );
+  const concessionCodes = useMemo(
+    () => new Set(concessionHighways.map(h => h.code)),
+    [concessionHighways]
+  );
+
+  const concessionSegments = useMemo(
+    () => segmentsRaw.filter(s => s.rodovia && concessionCodes.has(s.rodovia)),
+    [segmentsRaw, concessionCodes]
+  );
+
+  const concessionKpis = useMemo(() => {
+    const total = concessionSegments.length;
+    const criticos = concessionSegments.filter(s => s.status === "critico").length;
+    const atencao = concessionSegments.filter(s => s.status === "atencao").length;
+    const conformes = concessionSegments.filter(s => s.status === "conforme").length;
+    const conformidadePct = total ? Math.round((conformes / total) * 100) : 0;
+    const ndviAvg = total
+      ? concessionSegments.reduce((a, s) => a + s.ndvi, 0) / total
+      : 0;
+    const coberturaKm = concessionHighways.reduce(
+      (a, h) => a + Math.max(0, h.km_fim - h.km_inicio),
+      0
+    );
+    return {
+      total,
+      criticos,
+      atencao,
+      conformes,
+      conformidadePct,
+      ndviAvg,
+      coberturaKm,
+      rodoviasCount: concessionHighways.length,
+    };
+  }, [concessionSegments, concessionHighways]);
 
   const exportGeoJSON = () => {
     if (!currentHighway) return;
@@ -234,6 +274,109 @@ const Mapa = () => {
               Exportar GeoJSON
             </button>
           </div>
+
+          {/* KPIs agregados da concessão selecionada */}
+          {currentConcession && (
+            <div className="bg-background/90 backdrop-blur-md border border-border/50 rounded-xl p-4 shadow-card w-[280px] shrink-0">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-1.5">
+                  <Building2 className="h-3.5 w-3.5 text-primary" />
+                  KPIs da concessão
+                </span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">
+                  {concessionKpis.rodoviasCount} rodovia{concessionKpis.rodoviasCount > 1 ? "s" : ""}
+                </span>
+              </div>
+              <div className="text-[11px] text-foreground font-semibold mb-3 truncate" title={currentConcession}>
+                {currentConcession}
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <div className="flex items-center gap-1.5 text-[9px] uppercase tracking-wider text-muted-foreground mb-0.5">
+                    <Route className="h-3 w-3" /> Cobertura
+                  </div>
+                  <div className="text-[18px] font-bold tabular-nums">
+                    {concessionKpis.coberturaKm.toFixed(1).replace(".", ",")}
+                  </div>
+                  <div className="text-[10px] text-muted-foreground">km monitorados</div>
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5 text-[9px] uppercase tracking-wider text-muted-foreground mb-0.5">
+                    <AlertTriangle className="h-3 w-3" /> Críticos
+                  </div>
+                  <div className="text-[18px] font-bold tabular-nums text-destructive">
+                    {concessionKpis.criticos}
+                  </div>
+                  <div className="text-[10px] text-muted-foreground">
+                    de {concessionKpis.total} trechos
+                  </div>
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5 text-[9px] uppercase tracking-wider text-muted-foreground mb-0.5">
+                    <Leaf className="h-3 w-3" /> NDVI médio
+                  </div>
+                  <div className="text-[18px] font-bold tabular-nums">
+                    {concessionKpis.ndviAvg.toFixed(2)}
+                  </div>
+                  <div className="text-[10px] text-muted-foreground">
+                    {concessionKpis.ndviAvg >= 0.6
+                      ? "biomassa alta"
+                      : concessionKpis.ndviAvg >= 0.4
+                      ? "moderada"
+                      : "controlada"}
+                  </div>
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5 text-[9px] uppercase tracking-wider text-muted-foreground mb-0.5">
+                    <ShieldCheck className="h-3 w-3" /> Conformidade
+                  </div>
+                  <div
+                    className={`text-[18px] font-bold tabular-nums ${
+                      concessionKpis.conformidadePct >= 80
+                        ? "text-primary"
+                        : concessionKpis.conformidadePct >= 60
+                        ? "text-tertiary"
+                        : "text-destructive"
+                    }`}
+                  >
+                    {concessionKpis.conformidadePct}%
+                  </div>
+                  <div className="text-[10px] text-muted-foreground">
+                    {concessionKpis.atencao} em atenção
+                  </div>
+                </div>
+              </div>
+              <div className="mt-3 pt-3 border-t border-border/40">
+                <div className="flex h-1.5 rounded-full overflow-hidden bg-surface-high">
+                  {concessionKpis.total > 0 && (
+                    <>
+                      <div
+                        className="bg-primary transition-all"
+                        style={{ width: `${(concessionKpis.conformes / concessionKpis.total) * 100}%` }}
+                        title={`${concessionKpis.conformes} conformes`}
+                      />
+                      <div
+                        className="bg-tertiary transition-all"
+                        style={{ width: `${(concessionKpis.atencao / concessionKpis.total) * 100}%` }}
+                        title={`${concessionKpis.atencao} atenção`}
+                      />
+                      <div
+                        className="bg-destructive transition-all"
+                        style={{ width: `${(concessionKpis.criticos / concessionKpis.total) * 100}%` }}
+                        title={`${concessionKpis.criticos} críticos`}
+                      />
+                    </>
+                  )}
+                </div>
+                <div className="mt-1.5 flex items-center justify-between text-[9px] uppercase tracking-wider text-muted-foreground">
+                  <span>Distribuição de status</span>
+                  <span className="tabular-nums text-foreground font-semibold">
+                    {concessionKpis.total} segmentos
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="bg-background/90 backdrop-blur-md border border-border/50 rounded-xl p-4 shadow-card w-[240px] shrink-0">
             <div className="flex items-center justify-between mb-3">
