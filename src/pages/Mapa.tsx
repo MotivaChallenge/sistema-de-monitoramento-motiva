@@ -5,7 +5,7 @@ import { useFilters } from "@/contexts/FiltersContext";
 import { GlobalFilters } from "@/components/vegia/GlobalFilters";
 import { MapPointSheet } from "@/components/vegia/MapPointSheet";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertTriangle, Activity, Inbox, Eye, Layers, Crosshair, Route, Network, Download } from "lucide-react";
+import { AlertTriangle, Activity, Inbox, Eye, Layers, Crosshair, Route, Network, Download, Building2, Leaf, ShieldCheck } from "lucide-react";
 import { useState, useMemo, lazy, Suspense } from "react";
 
 const OSMMap = lazy(() => import("@/components/vegia/OSMMap").then(m => ({ default: m.OSMMap })));
@@ -28,6 +28,46 @@ const Mapa = () => {
   const [showPolyline, setShowPolyline] = useState(true);
 
   const currentHighway = highways.find(h => h.code === selectedHighway);
+  const currentConcession = currentHighway?.concessao;
+
+  const concessionHighways = useMemo(
+    () => highways.filter(h => h.concessao === currentConcession),
+    [highways, currentConcession]
+  );
+  const concessionCodes = useMemo(
+    () => new Set(concessionHighways.map(h => h.code)),
+    [concessionHighways]
+  );
+
+  const concessionSegments = useMemo(
+    () => segmentsRaw.filter(s => s.rodovia && concessionCodes.has(s.rodovia)),
+    [segmentsRaw, concessionCodes]
+  );
+
+  const concessionKpis = useMemo(() => {
+    const total = concessionSegments.length;
+    const criticos = concessionSegments.filter(s => s.status === "critico").length;
+    const atencao = concessionSegments.filter(s => s.status === "atencao").length;
+    const conformes = concessionSegments.filter(s => s.status === "conforme").length;
+    const conformidadePct = total ? Math.round((conformes / total) * 100) : 0;
+    const ndviAvg = total
+      ? concessionSegments.reduce((a, s) => a + s.ndvi, 0) / total
+      : 0;
+    const coberturaKm = concessionHighways.reduce(
+      (a, h) => a + Math.max(0, h.km_fim - h.km_inicio),
+      0
+    );
+    return {
+      total,
+      criticos,
+      atencao,
+      conformes,
+      conformidadePct,
+      ndviAvg,
+      coberturaKm,
+      rodoviasCount: concessionHighways.length,
+    };
+  }, [concessionSegments, concessionHighways]);
 
   const exportGeoJSON = () => {
     if (!currentHighway) return;
