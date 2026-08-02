@@ -28,14 +28,14 @@ export const SidebarBody = ({ onNavigate }: SidebarBodyProps) => {
       <div className="px-6 pt-7 pb-10 flex items-center gap-3">
         <div className="relative">
           <div className="h-10 w-10 rounded-lg bg-gradient-primary flex items-center justify-center text-primary-foreground font-extrabold text-[15px] ring-2 ring-primary/30 shadow-glow">
-            O
+            M
           </div>
           <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-turquoise ring-2 ring-sidebar" aria-label="Sistema online" />
         </div>
         <div>
-          <div className="text-[18px] font-extrabold leading-none tracking-tight">ORION</div>
+          <div className="text-[18px] font-extrabold leading-none tracking-tight">Motiva</div>
           <div className="text-[10px] uppercase tracking-[0.18em] text-sidebar-foreground/60 mt-1">
-            Roadside Intelligence
+            Monitoramento
           </div>
         </div>
       </div>
