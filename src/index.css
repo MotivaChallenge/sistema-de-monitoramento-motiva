@@ -4,39 +4,39 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ORION design system — Verde corporativo + Azul navy, apoio laranja (atenção) e vermelho (crítico) */
+/* Design system — Anil (azul-violeta) + branco, neutros de apoio */
 @layer base {
   :root {
-    --background: 210 25% 98%;            /* cinza claro corporativo */
-    --foreground: 215 35% 12%;            /* navy escuro */
+    --background: 0 0% 100%;              /* branco dominante */
+    --foreground: 250 30% 14%;            /* anil bem escuro */
 
-    --surface-low: 210 25% 96%;
-    --surface-high: 215 20% 92%;
+    --surface-low: 250 25% 97%;
+    --surface-high: 250 18% 93%;
     --surface-lowest: 0 0% 100%;
 
     --card: 0 0% 100%;
-    --card-foreground: 215 35% 12%;
+    --card-foreground: 250 30% 14%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 35% 12%;
+    --popover-foreground: 250 30% 14%;
 
-    /* Verde escuro corporativo — primária ORION */
-    --primary: 158 64% 26%;               /* deep forest */
+    /* Anil — primária */
+    --primary: 250 62% 44%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 158 55% 40%;
+    --primary-glow: 252 72% 60%;
 
-    --secondary: 210 25% 96%;
-    --secondary-foreground: 215 35% 12%;
+    --secondary: 250 25% 97%;
+    --secondary-foreground: 250 30% 14%;
 
-    /* Apoio: azul navy executivo */
-    --secondary-container: 215 60% 92%;
-    --on-secondary-container: 215 70% 22%;
+    /* Apoio: anil claro */
+    --secondary-container: 250 60% 94%;
+    --on-secondary-container: 250 60% 28%;
 
-    --muted: 215 20% 94%;
-    --muted-foreground: 215 14% 40%;
+    --muted: 250 16% 95%;
+    --muted-foreground: 250 10% 42%;
 
-    --accent: 215 20% 92%;
-    --accent-foreground: 215 35% 12%;
+    --accent: 250 20% 94%;
+    --accent-foreground: 250 30% 14%;
 
     /* Apoio: laranja — alto risco */
     --tertiary: 25 95% 53%;               /* #F97316 */
@@ -50,34 +50,34 @@
     --destructive-foreground: 0 0% 100%;
     --error-container: 354 90% 95%;
 
-    --border: 215 18% 88%;
-    --input: 215 20% 92%;
-    --ring: 158 64% 26%;
+    --border: 250 16% 90%;
+    --input: 250 16% 93%;
+    --ring: 250 62% 44%;
 
     --radius: 0.875rem;
 
-    --sidebar-background: 215 45% 12%;    /* navy profundo */
-    --sidebar-foreground: 210 25% 92%;
-    --sidebar-primary: 158 64% 38%;
+    --sidebar-background: 250 45% 14%;    /* anil profundo */
+    --sidebar-foreground: 250 25% 92%;
+    --sidebar-primary: 252 72% 62%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 215 40% 18%;
-    --sidebar-accent-foreground: 210 25% 96%;
-    --sidebar-border: 215 35% 20%;
-    --sidebar-ring: 158 64% 38%;
+    --sidebar-accent: 250 40% 20%;
+    --sidebar-accent-foreground: 250 25% 96%;
+    --sidebar-border: 250 32% 24%;
+    --sidebar-ring: 252 72% 62%;
 
     /* Sombras e gradientes — usar em cards e elementos elevados */
-    --shadow-card: 0 1px 2px hsl(215 35% 12% / 0.04), 0 1px 3px hsl(215 35% 12% / 0.04);
-    --shadow-elegant: 0 4px 16px -4px hsl(215 45% 18% / 0.10), 0 2px 6px hsl(215 35% 12% / 0.04);
+    --shadow-card: 0 1px 2px hsl(250 35% 14% / 0.04), 0 1px 3px hsl(250 35% 14% / 0.04);
+    --shadow-elegant: 0 4px 16px -4px hsl(250 45% 22% / 0.10), 0 2px 6px hsl(250 35% 14% / 0.04);
     --shadow-glow: 0 0 0 1px hsl(var(--primary) / 0.08), 0 8px 24px -8px hsl(var(--primary) / 0.18);
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary-glow)) 100%);
     --gradient-surface: linear-gradient(180deg, hsl(var(--surface-lowest)) 0%, hsl(var(--surface-low)) 100%);
-    --gradient-sidebar: linear-gradient(180deg, hsl(215 45% 12%) 0%, hsl(215 50% 8%) 100%);
+    --gradient-sidebar: linear-gradient(180deg, hsl(250 45% 16%) 0%, hsl(250 50% 10%) 100%);
     --transition-smooth: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .dark { /* same — dark mode disabled visually */
-    --background: 210 25% 98%;
-    --foreground: 215 35% 12%;
+    --background: 0 0% 100%;
+    --foreground: 250 30% 14%;
   }
 }
 
