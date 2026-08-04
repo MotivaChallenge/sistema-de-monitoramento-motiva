@@ -172,7 +172,7 @@ export const AIChatWidget = ({ context }: { context: AIChatContext }) => {
         onClick={() => setOpen(o => !o)}
         aria-label={open ? "Fechar assistente de IA" : "Abrir assistente de IA"}
         aria-expanded={open}
-        className="h-13 w-13 h-[52px] w-[52px] rounded-full bg-gradient-to-b from-primary to-primary-glow text-primary-foreground shadow-elegant flex items-center justify-center hover:scale-105 active:scale-95 transition-smooth"
+        className="h-[52px] w-[52px] rounded-full bg-gradient-to-b from-primary to-primary-glow text-primary-foreground shadow-elegant flex items-center justify-center hover:scale-105 active:scale-95 transition-smooth"
       >
         {open ? <X className="h-5 w-5" /> : <Bot className="h-5 w-5" />}
       </button>
