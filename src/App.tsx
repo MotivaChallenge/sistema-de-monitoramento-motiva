@@ -22,8 +22,6 @@ const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Previsoes = lazy(() => import("./pages/Previsoes"));
 const Planejamento = lazy(() => import("./pages/Planejamento"));
 const Equipes = lazy(() => import("./pages/Equipes"));
-const ROI = lazy(() => import("./pages/ROI"));
-const Integracoes = lazy(() => import("./pages/Integracoes"));
 const Mapa = lazy(() => import("./pages/Mapa"));
 const OrdensServico = lazy(() => import("./pages/OrdensServico"));
 
@@ -69,8 +67,6 @@ const App = () => (
               <Route path="/planejamento" element={<Planejamento />} />
               <Route path="/equipes" element={<Equipes />} />
               <Route path="/ordens" element={<OrdensServico />} />
-              <Route path="/roi" element={<ROI />} />
-              <Route path="/integracoes" element={<Integracoes />} />
               <Route path="/segmento/:id" element={<Segmento />} />
               <Route path="/relatorio" element={<Relatorio />} />
               <Route path="/alertas" element={<Alertas />} />
