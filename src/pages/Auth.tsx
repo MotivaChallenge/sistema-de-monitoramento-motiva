@@ -3,8 +3,8 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { Leaf } from "lucide-react";
 import { z } from "zod";
+import motivaLogo from "@/assets/motiva-logo.webp.asset.json";
 
 const signinSchema = z.object({
   email: z.string().trim().email("Email inválido").max(255),
@@ -72,9 +72,7 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center bg-background p-6">
       <div className="w-full max-w-md bg-surface-lowest rounded-2xl p-8 shadow-sm">
         <div className="flex items-center gap-3 mb-7">
-          <div className="h-11 w-11 rounded-xl bg-primary text-primary-foreground flex items-center justify-center">
-            <Leaf className="h-5 w-5" aria-hidden />
-          </div>
+          <img src={motivaLogo.url} alt="Motiva" className="h-11 w-11 rounded-xl object-contain" />
           <div>
             <h1 className="text-[20px] font-bold tracking-tight">Acesso ao painel</h1>
             <p className="text-[12px] text-muted-foreground">Monitoramento de vegetação rodoviária</p>
