@@ -2,6 +2,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import { LayoutDashboard, Map, TrendingUp, CalendarDays, Users, BarChart3, Settings, LogOut, User, DollarSign, Plug, ClipboardList } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAlertsFeed } from "@/hooks/useAlertsFeed";
+import motivaLogo from "@/assets/motiva-logo.webp.asset.json";
 
 const items = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, badgeKey: "alerts" as const },
@@ -27,9 +28,11 @@ export const SidebarBody = ({ onNavigate }: SidebarBodyProps) => {
     <div className="w-[220px] h-full bg-gradient-sidebar text-sidebar-foreground flex flex-col border-r border-sidebar-border/50">
       <div className="px-6 pt-7 pb-10 flex items-center gap-3">
         <div className="relative">
-          <div className="h-10 w-10 rounded-lg bg-gradient-primary flex items-center justify-center text-primary-foreground font-extrabold text-[15px] ring-2 ring-primary/30 shadow-glow">
-            M
-          </div>
+          <img
+            src={motivaLogo.url}
+            alt="Motiva"
+            className="h-10 w-10 rounded-lg object-contain shadow-glow"
+          />
           <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-turquoise ring-2 ring-sidebar" aria-label="Sistema online" />
         </div>
         <div>
