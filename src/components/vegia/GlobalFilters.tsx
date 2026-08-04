@@ -1,4 +1,4 @@
-import { useFilters, KM_FILTER_MAX, StatusFilter } from "@/contexts/FiltersContext";
+import { useFilters, StatusFilter } from "@/contexts/FiltersContext";
 import { Slider } from "@/components/ui/slider";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Filter, X } from "lucide-react";
@@ -10,7 +10,8 @@ const STATUS_CHIPS: { key: StatusFilter; label: string; cls: string }[] = [
 ];
 
 export const GlobalFilters = () => {
-  const { statuses, kmRange, toggleStatus, setKmRange, reset, activeCount } = useFilters();
+  const { statuses, kmRange, kmMax, toggleStatus, setKmRange, reset, activeCount } = useFilters();
+  const range: [number, number] = kmRange ?? [0, kmMax];
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -49,13 +50,15 @@ export const GlobalFilters = () => {
         <div>
           <div className="flex items-center justify-between mb-2">
             <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Faixa de KM</div>
-            <div className="text-[12px] font-mono">KM {kmRange[0]} – {kmRange[1]}</div>
+            <div className="text-[12px] font-mono">
+              {kmRange ? `KM ${kmRange[0]} – ${kmRange[1]}` : "Toda a malha"}
+            </div>
           </div>
           <Slider
             min={0}
-            max={KM_FILTER_MAX}
+            max={kmMax}
             step={1}
-            value={kmRange}
+            value={range}
             onValueChange={(v) => setKmRange([v[0], v[1]] as [number, number])}
           />
         </div>

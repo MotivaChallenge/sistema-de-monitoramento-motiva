@@ -22,10 +22,10 @@ import { WeatherForecast } from "@/components/vegia/WeatherForecast";
 import { AIChatWidget } from "@/components/vegia/AIChatWidget";
 import { GlobalFilters } from "@/components/vegia/GlobalFilters";
 import { useFilters } from "@/contexts/FiltersContext";
-import { useTotalCoverage } from "@/hooks/useVegiaData";
+import { useTotalCoverage, useWorkOrders } from "@/hooks/useVegiaData";
 import { ircForSegment } from "@/lib/irc";
 import { useDashboardData } from "@/hooks/useDashboardData";
-import { recommendationsFor } from "@/mocks/dashboard";
+import { buildRecommendations } from "@/lib/recommendations";
 
 const NDVIBarChart = lazy(() => import("@/components/vegia/NDVIBarChart").then(m => ({ default: m.NDVIBarChart })));
 
@@ -37,9 +37,10 @@ const Dashboard = () => {
   const { matches, activeCount } = useFilters();
 
   const {
-    segments: allSegments, highlights, rain5d, teamsAvailable, teamsCapacity, isLoading, isError,
+    segments: allSegments, highlights, rain5d, teamsAvailable, teamsTotal, isLoading, isError,
   } = useDashboardData();
   const { data: coverage = 0 } = useTotalCoverage();
+  const { data: workOrders = [] } = useWorkOrders();
 
   const segments = useMemo(
     () => allSegments.filter(s => matches({ status: s.status, kmStart: s.kmStart })),
@@ -62,7 +63,30 @@ const Dashboard = () => {
   const fmtBRL = (v: number) =>
     v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0, notation: "compact" });
 
-  const recommendations = recommendationsFor(criticos > 0 ? "critico" : totalAlerts > 0 ? "atencao" : "conforme");
+  const ircById = useMemo(
+    () => new Map(segments.map(s => [s.id, ircForSegment(s, rain5d).score])),
+    [segments, rain5d]
+  );
+  const pendingOrders = workOrders.filter(
+    o => o.status === "pendente" || o.status === "em_andamento"
+  ).length;
+
+  const recommendations = useMemo(
+    () => buildRecommendations({ segments, ircById, rain5d, teamsAvailable, teamsTotal, pendingOrders }),
+    [segments, ircById, rain5d, teamsAvailable, teamsTotal, pendingOrders]
+  );
+
+  const topSegments = useMemo(
+    () =>
+      [...segments]
+        .sort((a, b) => (ircById.get(b.id) ?? 0) - (ircById.get(a.id) ?? 0))
+        .slice(0, 5)
+        .map(s => ({
+          km: s.km, tipo: s.tipo, status: s.status, altura: s.altura,
+          limite: s.limite, irc: ircById.get(s.id) ?? 0,
+        })),
+    [segments, ircById]
+  );
 
   const lastUpdate = useMemo(() => new Date(), [fetching]);
 
@@ -96,6 +120,7 @@ const Dashboard = () => {
       />
 
       <div className="px-4 md:px-8 lg:px-10 pt-2 pb-12 space-y-6">
+        <h1 className="sr-only">Painel de monitoramento de vegetação rodoviária</h1>
         {isError && <QueryErrorState onRetry={() => qc.invalidateQueries()} />}
 
         {activeCount > 0 && (
@@ -169,8 +194,8 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5">
           <StatisticCard icon={DollarSign} label="Economia estimada/ano" value={fmtBRL(economiaAnual)} hint="vs. modelo tradicional" tone="positive" />
           <StatisticCard icon={TrendingDown} label="Custos evitados" value={fmtBRL(custosEvitados)} hint="multas + deslocamentos" />
-          <StatisticCard icon={CalendarCheck} label="Intervenções programadas" value={String(totalAlerts)} hint="próximos 14 dias" tone={totalAlerts > 0 ? "warning" : "positive"} onClick={() => navigate("/planejamento")} />
-          <StatisticCard icon={Users} label="Equipes" value={`${teamsAvailable} / ${teamsCapacity}`} hint="Disponíveis para deslocamento" tone="positive" onClick={() => navigate("/equipes")} />
+          <StatisticCard icon={CalendarCheck} label="Ordens em aberto" value={String(pendingOrders)} hint="pendentes e em andamento" tone={pendingOrders > 0 ? "warning" : "positive"} onClick={() => navigate("/ordens")} />
+          <StatisticCard icon={Users} label="Equipes" value={`${teamsAvailable} / ${teamsTotal}`} hint="Disponíveis para deslocamento" tone={teamsAvailable > 0 ? "positive" : "warning"} onClick={() => navigate("/equipes")} />
         </div>
 
         {/* 6 — Painel operacional do dia */}
@@ -235,6 +260,11 @@ const Dashboard = () => {
           <h2 className="flex items-center gap-2 text-[12px] uppercase tracking-wider text-muted-foreground font-semibold mb-3">
             <Sparkles className="h-3.5 w-3.5 text-primary" /> Recomendações da IA
           </h2>
+          {recommendations.length === 0 ? (
+            <div className="text-[12px] text-muted-foreground bg-surface-lowest border border-border/40 rounded-xl px-4 py-6 text-center">
+              Sem dados suficientes para gerar recomendações.
+            </div>
+          ) : (
           <AutoCarousel
             ariaLabel="Recomendações geradas por inteligência artificial"
             interval={6000}
@@ -248,11 +278,15 @@ const Dashboard = () => {
               />
             ))}
           />
+          )}
         </div>
       </div>
 
       <AIChatWidget
-        context={{ criticos, total, ircAvg, rain5d, alerts: totalAlerts }}
+        context={{
+          criticos, total, ircAvg, rain5d, alerts: totalAlerts,
+          coverageKm: coverage, teamsAvailable, teamsTotal, pendingOrders, topSegments,
+        }}
       />
     </>
   );

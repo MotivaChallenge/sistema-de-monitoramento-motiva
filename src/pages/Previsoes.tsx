@@ -4,6 +4,7 @@ import { useWeather } from "@/hooks/useWeather";
 import { ircForSegment } from "@/lib/irc";
 import { useMemo } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, BarChart, Bar, Legend } from "recharts";
+
 import { TrendingUp, AlertTriangle, CalendarClock, Sparkles } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { QueryErrorState } from "@/components/vegia/QueryErrorState";
@@ -23,7 +24,7 @@ function projectGrowth(baseHeightCm: number, days: number, rain5d: number, ircSc
 }
 
 const Previsoes = () => {
-  const { data: segmentsRaw = [], isLoading, isError, refetch } = useSegments();
+  const { data: segmentsRaw = [], isLoading, isError, refetch, dataUpdatedAt } = useSegments();
   const { data: weather } = useWeather();
   const rain5d = weather?.summary.totalRainMm ?? 8;
 
@@ -71,7 +72,9 @@ const Previsoes = () => {
             </p>
           </div>
           <div className="text-[11px] uppercase tracking-wider text-muted-foreground bg-surface-low border border-border/40 rounded-full px-3 py-1.5">
-            Modelo v2.4 · Atualizado há 2h
+            {segmentsRaw.length} trechos · atualizado {dataUpdatedAt
+              ? new Date(dataUpdatedAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+              : "—"}
           </div>
         </header>
 

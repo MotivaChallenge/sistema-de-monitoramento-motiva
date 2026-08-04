@@ -5,6 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { NotificationsPanel } from "./NotificationsPanel";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useSegments } from "@/hooks/useVegiaData";
 
 interface Props {
   breadcrumb?: { label: string; to?: string }[];
@@ -19,6 +20,12 @@ export const TopHeader = ({ breadcrumb = [{ label: "RODOANEL SP-021" }], current
   const { pathname } = useLocation();
   const { signOut, user } = useAuth();
   const qc = useQueryClient();
+  const { data: segments = [], dataUpdatedAt } = useSegments();
+  const criticos = segments.filter(s => s.status === "critico").length;
+  const atencao = segments.filter(s => s.status === "atencao").length;
+  const lastReading = dataUpdatedAt
+    ? new Date(dataUpdatedAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+    : "—";
   const refresh = () => { qc.invalidateQueries(); toast.success("Atualizando dados…"); };
   return (
     <header className="h-[72px] px-4 md:px-6 flex items-center justify-between gap-4 bg-background/85 backdrop-blur-md sticky top-0 z-30 border-b border-border/40">
@@ -42,19 +49,19 @@ export const TopHeader = ({ breadcrumb = [{ label: "RODOANEL SP-021" }], current
 
       <div className="flex items-center gap-2 shrink-0">
         {showStatusBadges && (
-          <div className="flex items-center gap-1.5">
-            <span className="px-2.5 py-1 rounded-full bg-destructive/10 text-destructive text-[11px] font-semibold flex items-center gap-1.5 whitespace-nowrap">
-              <span className="h-1.5 w-1.5 rounded-full bg-destructive" /> 3 <span className="hidden xl:inline">CRÍTICOS</span><span className="xl:hidden">CRIT</span>
+          <div className="hidden md:flex items-center gap-1.5">
+            <span className="px-2.5 py-1 rounded-full bg-destructive/10 text-destructive text-[11px] font-semibold flex items-center gap-1.5 whitespace-nowrap tabular-nums">
+              <span className="h-1.5 w-1.5 rounded-full bg-destructive" /> {criticos} <span className="hidden xl:inline">CRÍTICOS</span><span className="xl:hidden">CRIT</span>
             </span>
-            <span className="px-2.5 py-1 rounded-full bg-tertiary/15 text-tertiary text-[11px] font-semibold flex items-center gap-1.5 whitespace-nowrap">
-              <span className="h-1.5 w-1.5 rounded-full bg-tertiary" /> 7 <span className="hidden xl:inline">ATENÇÃO</span><span className="xl:hidden">ATEN</span>
+            <span className="px-2.5 py-1 rounded-full bg-tertiary/15 text-tertiary text-[11px] font-semibold flex items-center gap-1.5 whitespace-nowrap tabular-nums">
+              <span className="h-1.5 w-1.5 rounded-full bg-tertiary" /> {atencao} <span className="hidden xl:inline">ATENÇÃO</span><span className="xl:hidden">ATEN</span>
             </span>
           </div>
         )}
         {showLastReading && (
           <div className="hidden xl:block text-right leading-tight pl-2">
             <div className="label-md">Última leitura Sentinel-2</div>
-            <div className="text-[12px] font-medium">Hoje, 09:42 (UTC-3)</div>
+            <div className="text-[12px] font-medium">Hoje, {lastReading}</div>
           </div>
         )}
         <NotificationsPanel />

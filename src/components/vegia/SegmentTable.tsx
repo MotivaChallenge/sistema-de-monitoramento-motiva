@@ -27,8 +27,6 @@ const STATUS_OPTIONS: { value: StatusFilter; label: string }[] = [
   { value: "conforme", label: "Conforme" },
 ];
 
-const KM_MAX = 30;
-
 const csvEscape = (v: string | number) => {
   const s = String(v);
   return /[",;\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
@@ -39,8 +37,15 @@ export const SegmentTable = ({ rows }: { rows: Segment[] }) => {
   const [q, setQ] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [clausula, setClausula] = useState<string>("all");
-  const [kmRange, setKmRange] = useState<[number, number]>([0, KM_MAX]);
+  /** `null` = toda a malha; o limite vem dos próprios dados. */
+  const [kmRange, setKmRange] = useState<[number, number] | null>(null);
   const [sortDesc, setSortDesc] = useState(true);
+
+  const kmMax = useMemo(
+    () => Math.max(1, Math.ceil(rows.reduce((a, r) => Math.max(a, r.kmEnd), 0))),
+    [rows]
+  );
+  const range: [number, number] = kmRange ?? [0, kmMax];
 
   const clauseOptions = useMemo(
     () => Array.from(new Set(rows.map(r => r.clausula))).sort(),
@@ -52,17 +57,23 @@ export const SegmentTable = ({ rows }: { rows: Segment[] }) => {
       if (q && !`${r.km} ${r.tipo}`.toLowerCase().includes(q.toLowerCase())) return false;
       if (statusFilter !== "all" && r.status !== statusFilter) return false;
       if (clausula !== "all" && r.clausula !== clausula) return false;
-      if (r.kmStart < kmRange[0] || r.kmStart > kmRange[1]) return false;
+      if (kmRange && (r.kmStart < kmRange[0] || r.kmStart > kmRange[1])) return false;
       return true;
     });
     return [...filtered].sort((a, b) => sortDesc ? b.altura - a.altura : a.altura - b.altura);
   }, [rows, q, statusFilter, clausula, kmRange, sortDesc]);
 
-  const activeFilters = (statusFilter !== "all" ? 1 : 0) + (clausula !== "all" ? 1 : 0) + (kmRange[0] > 0 || kmRange[1] < KM_MAX ? 1 : 0) + (q ? 1 : 0);
+  const kmActive = !!kmRange && (kmRange[0] > 0 || kmRange[1] < kmMax);
+  const activeFilters = (statusFilter !== "all" ? 1 : 0) + (clausula !== "all" ? 1 : 0) + (kmActive ? 1 : 0) + (q ? 1 : 0);
 
   const resetFilters = () => {
-    setQ(""); setStatusFilter("all"); setClausula("all"); setKmRange([0, KM_MAX]);
+    setQ(""); setStatusFilter("all"); setClausula("all"); setKmRange(null);
   };
+
+  const generatedAt = useMemo(
+    () => new Date().toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }),
+    [],
+  );
 
   const exportCsv = () => {
     const headers = ["Segmento (KM)", "KM Inicial", "KM Final", "Tipo", "NDVI", "Altura (cm)", "Limite (cm)", "Status", "Cláusula", "Última Roçada", "Deadline"];
@@ -85,20 +96,21 @@ export const SegmentTable = ({ rows }: { rows: Segment[] }) => {
   };
 
   return (
-    <div className="bg-surface-lowest rounded-xl p-6">
-      <div className="flex items-center justify-between mb-5">
+    <div className="bg-surface-lowest rounded-xl p-4 md:p-6 min-w-0 max-w-full">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
         <div className="flex items-center gap-3">
           <h3 className="text-[16px] font-semibold">Detalhamento por Segmento</h3>
           <span className="label-md">{data.length} de {rows.length}</span>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 bg-surface-low rounded-md px-3 py-1.5">
+        <div className="flex flex-wrap items-center gap-2 min-w-0">
+          <div className="flex items-center gap-2 bg-surface-low rounded-md px-3 py-1.5 min-w-0">
             <Search className="h-3.5 w-3.5 text-muted-foreground" />
             <input
               value={q}
               onChange={e => setQ(e.target.value)}
               placeholder="Buscar KM ou tipo"
-              className="bg-transparent outline-none text-[13px] w-40"
+              aria-label="Buscar segmento por KM ou tipo"
+              className="bg-transparent outline-none text-[13px] w-32 sm:w-40 min-w-0"
             />
           </div>
           <button
@@ -114,9 +126,9 @@ export const SegmentTable = ({ rows }: { rows: Segment[] }) => {
       {/* Filter bar */}
       <div className="bg-surface-low rounded-md p-4 mb-5 flex flex-wrap items-center gap-x-6 gap-y-3">
         {/* Status segmented */}
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <span className="label-md">Status</span>
-          <div className="inline-flex bg-surface-high rounded-md p-0.5">
+          <div className="inline-flex flex-wrap bg-surface-high rounded-md p-0.5">
             {STATUS_OPTIONS.map(o => (
               <button
                 key={o.value}
@@ -147,22 +159,24 @@ export const SegmentTable = ({ rows }: { rows: Segment[] }) => {
         {/* KM range */}
         <div className="flex items-center gap-3 flex-1 min-w-[260px]">
           <span className="label-md whitespace-nowrap">KM</span>
-          <span className="text-[12px] tabular-nums w-8 text-right">{kmRange[0].toFixed(0)}</span>
+          <span className="text-[12px] tabular-nums w-10 text-right">{range[0].toFixed(0)}</span>
           <div className="flex-1 min-w-0 flex items-center gap-2">
             <input
-              type="range" min={0} max={KM_MAX} step={1}
-              value={kmRange[0]}
-              onChange={e => setKmRange([Math.min(Number(e.target.value), kmRange[1]), kmRange[1]])}
+              type="range" min={0} max={kmMax} step={1}
+              aria-label="KM inicial"
+              value={range[0]}
+              onChange={e => setKmRange([Math.min(Number(e.target.value), range[1]), range[1]])}
               className="flex-1 min-w-0 accent-primary"
             />
             <input
-              type="range" min={0} max={KM_MAX} step={1}
-              value={kmRange[1]}
-              onChange={e => setKmRange([kmRange[0], Math.max(Number(e.target.value), kmRange[0])])}
+              type="range" min={0} max={kmMax} step={1}
+              aria-label="KM final"
+              value={range[1]}
+              onChange={e => setKmRange([range[0], Math.max(Number(e.target.value), range[0])])}
               className="flex-1 min-w-0 accent-primary"
             />
           </div>
-          <span className="text-[12px] tabular-nums w-8">{kmRange[1].toFixed(0)}</span>
+          <span className="text-[12px] tabular-nums w-10">{range[1].toFixed(0)}</span>
         </div>
 
         {activeFilters > 0 && (
@@ -175,6 +189,8 @@ export const SegmentTable = ({ rows }: { rows: Segment[] }) => {
         )}
       </div>
 
+      <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
+      <div className="min-w-[720px]">
       <div className="grid grid-cols-[1.4fr_1.2fr_1.1fr_0.8fr_1.1fr_0.9fr_0.9fr] label-md pb-3">
         <span>Segmento (KM)</span><span>Tipo</span><span>NDVI</span>
         <button onClick={() => setSortDesc(s => !s)} className="flex items-center gap-1 hover:text-foreground text-left">
@@ -207,8 +223,10 @@ export const SegmentTable = ({ rows }: { rows: Segment[] }) => {
           </button>
         ))}
       </div>
-      <div className="flex items-center justify-between mt-5 pt-4">
-        <span className="label-md">Documento gerado via satélite — 24/04/2026 14:32</span>
+      </div>
+      </div>
+      <div className="flex flex-wrap items-center justify-between gap-2 mt-5 pt-4">
+        <span className="label-md">Documento gerado via satélite — {generatedAt}</span>
         <button onClick={resetFilters} className="text-primary text-[13px] font-semibold hover:underline">
           Ver todos os segmentos ›
         </button>

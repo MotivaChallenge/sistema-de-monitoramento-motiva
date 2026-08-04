@@ -54,6 +54,23 @@ export const useAlertsFeed = () => {
   return query;
 };
 
+/**
+ * Contagem exata de alertas ativos (crítico/atenção).
+ * O feed é limitado a 20 itens, por isso o badge usa uma contagem própria.
+ */
+export const useActiveAlertsCount = () =>
+  useQuery({
+    queryKey: ["alerts-active-count"],
+    queryFn: async (): Promise<number> => {
+      const { count, error } = await supabase
+        .from("alerts")
+        .select("id", { count: "exact", head: true })
+        .in("status", ["critico", "atencao"]);
+      if (error) throw error;
+      return count ?? 0;
+    },
+  });
+
 const LAST_SEEN_KEY = "vegia.alerts.lastSeen";
 
 export const getLastSeen = (): number => {

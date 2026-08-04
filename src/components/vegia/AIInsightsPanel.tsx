@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Sparkles, AlertTriangle, CheckCircle2, RefreshCw, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Slider } from "@/components/ui/slider";
+import { useSegments } from "@/hooks/useVegiaData";
 
 interface Recommendation {
   title: string;
@@ -36,12 +37,20 @@ const urgencyStyles: Record<string, string> = {
 
 export const AIInsightsPanel = () => {
   const qc = useQueryClient();
+  const { data: allSegments } = useSegments();
   const [statuses, setStatuses] = useState<Array<"critico" | "atencao" | "conforme">>([]);
-  const [kmRange, setKmRange] = useState<[number, number]>([0, 30]);
+  const [kmRange, setKmRange] = useState<[number, number] | null>(null);
+
+  /** Limite do slider derivado da malha carregada, não fixo. */
+  const kmMax = useMemo(
+    () => Math.max(1, Math.ceil((allSegments ?? []).reduce((a, s) => Math.max(a, s.kmEnd), 0))),
+    [allSegments]
+  );
+  const range: [number, number] = kmRange ?? [0, kmMax];
 
   const filters = useMemo(
-    () => ({ statuses, kmStart: kmRange[0], kmEnd: kmRange[1] }),
-    [statuses, kmRange]
+    () => ({ statuses, kmStart: range[0], kmEnd: range[1] }),
+    [statuses, range[0], range[1]]
   );
 
   const { data, isLoading, isFetching, error, refetch } = useQuery({
@@ -125,13 +134,15 @@ export const AIInsightsPanel = () => {
         <div>
           <div className="flex items-center justify-between mb-2">
             <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Faixa de KM</div>
-            <div className="text-[12px] font-mono">KM {kmRange[0]} – {kmRange[1]}</div>
+            <div className="text-[12px] font-mono">
+              {kmRange ? `KM ${kmRange[0]} – ${kmRange[1]}` : "Toda a malha"}
+            </div>
           </div>
           <Slider
             min={0}
-            max={30}
+            max={kmMax}
             step={1}
-            value={kmRange}
+            value={range}
             onValueChange={(v) => setKmRange([v[0], v[1]] as [number, number])}
           />
         </div>
