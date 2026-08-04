@@ -128,7 +128,7 @@ const Planejamento = () => {
               capacidade diária e região atendida.
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <div className="inline-flex bg-surface-high rounded-md p-0.5">
               {(["semana", "mes"] as const).map(h => (
                 <button

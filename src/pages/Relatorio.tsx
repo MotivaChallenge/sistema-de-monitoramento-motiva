@@ -81,29 +81,29 @@ const Relatorio = () => {
       rightSlot={
         <>
           <GlobalFilters />
-          <span className="ml-2 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary-container text-[12px] font-semibold tracking-wider uppercase text-secondary-on-container">
+           <span className="ml-2 hidden lg:inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary-container text-[12px] font-semibold tracking-wider uppercase text-secondary-on-container">
             <ShieldCheck className="h-3.5 w-3.5" /> Monitoramento Ativo
           </span>
         </>
       }
     />
-    <div className="px-10 pb-12">
-      <div className="flex items-start justify-between mb-8">
-        <div>
-          <h1 className="text-[34px] font-bold tracking-tight">Relatório de conformidade</h1>
+    <div className="px-4 md:px-10 pb-12">
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-8">
+        <div className="min-w-0">
+          <h1 className="text-[26px] md:text-[34px] font-bold tracking-tight">Relatório de conformidade</h1>
           <p className="text-muted-foreground mt-1">
             Levantamento de campo: {periodLabel}
             {selectedReport && <> · {selectedReport.report_code} · {selectedReport.rodovia}</>}
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3 shrink-0">
           <label htmlFor="report-select" className="sr-only">Selecionar relatório</label>
           <select
             id="report-select"
             value={reportId ?? ""}
             onChange={e => setReportId(Number(e.target.value))}
             disabled={!reports.length}
-            className="h-11 px-4 rounded-lg bg-surface-high text-[13px] font-medium outline-none border border-border disabled:opacity-50"
+            className="h-11 px-4 max-w-full min-w-0 rounded-lg bg-surface-high text-[13px] font-medium outline-none border border-border disabled:opacity-50"
           >
             {reports.length === 0 && <option value="">Nenhum relatório</option>}
             {reports.map(r => (

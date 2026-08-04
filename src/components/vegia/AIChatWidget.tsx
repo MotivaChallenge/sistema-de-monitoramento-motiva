@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Bot, Send, X } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ChatMessage {
   id: string;
@@ -13,9 +14,15 @@ export interface AIChatContext {
   ircAvg: number;
   rain5d: number;
   alerts: number;
+  coverageKm?: number;
+  teamsAvailable?: number;
+  teamsTotal?: number;
+  pendingOrders?: number;
+  topSegments?: { km: string; tipo: string; status: string; altura: number; limite: number; irc: number }[];
 }
 
-const buildAnswer = (question: string, ctx: AIChatContext): string => {
+/** Resposta local usada apenas quando a IA está indisponível. */
+const offlineAnswer = (question: string, ctx: AIChatContext): string => {
   const q = question.toLowerCase();
   if (q.includes("chuva") || q.includes("clima") || q.includes("tempo"))
     return `A previsão acumulada para os próximos 5 dias é de ${ctx.rain5d} mm. Com esse volume o crescimento da vegetação acelera — antecipe a roçada dos trechos em atenção.`;
@@ -31,6 +38,16 @@ const buildAnswer = (question: string, ctx: AIChatContext): string => {
 };
 
 const SUGGESTIONS = ["Quais trechos são críticos?", "Como o clima afeta a operação?", "Qual o IRC médio?"];
+
+const MAX_LEN = 500;
+
+/** Renderiza **negrito** simples vindo da resposta da IA. */
+const renderText = (text: string) =>
+  text.split(/(\*\*[^*]+\*\*)/g).map((part, i) =>
+    part.startsWith("**") && part.endsWith("**") && part.length > 4
+      ? <strong key={i} className="font-semibold">{part.slice(2, -2)}</strong>
+      : <span key={i}>{part}</span>
+  );
 
 export const AIChatWidget = ({ context }: { context: AIChatContext }) => {
   const [open, setOpen] = useState(false);
@@ -70,17 +87,34 @@ export const AIChatWidget = ({ context }: { context: AIChatContext }) => {
     };
   }, [open]);
 
-  const send = (text: string) => {
-    const value = text.trim();
+  const send = async (text: string) => {
+    const value = text.trim().slice(0, MAX_LEN);
     if (!value || typing) return;
+    const history = messages
+      .filter(m => m.id !== "welcome")
+      .slice(-8)
+      .map(m => ({ role: m.role, content: m.text }));
+
     setMessages(prev => [...prev, { id: `u-${Date.now()}`, role: "user", text: value }]);
     setInput("");
     setTyping(true);
-    window.setTimeout(() => {
-      setMessages(prev => [...prev, { id: `a-${Date.now()}`, role: "assistant", text: buildAnswer(value, context) }]);
-      setTyping(false);
-      inputRef.current?.focus();
-    }, 700);
+
+    let answer: string;
+    try {
+      const { data, error } = await supabase.functions.invoke("ai-chat", {
+        body: { question: value, context, history },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      answer = data?.answer?.trim() || offlineAnswer(value, context);
+    } catch (e) {
+      const detail = e instanceof Error ? e.message : "";
+      answer = `${offlineAnswer(value, context)}\n\n(Resposta gerada localmente — a IA está indisponível no momento${detail ? `: ${detail}` : ""}.)`;
+    }
+
+    setMessages(prev => [...prev, { id: `a-${Date.now()}`, role: "assistant", text: answer }]);
+    setTyping(false);
+    inputRef.current?.focus();
   };
 
   return (
@@ -93,7 +127,9 @@ export const AIChatWidget = ({ context }: { context: AIChatContext }) => {
             </span>
             <div className="flex-1 min-w-0">
               <div className="text-[12.5px] font-semibold leading-tight">Assistente de monitoramento</div>
-              <div className="text-[10.5px] text-muted-foreground">Respostas simuladas</div>
+              <div className="text-[10.5px] text-muted-foreground">
+                {typing ? "Analisando dados da malha…" : "Baseado nos dados do painel"}
+              </div>
             </div>
             <button
               onClick={() => setOpen(false)}
@@ -108,20 +144,20 @@ export const AIChatWidget = ({ context }: { context: AIChatContext }) => {
             {messages.map(m => (
               <div key={m.id} className={m.role === "user" ? "flex justify-end" : "flex justify-start"}>
                 <div
-                  className={`max-w-[85%] text-[12.5px] leading-relaxed rounded-2xl px-3 py-2 ${
+                  className={`max-w-[85%] text-[12.5px] leading-relaxed rounded-2xl px-3 py-2 whitespace-pre-line ${
                     m.role === "user"
                       ? "bg-primary text-primary-foreground rounded-br-sm"
                       : "bg-surface-low text-foreground rounded-bl-sm"
                   }`}
                 >
-                  {m.text}
+                  {renderText(m.text)}
                 </div>
               </div>
             ))}
             {typing && (
               <div className="flex justify-start">
                 <div className="bg-surface-low rounded-2xl rounded-bl-sm px-3 py-2 text-[12px] text-muted-foreground">
-                  digitando…
+                  pensando…
                 </div>
               </div>
             )}
@@ -154,6 +190,7 @@ export const AIChatWidget = ({ context }: { context: AIChatContext }) => {
               onChange={e => setInput(e.target.value)}
               placeholder="Pergunte sobre a malha…"
               aria-label="Mensagem para o assistente"
+              maxLength={MAX_LEN}
               className="flex-1 h-9 px-3 rounded-lg bg-surface-low border border-border text-[12.5px] outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
             <button

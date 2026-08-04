@@ -1,7 +1,7 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { LayoutDashboard, Map, TrendingUp, CalendarDays, Users, BarChart3, Settings, LogOut, User, ClipboardList, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useAlertsFeed } from "@/hooks/useAlertsFeed";
+import { useActiveAlertsCount } from "@/hooks/useAlertsFeed";
 import motivaLogo from "@/assets/motiva-logo.webp.asset.json";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -23,8 +23,7 @@ interface SidebarBodyProps { onNavigate?: () => void; collapsed?: boolean; onTog
 export const SidebarBody = ({ onNavigate, collapsed = false, onToggle }: SidebarBodyProps) => {
   const { pathname } = useLocation();
   const { signOut, user } = useAuth();
-  const { data: feed = [] } = useAlertsFeed();
-  const activeAlerts = feed.filter(a => a.status === "critico" || a.status === "atencao").length;
+  const { data: activeAlerts = 0 } = useActiveAlertsCount();
 
   return (
     <div

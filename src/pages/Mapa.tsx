@@ -215,6 +215,7 @@ const Mapa = () => {
         rightSlot={<GlobalFilters />}
       />
       <div className="relative h-[calc(100vh-72px)] w-full overflow-hidden">
+        <h1 className="sr-only">Mapa operacional da malha rodoviária</h1>
         {/* Full-screen map */}
         <div className="absolute inset-0">
           <Suspense fallback={<Skeleton className="w-full h-full" />}>

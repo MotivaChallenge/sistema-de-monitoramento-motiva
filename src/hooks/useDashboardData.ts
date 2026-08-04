@@ -2,7 +2,6 @@ import { useMemo } from "react";
 import { useSegments, useKmMarkers, useFieldTeams, useHighways } from "@/hooks/useVegiaData";
 import { useWeather } from "@/hooks/useWeather";
 import { ircForSegment } from "@/lib/irc";
-import { TEAM_CAPACITY } from "@/mocks/dashboard";
 import type { Segment, Status } from "@/types/domain";
 
 export interface SegmentPoint {
@@ -59,6 +58,8 @@ export const useDashboardData = (rodovia?: string) => {
 
   const teams = teamsQ.data ?? [];
   const teamsAvailable = teams.filter(t => t.status === "disponivel").length;
+  /** Capacidade diária somada de todas as equipes cadastradas. */
+  const dailyCapacity = teams.reduce((a, t) => a + (t.capacidade_dia ?? 0), 0);
 
   const counts = useMemo(() => {
     const by = (s: Status) => segments.filter(x => x.status === s).length;
@@ -91,8 +92,10 @@ export const useDashboardData = (rodovia?: string) => {
     kmCoverage,
     avgCriticality,
     rain5d,
+    teams,
     teamsAvailable,
-    teamsCapacity: TEAM_CAPACITY,
+    teamsTotal: teams.length,
+    dailyCapacity,
     isLoading: segmentsQ.isLoading || markersQ.isLoading,
     isError: segmentsQ.isError,
   };
