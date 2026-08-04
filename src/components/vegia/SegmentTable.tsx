@@ -96,7 +96,7 @@ export const SegmentTable = ({ rows }: { rows: Segment[] }) => {
   };
 
   return (
-    <div className="bg-surface-lowest rounded-xl p-4 md:p-6">
+    <div className="bg-surface-lowest rounded-xl p-4 md:p-6 min-w-0 max-w-full">
       <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
         <div className="flex items-center gap-3">
           <h3 className="text-[16px] font-semibold">Detalhamento por Segmento</h3>
