@@ -65,7 +65,7 @@ export const UpcomingMaintenance = ({ limit = 5 }: { limit?: number }) => {
       </ul>
 
       <button
-        onClick={() => navigate("/ordens-servico")}
+        onClick={() => navigate("/ordens")}
         className="w-full mt-3 py-2 rounded-lg border border-border text-[11px] font-semibold tracking-wider uppercase hover:bg-surface-low hover:border-primary/40 transition-smooth"
       >
         Ver ordens de serviço
