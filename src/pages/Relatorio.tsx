@@ -130,7 +130,7 @@ const Relatorio = () => {
         />
       ) : loadingReports || loadingSegs ? (
         <div className="space-y-5">
-          <div className="grid grid-cols-4 gap-5"><Skeleton className="h-28" /><Skeleton className="h-28" /><Skeleton className="h-28" /><Skeleton className="h-28" /></div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5"><Skeleton className="h-28" /><Skeleton className="h-28" /><Skeleton className="h-28" /><Skeleton className="h-28" /></div>
           <Skeleton className="h-96 w-full" />
         </div>
       ) : reports.length === 0 ? (
@@ -141,7 +141,7 @@ const Relatorio = () => {
         </div>
       ) : (
       <>
-      <div className="grid grid-cols-4 gap-5 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-6">
         <MetricCard label="Conformidade" value={<span>{conformidade}<span className="text-[24px]">%</span></span>} footer={
           <div className="space-y-2">
             <span className="text-muted-foreground text-[12px] font-semibold">{lvl1}+{lvl2}/{totalCounted} pontos</span>
@@ -162,7 +162,7 @@ const Relatorio = () => {
 
       <SegmentTable rows={segments} />
 
-      <div className="mt-6 bg-surface-lowest rounded-xl p-5 flex items-center justify-between">
+      <div className="mt-6 bg-surface-lowest rounded-xl p-5 flex flex-wrap gap-4 items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="flex -space-x-2">
             {[1,2,3].map(i => <div key={i} className="h-9 w-9 rounded-full bg-foreground/80 border-2 border-surface-lowest" />)}
