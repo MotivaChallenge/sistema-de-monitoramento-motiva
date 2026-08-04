@@ -64,7 +64,6 @@ const Dashboard = () => {
 
   const recommendations = recommendationsFor(criticos > 0 ? "critico" : totalAlerts > 0 ? "atencao" : "conforme");
 
-  const monitoredPct = allSegments.length ? Math.round((total / allSegments.length) * 100) : 0;
   const lastUpdate = useMemo(() => new Date(), [fetching]);
 
   return (
@@ -130,7 +129,8 @@ const Dashboard = () => {
         {/* 2 — Resumo operacional rápido */}
         <OpsSummaryBar
           lastUpdate={lastUpdate}
-          monitoredPct={monitoredPct}
+          segmentsShown={total}
+          segmentsTotal={allSegments.length}
           coverageKm={coverage}
           criticos={criticos}
           activeAlerts={totalAlerts}
