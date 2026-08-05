@@ -205,15 +205,63 @@ const OrdensServico = () => {
         </div>
 
         <section className="bg-surface-lowest rounded-xl border border-border/40 shadow-card overflow-hidden">
-          <div className="px-5 py-4 border-b border-border/40">
-            <h2 className="text-[14px] font-semibold tracking-wide uppercase">Ordens ativas</h2>
+          <div className="px-5 py-4 border-b border-border/40 space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 className="text-[14px] font-semibold tracking-wide uppercase">Ordens de serviço</h2>
+              <span className="text-[11px] text-muted-foreground tabular-nums">
+                {orders.length} de {allOrders.length} ordens
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="relative min-w-[200px] flex-1 max-w-[280px]">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <Input
+                  value={fSearch}
+                  onChange={e => setFSearch(e.target.value)}
+                  placeholder="Buscar por código, KM ou serviço…"
+                  aria-label="Buscar ordens de serviço"
+                  className="pl-8 h-9 text-[13px]"
+                />
+              </div>
+              <Select value={fStatus} onValueChange={(v: any) => setFStatus(v)}>
+                <SelectTrigger className="h-9 w-[160px] text-[12px]" aria-label="Filtrar por status"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos os status</SelectItem>
+                  {(Object.keys(STATUS_META) as WorkOrderStatus[]).map(s => (
+                    <SelectItem key={s} value={s}>{STATUS_META[s].label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={fPriority} onValueChange={(v: any) => setFPriority(v)}>
+                <SelectTrigger className="h-9 w-[150px] text-[12px]" aria-label="Filtrar por prioridade"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todas">Toda prioridade</SelectItem>
+                  {(Object.keys(PRIORITY_META) as WorkOrderPriority[]).map(p => (
+                    <SelectItem key={p} value={p}>{PRIORITY_META[p].label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={fTeam} onValueChange={setFTeam}>
+                <SelectTrigger className="h-9 w-[170px] text-[12px]" aria-label="Filtrar por equipe"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todas">Todas as equipes</SelectItem>
+                  <SelectItem value="sem">Sem atribuição</SelectItem>
+                  {teams.map(t => <SelectItem key={t.id} value={t.id}>{t.nome}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              {filtersActive && (
+                <Button variant="ghost" size="sm" onClick={clearFilters} className="h-9 gap-1.5 text-[12px]">
+                  <X className="h-3.5 w-3.5" /> Limpar
+                </Button>
+              )}
+            </div>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-[13px]">
+            <table className="w-full text-[13px] min-w-[880px]">
               <thead className="bg-surface-low text-[11px] uppercase tracking-wider text-muted-foreground">
                 <tr>
                   <th className="text-left px-5 py-3 font-semibold">Código</th>
-                  <th className="text-left px-3 py-3 font-semibold">Trecho</th>
+                  <th className="text-left px-3 py-3 font-semibold">Trecho / localização</th>
                   <th className="text-left px-3 py-3 font-semibold">Serviço</th>
                   <th className="text-left px-3 py-3 font-semibold">Equipe</th>
                   <th className="text-left px-3 py-3 font-semibold">Prioridade</th>
@@ -230,26 +278,63 @@ const OrdensServico = () => {
                     className="inline-flex items-center gap-2 text-destructive hover:underline text-[12px] font-semibold"
                   >Falha ao carregar ordens de serviço — tentar novamente</button>
                 </td></tr>}
-                {!isLoading && orders.length === 0 && <tr><td colSpan={8} className="px-5 py-6 text-center text-muted-foreground">Nenhuma OS emitida.</td></tr>}
+                {!isLoading && !isError && orders.length === 0 && (
+                  <tr><td colSpan={8} className="px-5 py-6 text-center text-muted-foreground">
+                    {filtersActive ? "Nenhuma OS encontrada para os filtros atuais." : "Nenhuma OS emitida."}
+                  </td></tr>
+                )}
                 {orders.map(o => {
                   const seg = segMap.get(o.segment_id);
                   const team = o.team_id ? teamMap.get(o.team_id) : null;
                   const sm = STATUS_META[o.status];
                   const pm = PRIORITY_META[o.priority];
+                  const done = o.status === "concluida" || o.status === "cancelada";
                   return (
-                    <tr key={o.id} className="hover:bg-surface-low/60 transition-smooth">
+                    <tr key={o.id} className={`hover:bg-surface-low/60 transition-smooth ${o.status === "concluida" ? "opacity-70" : ""}`}>
                       <td className="px-5 py-3 font-mono text-[12px] font-semibold">{o.code}</td>
-                      <td className="px-3 py-3">{seg ? `${seg.km} · ${seg.tipo}` : o.segment_id}</td>
+                      <td className="px-3 py-3">
+                        {seg ? (
+                          <div className="leading-tight">
+                            <div className="font-medium">{formatKmPrecise(seg.kmStart)} — {formatKmPrecise(seg.kmEnd)}</div>
+                            <div className="text-[11px] text-muted-foreground">
+                              {seg.rodovia ? `${seg.rodovia} · ` : ""}{seg.tipo}
+                            </div>
+                          </div>
+                        ) : o.segment_id}
+                      </td>
                       <td className="px-3 py-3 capitalize">{o.tipo_servico}</td>
                       <td className="px-3 py-3">{team?.nome ?? <span className="text-muted-foreground">—</span>}</td>
                       <td className="px-3 py-3"><span className="font-semibold" style={{ color: pm.fg }}>{pm.label}</span></td>
                       <td className="px-3 py-3 tabular-nums text-muted-foreground">{o.scheduled_for ?? "—"}</td>
                       <td className="px-5 py-3">
-                        <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-[11px] font-semibold" style={{ background: sm.bg, color: sm.fg }}>{sm.label}</span>
+                        <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-[11px] font-semibold" style={{ background: sm.bg, color: sm.fg }}>
+                          {o.status === "concluida" && <CheckCircle2 className="h-3 w-3" />}
+                          {sm.label}
+                        </span>
+                        {o.completed_at && (
+                          <div className="text-[10px] text-muted-foreground mt-1 tabular-nums">
+                            Finalizada em {fmtDateTime(o.completed_at)}
+                          </div>
+                        )}
                       </td>
                       {canEdit && (
                         <td className="px-5 py-3 text-right">
                           <div className="inline-flex gap-1">
+                            {!done && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => complete(o)}
+                                disabled={completingId === o.id}
+                                className="gap-1.5 text-turquoise hover:text-turquoise"
+                                aria-label={`Concluir ordem ${o.code}`}
+                              >
+                                {completingId === o.id
+                                  ? <Loader2 className="h-4 w-4 animate-spin" />
+                                  : <CheckCircle2 className="h-4 w-4" />}
+                                <span className="hidden lg:inline text-[12px] font-semibold">Concluir</span>
+                              </Button>
+                            )}
                             <Button size="sm" variant="ghost" onClick={() => openEdit(o)} aria-label="Editar"><Pencil className="h-4 w-4" /></Button>
                             {isAdmin && <Button size="sm" variant="ghost" onClick={() => remove(o)} aria-label="Excluir"><Trash2 className="h-4 w-4 text-destructive" /></Button>}
                           </div>
