@@ -122,7 +122,7 @@ const Dashboard = () => {
         }
       />
 
-      <div className="px-4 md:px-8 lg:px-10 pt-2 pb-12 space-y-6">
+      <div className="px-4 md:px-8 lg:px-10 pt-2 pb-12 space-y-5">
         <h1 className="sr-only">Painel de monitoramento de vegetação rodoviária</h1>
         {isError && <QueryErrorState onRetry={() => qc.invalidateQueries()} />}
 
@@ -217,15 +217,15 @@ const Dashboard = () => {
         )}
 
         {/* 6 — Painel operacional do dia */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 items-stretch">
           <PriorityList segments={segments} rain5d={rain5d} />
           <UpcomingMaintenance />
           <TeamsStatus />
         </div>
 
         {/* 7 — Análises e alertas */}
-        <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6">
-          <div className="space-y-6">
+        <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-4 items-start">
+          <div className="space-y-4">
             <section className="bg-surface-lowest rounded-xl p-4 md:p-5 border border-border/40 shadow-card">
               <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                 <h3 className="text-[13px] font-semibold tracking-wider uppercase">Tendência NDVI</h3>
