@@ -167,52 +167,54 @@ const Dashboard = () => {
         {/* 3 — Clima em destaque */}
         <WeatherForecast />
 
-        {/* 4 — Indicadores da malha */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5">
-          <MetricCard icon={Activity} label="Cobertura Total" value={coverage.toFixed(1).replace(".", ",")} unit="km" footer={<div className="h-1.5 rounded-full bg-surface-high overflow-hidden"><div className="h-full w-full rounded-full bg-gradient-primary" /></div>} />
-          <MetricCard icon={AlertTriangle} label="Trechos Críticos" value={String(criticos)} unit={`de ${total} segmentos`} variant="danger" footer={
-            <div className="h-1.5 rounded-full bg-surface-high">
-              <div className="h-full rounded-full bg-destructive transition-smooth" style={{ width: `${total ? (criticos / total) * 100 : 0}%` }} />
-            </div>
-          } />
-          <MetricCard icon={Leaf} label="NDVI Médio" value={ndviAvg.toFixed(2).replace(".", ",")} unit="global" footer={
-            <div className="flex h-1.5 gap-0.5 rounded-full overflow-hidden">
-              <div className="flex-1 bg-destructive/30" /><div className="flex-1 bg-tertiary/40" /><div className="flex-[2] bg-primary" />
-            </div>
-          } />
-          <MetricCard icon={Gauge} label="IRC Médio" value={String(ircAvg)} unit="/ 100" variant={ircAvg >= 75 ? "danger" : undefined} footer={
-            <div className="h-1.5 rounded-full bg-surface-high">
-              <div
-                className="h-full rounded-full transition-smooth"
-                style={{
-                  width: `${ircAvg}%`,
-                  background: ircAvg >= 75 ? "hsl(var(--destructive))" : ircAvg >= 55 ? "hsl(var(--tertiary))" : "hsl(var(--primary))",
-                }}
-              />
-            </div>
-          } />
-        </div>
-
-        {/* 5 — Visão executiva */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5">
-          <StatisticCard
-            icon={DollarSign}
-            label="Economia estimada/ano"
-            value={fmtBRL(economiaAnual)}
-            hint="vs. modelo tradicional"
-            tone="positive"
-            info={`Projeção anual da redução de custo de roçada com manutenção guiada por satélite. Cálculo: ${coverage.toFixed(1).replace(".", ",")} km monitorados × R$ 4.200 por km/mês (custo médio de ciclo) × 12 meses × 28% de ganho médio de eficiência ao substituir o calendário fixo pela priorização por NDVI/IRC.`}
+        {/* 4 — Indicadores operacionais (carrossel) */}
+        {isLoading ? (
+          <Skeleton className="h-[150px] w-full rounded-xl" />
+        ) : (
+          <KpiCarousel
+            ariaLabel="Indicadores operacionais da malha"
+            items={[
+              <MetricCard key="cob" icon={Activity} label="Cobertura Total" value={coverage.toFixed(1).replace(".", ",")} unit="km" footer={<div className="h-1.5 rounded-full bg-surface-high overflow-hidden"><div className="h-full w-full rounded-full bg-gradient-primary" /></div>} />,
+              <MetricCard key="cri" icon={AlertTriangle} label="Trechos Críticos" value={String(criticos)} unit={`de ${total} segmentos`} variant="danger" footer={
+                <div className="h-1.5 rounded-full bg-surface-high">
+                  <div className="h-full rounded-full bg-destructive transition-smooth" style={{ width: `${total ? (criticos / total) * 100 : 0}%` }} />
+                </div>
+              } />,
+              <MetricCard key="ndvi" icon={Leaf} label="NDVI Médio" value={ndviAvg.toFixed(2).replace(".", ",")} unit="global" footer={
+                <div className="flex h-1.5 gap-0.5 rounded-full overflow-hidden">
+                  <div className="flex-1 bg-destructive/30" /><div className="flex-1 bg-tertiary/40" /><div className="flex-[2] bg-primary" />
+                </div>
+              } />,
+              <MetricCard key="irc" icon={Gauge} label="IRC Médio" value={String(ircAvg)} unit="/ 100" variant={ircAvg >= 75 ? "danger" : undefined} footer={
+                <div className="h-1.5 rounded-full bg-surface-high">
+                  <div className="h-full rounded-full transition-smooth" style={{
+                    width: `${ircAvg}%`,
+                    background: ircAvg >= 75 ? "hsl(var(--destructive))" : ircAvg >= 55 ? "hsl(var(--tertiary))" : "hsl(var(--primary))",
+                  }} />
+                </div>
+              } />,
+              <MetricCard key="conf" icon={ShieldCheck} label="Conformidade" value={String(conformidadePct)} unit="% dos trechos" variant={conformidadePct < 70 ? "danger" : undefined} footer={
+                <div className="h-1.5 rounded-full bg-surface-high">
+                  <div className="h-full rounded-full bg-turquoise transition-smooth" style={{ width: `${conformidadePct}%` }} />
+                </div>
+              } />,
+              <MetricCard key="ale" icon={BellRing} label="Alertas Ativos" value={String(totalAlerts)} unit="em aberto" variant={totalAlerts > 0 ? "danger" : undefined} footer={
+                <p className="text-[11px] text-muted-foreground">{criticos} críticos · {Math.max(totalAlerts - criticos, 0)} em atenção</p>
+              } />,
+              <MetricCard key="os" icon={CalendarCheck} label="Ordens em Aberto" value={String(pendingOrders)} unit="pendentes / em andamento" footer={
+                <button onClick={() => navigate("/ordens")} className="text-[11px] font-semibold uppercase tracking-wider text-primary hover:underline">Ver ordens</button>
+              } />,
+              <MetricCard key="eq" icon={Users} label="Equipes Disponíveis" value={`${teamsAvailable}`} unit={`de ${teamsTotal} equipes`} variant={teamsAvailable === 0 ? "danger" : undefined} footer={
+                <button onClick={() => navigate("/equipes")} className="text-[11px] font-semibold uppercase tracking-wider text-primary hover:underline">Gerenciar equipes</button>
+              } />,
+              <MetricCard key="rain" icon={CloudRain} label="Chuva 5 dias" value={rain5d.toFixed(1).replace(".", ",")} unit="mm acumulados" variant={rain5d >= 40 ? "danger" : undefined} footer={
+                <p className="text-[11px] text-muted-foreground">
+                  {rain5d >= 40 ? "Alto risco de crescimento acelerado" : rain5d >= 15 ? "Crescimento moderado esperado" : "Baixo impacto na vegetação"}
+                </p>
+              } />,
+            ]}
           />
-          <StatisticCard
-            icon={TrendingDown}
-            label="Custos evitados"
-            value={fmtBRL(custosEvitados)}
-            hint="multas + deslocamentos"
-            info="Parcela da economia que corresponde a perdas evitadas — multas contratuais por descumprimento de altura de vegetação e deslocamentos desnecessários de equipe. Estimado em 35% da economia anual projetada, com base no histórico de notificações e viagens improdutivas."
-          />
-          <StatisticCard icon={CalendarCheck} label="Ordens em aberto" value={String(pendingOrders)} hint="pendentes e em andamento" tone={pendingOrders > 0 ? "warning" : "positive"} onClick={() => navigate("/ordens")} />
-          <StatisticCard icon={Users} label="Equipes" value={`${teamsAvailable} / ${teamsTotal}`} hint="Disponíveis para deslocamento" tone={teamsAvailable > 0 ? "positive" : "warning"} onClick={() => navigate("/equipes")} />
-        </div>
+        )}
 
         {/* 6 — Painel operacional do dia */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-5">
