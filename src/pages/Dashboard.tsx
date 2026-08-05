@@ -21,6 +21,7 @@ import { AlertCard } from "@/components/vegia/AlertCard";
 import { WeatherForecast } from "@/components/vegia/WeatherForecast";
 import { AIChatWidget } from "@/components/vegia/AIChatWidget";
 import { GlobalFilters } from "@/components/vegia/GlobalFilters";
+import { HighwaySelect } from "@/components/vegia/HighwaySelect";
 import { useFilters } from "@/contexts/FiltersContext";
 import { useTotalCoverage, useWorkOrders } from "@/hooks/useVegiaData";
 import { ircForSegment } from "@/lib/irc";
@@ -34,16 +35,21 @@ const Dashboard = () => {
   const qc = useQueryClient();
   const fetching = useIsFetching();
   const [refreshing, setRefreshing] = useState(false);
-  const { matches, activeCount } = useFilters();
+  const { matches, activeCount, rodovia } = useFilters();
 
   const {
     segments: allSegments, highlights, rain5d, teamsAvailable, teamsTotal, isLoading, isError,
-  } = useDashboardData();
-  const { data: coverage = 0 } = useTotalCoverage();
+    kmCoverage,
+  } = useDashboardData(rodovia ?? undefined);
+  const { data: totalCoverage = 0 } = useTotalCoverage();
+  const coverage = rodovia ? kmCoverage : totalCoverage;
   const { data: workOrders = [] } = useWorkOrders();
 
   const segments = useMemo(
-    () => allSegments.filter(s => matches({ status: s.status, kmStart: s.kmStart })),
+    () => allSegments.filter(s => matches({
+      status: s.status, kmStart: s.kmStart, rodovia: s.rodovia ?? null,
+      text: `${s.km} ${s.tipo} ${s.id}`,
+    })),
     [allSegments, matches]
   );
 
@@ -67,8 +73,9 @@ const Dashboard = () => {
     () => new Map(segments.map(s => [s.id, ircForSegment(s, rain5d).score])),
     [segments, rain5d]
   );
+  const segmentIds = useMemo(() => new Set(segments.map(s => s.id)), [segments]);
   const pendingOrders = workOrders.filter(
-    o => o.status === "pendente" || o.status === "em_andamento"
+    o => (o.status === "pendente" || o.status === "em_andamento") && segmentIds.has(o.segment_id)
   ).length;
 
   const recommendations = useMemo(
