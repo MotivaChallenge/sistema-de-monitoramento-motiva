@@ -284,7 +284,7 @@ const Planejamento = () => {
         <div className="bg-secondary-container/40 border border-secondary-container rounded-xl p-4 text-[12px] text-secondary-on-container flex items-start gap-3">
           <Gauge className="h-4 w-4 mt-0.5 shrink-0" />
           <div>
-            <b>Otimização ORION:</b> a alocação prioriza trechos com IRC {">"} 55,
+            <b>Otimização Motiva:</b> a alocação prioriza trechos com IRC {">"} 55,
             balanceando carga por equipe e respeitando regionalização. Janela
             recalculada automaticamente conforme novas leituras NDVI e previsão de chuva.
           </div>
