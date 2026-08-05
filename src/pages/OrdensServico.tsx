@@ -1,9 +1,9 @@
 import { TopHeader } from "@/components/vegia/TopHeader";
-import { ClipboardList, Plus, Pencil, Trash2 } from "lucide-react";
+import { ClipboardList, Plus, Pencil, Trash2, CheckCircle2, Search, X, Loader2 } from "lucide-react";
 import { useFieldTeams, useWorkOrders, WorkOrder, WorkOrderPriority, WorkOrderStatus } from "@/hooks/useVegiaData";
 import { useSegments } from "@/hooks/useVegiaData";
 import { useAuth } from "@/hooks/useAuth";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { formatKmPrecise } from "@/lib/km";
 
 const STATUS_META: Record<WorkOrderStatus, { label: string; bg: string; fg: string }> = {
   pendente: { label: "Pendente", bg: "hsl(var(--muted) / 0.6)", fg: "hsl(var(--muted-foreground))" },
@@ -51,8 +52,11 @@ const emptyForm: FormState = {
 
 const nextCode = () => `OS-${Date.now().toString(36).toUpperCase().slice(-6)}`;
 
+const fmtDateTime = (iso: string) =>
+  new Date(iso).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
+
 const OrdensServico = () => {
-  const { data: orders = [], isLoading, isError, refetch } = useWorkOrders();
+  const { data: allOrders = [], isLoading, isError, refetch } = useWorkOrders();
   const { data: teams = [] } = useFieldTeams();
   const { data: segments = [] } = useSegments();
   const { canEdit, isAdmin, user } = useAuth();
@@ -61,15 +65,41 @@ const OrdensServico = () => {
   const [editing, setEditing] = useState<WorkOrder | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
   const [saving, setSaving] = useState(false);
+  const [completingId, setCompletingId] = useState<string | null>(null);
+
+  // Filtros específicos desta tela
+  const [fStatus, setFStatus] = useState<WorkOrderStatus | "todos">("todos");
+  const [fPriority, setFPriority] = useState<WorkOrderPriority | "todas">("todas");
+  const [fTeam, setFTeam] = useState<string>("todas");
+  const [fSearch, setFSearch] = useState("");
 
   const segMap = new Map(segments.map(s => [s.id, s]));
   const teamMap = new Map(teams.map(t => [t.id, t]));
 
+  const orders = useMemo(() => {
+    const q = fSearch.trim().toLowerCase();
+    return allOrders.filter(o => {
+      if (fStatus !== "todos" && o.status !== fStatus) return false;
+      if (fPriority !== "todas" && o.priority !== fPriority) return false;
+      if (fTeam !== "todas" && (o.team_id ?? "sem") !== fTeam) return false;
+      if (q) {
+        const seg = segMap.get(o.segment_id);
+        const hay = `${o.code} ${o.tipo_servico} ${seg?.km ?? ""} ${seg?.tipo ?? ""} ${seg?.rodovia ?? ""}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [allOrders, fStatus, fPriority, fTeam, fSearch, segments]);
+
+  const filtersActive =
+    fStatus !== "todos" || fPriority !== "todas" || fTeam !== "todas" || fSearch.trim() !== "";
+  const clearFilters = () => { setFStatus("todos"); setFPriority("todas"); setFTeam("todas"); setFSearch(""); };
+
   const kpis = {
-    total: orders.length,
-    pendentes: orders.filter(o => o.status === "pendente").length,
-    andamento: orders.filter(o => o.status === "em_andamento").length,
-    concluidas: orders.filter(o => o.status === "concluida").length,
+    total: allOrders.length,
+    pendentes: allOrders.filter(o => o.status === "pendente").length,
+    andamento: allOrders.filter(o => o.status === "em_andamento").length,
+    concluidas: allOrders.filter(o => o.status === "concluida").length,
   };
 
   const openCreate = () => {
@@ -121,6 +151,26 @@ const OrdensServico = () => {
     const { error } = await supabase.from("work_orders").delete().eq("id", o.id);
     if (error) { toast.error("Erro ao excluir", { description: error.message }); return; }
     toast.success("OS excluída");
+    qc.invalidateQueries({ queryKey: ["work_orders"] });
+  };
+
+  const complete = async (o: WorkOrder) => {
+    setCompletingId(o.id);
+    const now = new Date().toISOString();
+    const { error } = await supabase
+      .from("work_orders")
+      .update({
+        status: "concluida",
+        completed_at: now,
+        started_at: o.started_at ?? now,
+      })
+      .eq("id", o.id);
+    setCompletingId(null);
+    if (error) { toast.error("Não foi possível concluir a OS", { description: error.message }); return; }
+    const seg = segMap.get(o.segment_id);
+    toast.success(`OS ${o.code} concluída`, {
+      description: `${seg ? `${seg.km} · ` : ""}Finalizada em ${fmtDateTime(now)}.`,
+    });
     qc.invalidateQueries({ queryKey: ["work_orders"] });
   };
 
