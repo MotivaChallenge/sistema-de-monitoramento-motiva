@@ -4,18 +4,32 @@ import { useSegments } from "@/hooks/useVegiaData";
 
 export type StatusFilter = Status; // "critico" | "atencao" | "conforme"
 
+export interface MatchTarget {
+  status: Status;
+  kmStart: number;
+  rodovia?: string | null;
+  /** Texto livre pesquisável (km, tipo, id…). */
+  text?: string;
+}
+
 interface FiltersCtx {
   statuses: StatusFilter[];
   /** `null` = sem restrição de KM (padrão). */
   kmRange: [number, number] | null;
   /** Maior KM presente na malha carregada. */
   kmMax: number;
+  /** Código da rodovia selecionada (`null` = toda a malha). */
+  rodovia: string | null;
+  /** Busca textual global. */
+  search: string;
   toggleStatus: (s: StatusFilter) => void;
   setStatuses: (s: StatusFilter[]) => void;
   setKmRange: (r: [number, number] | null) => void;
+  setRodovia: (code: string | null) => void;
+  setSearch: (q: string) => void;
   reset: () => void;
   activeCount: number;
-  matches: (s: { status: Status; kmStart: number }) => boolean;
+  matches: (s: MatchTarget) => boolean;
 }
 
 const Ctx = createContext<FiltersCtx | null>(null);
@@ -24,6 +38,8 @@ export const FiltersProvider = ({ children }: { children: ReactNode }) => {
   const { data: segments } = useSegments();
   const [statuses, setStatuses] = useState<StatusFilter[]>([]);
   const [kmRange, setKmRange] = useState<[number, number] | null>(null);
+  const [rodovia, setRodovia] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
 
   /** Limite superior do slider — derivado da malha real, nunca fixo. */
   const kmMax = useMemo(() => {
@@ -38,18 +54,25 @@ export const FiltersProvider = ({ children }: { children: ReactNode }) => {
   const reset = useCallback(() => {
     setStatuses([]);
     setKmRange(null);
+    setRodovia(null);
+    setSearch("");
   }, []);
 
   const value = useMemo<FiltersCtx>(() => {
     const kmActive = !!kmRange && (kmRange[0] > 0 || kmRange[1] < kmMax);
-    const activeCount = (statuses.length > 0 ? 1 : 0) + (kmActive ? 1 : 0);
+    const q = search.trim().toLowerCase();
+    const activeCount =
+      (statuses.length > 0 ? 1 : 0) + (kmActive ? 1 : 0) + (rodovia ? 1 : 0) + (q ? 1 : 0);
     return {
-      statuses, kmRange, kmMax, toggleStatus, setStatuses, setKmRange, reset, activeCount,
+      statuses, kmRange, kmMax, rodovia, search,
+      toggleStatus, setStatuses, setKmRange, setRodovia, setSearch, reset, activeCount,
       matches: (s) =>
         (statuses.length === 0 || statuses.includes(s.status)) &&
-        (!kmActive || (s.kmStart >= kmRange![0] && s.kmStart <= kmRange![1])),
+        (!kmActive || (s.kmStart >= kmRange![0] && s.kmStart <= kmRange![1])) &&
+        (!rodovia || s.rodovia === undefined || s.rodovia === rodovia) &&
+        (!q || !s.text || s.text.toLowerCase().includes(q)),
     };
-  }, [statuses, kmRange, kmMax, toggleStatus, reset]);
+  }, [statuses, kmRange, kmMax, rodovia, search, toggleStatus, reset]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 };
