@@ -2,11 +2,14 @@ import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Status } from "@/types/domain";
+import { toast } from "sonner";
 
 export interface AlertFeedItem {
   id: string;
   segmentId: string;
   km: string;
+  kmStart: number;
+  rodovia: string | null;
   status: Status;
   message: string;
   createdAt: string;
@@ -22,7 +25,7 @@ export const useAlertsFeed = () => {
     queryFn: async (): Promise<AlertFeedItem[]> => {
       const { data, error } = await supabase
         .from("alerts")
-        .select("id, segment_id, status, message, created_at, segments(km)")
+        .select("id, segment_id, status, message, created_at, segments(km, km_start, rodovia)")
         .order("created_at", { ascending: false })
         .limit(20);
       if (error) throw error;
@@ -30,6 +33,8 @@ export const useAlertsFeed = () => {
         id: r.id,
         segmentId: r.segment_id,
         km: r.segments?.km ?? r.segment_id,
+        kmStart: Number(r.segments?.km_start ?? 0),
+        rodovia: r.segments?.rodovia ?? null,
         status: r.status as Status,
         message: r.message ?? "Alteração de status registrada",
         createdAt: r.created_at,
@@ -43,7 +48,17 @@ export const useAlertsFeed = () => {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "alerts" },
-        () => qc.invalidateQueries({ queryKey: QUERY_KEY })
+        (payload) => {
+          qc.invalidateQueries({ queryKey: QUERY_KEY });
+          qc.invalidateQueries({ queryKey: ["alerts-active-count"] });
+          if (payload.eventType === "INSERT") {
+            const row: any = payload.new;
+            const msg = row?.message ?? "Novo evento registrado na malha.";
+            if (row?.status === "critico") toast.error("Novo alerta crítico", { description: msg });
+            else if (row?.status === "atencao") toast.warning("Trecho em atenção", { description: msg });
+            else toast.success("Trecho regularizado", { description: msg });
+          }
+        }
       )
       .subscribe();
     return () => {

@@ -1,8 +1,8 @@
 import { TopHeader } from "@/components/vegia/TopHeader";
-import { Users, MapPin, Clock, Activity, Plus, Pencil, Trash2 } from "lucide-react";
+import { Users, MapPin, Clock, Activity, Plus, Pencil, Trash2, Search, X } from "lucide-react";
 import { useFieldTeams, TeamStatus, FieldTeam } from "@/hooks/useVegiaData";
 import { useAuth } from "@/hooks/useAuth";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -42,7 +42,7 @@ const emptyForm: FormState = {
 };
 
 const Equipes = () => {
-  const { data: teams = [], isLoading, isError, refetch } = useFieldTeams();
+  const { data: allTeams = [], isLoading, isError, refetch } = useFieldTeams();
   const { canEdit, isAdmin } = useAuth();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
@@ -50,11 +50,34 @@ const Equipes = () => {
   const [form, setForm] = useState<FormState>(emptyForm);
   const [saving, setSaving] = useState(false);
 
-  const total = teams.length;
-  const disponiveis = teams.filter(t => t.status === "disponivel").length;
-  const emCampo = teams.filter(t => t.status === "campo").length;
-  const capacidadeDia = teams.filter(t => t.status !== "afastada" && t.status !== "manutencao").reduce((a, t) => a + t.capacidade_dia, 0);
-  const eficienciaMedia = teams.length ? Math.round(teams.reduce((a, t) => a + t.eficiencia, 0) / teams.length) : 0;
+  // Filtros da tela de equipes
+  const [fStatus, setFStatus] = useState<TeamStatus | "todos">("todos");
+  const [fRegiao, setFRegiao] = useState<string>("todas");
+  const [fSearch, setFSearch] = useState("");
+
+  const regioes = useMemo(
+    () => Array.from(new Set(allTeams.map(t => t.regiao))).sort(),
+    [allTeams]
+  );
+
+  const teams = useMemo(() => {
+    const q = fSearch.trim().toLowerCase();
+    return allTeams.filter(t => {
+      if (fStatus !== "todos" && t.status !== fStatus) return false;
+      if (fRegiao !== "todas" && t.regiao !== fRegiao) return false;
+      if (q && !`${t.nome} ${t.regiao}`.toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }, [allTeams, fStatus, fRegiao, fSearch]);
+
+  const filtersActive = fStatus !== "todos" || fRegiao !== "todas" || fSearch.trim() !== "";
+  const clearFilters = () => { setFStatus("todos"); setFRegiao("todas"); setFSearch(""); };
+
+  const total = allTeams.length;
+  const disponiveis = allTeams.filter(t => t.status === "disponivel").length;
+  const emCampo = allTeams.filter(t => t.status === "campo").length;
+  const capacidadeDia = allTeams.filter(t => t.status !== "afastada" && t.status !== "manutencao").reduce((a, t) => a + t.capacidade_dia, 0);
+  const eficienciaMedia = allTeams.length ? Math.round(allTeams.reduce((a, t) => a + t.eficiencia, 0) / allTeams.length) : 0;
 
   const ranking = [...teams].sort((a, b) => b.eficiencia - a.eficiencia);
 
@@ -125,9 +148,47 @@ const Equipes = () => {
         </div>
 
         <section className="bg-surface-lowest rounded-xl border border-border/40 shadow-card overflow-hidden">
-          <div className="px-5 py-4 border-b border-border/40 flex items-center justify-between">
-            <h2 className="text-[14px] font-semibold tracking-wide uppercase">Cadastro de equipes</h2>
-            <span className="text-[11px] text-muted-foreground">Eficiência média da operação: <b className="text-foreground">{eficienciaMedia}%</b></span>
+          <div className="px-5 py-4 border-b border-border/40 space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 className="text-[14px] font-semibold tracking-wide uppercase">Cadastro de equipes</h2>
+              <span className="text-[11px] text-muted-foreground">Eficiência média da operação: <b className="text-foreground">{eficienciaMedia}%</b></span>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="relative min-w-[200px] flex-1 max-w-[260px]">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <Input
+                  value={fSearch}
+                  onChange={e => setFSearch(e.target.value)}
+                  placeholder="Buscar equipe ou região…"
+                  aria-label="Buscar equipes"
+                  className="pl-8 h-9 text-[13px]"
+                />
+              </div>
+              <Select value={fStatus} onValueChange={(v: any) => setFStatus(v)}>
+                <SelectTrigger className="h-9 w-[160px] text-[12px]" aria-label="Filtrar por status"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos os status</SelectItem>
+                  {(Object.keys(STATUS_META) as TeamStatus[]).map(s => (
+                    <SelectItem key={s} value={s}>{STATUS_META[s].label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={fRegiao} onValueChange={setFRegiao}>
+                <SelectTrigger className="h-9 w-[160px] text-[12px]" aria-label="Filtrar por região"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todas">Todas as regiões</SelectItem>
+                  {regioes.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              {filtersActive && (
+                <Button variant="ghost" size="sm" onClick={clearFilters} className="h-9 gap-1.5 text-[12px]">
+                  <X className="h-3.5 w-3.5" /> Limpar
+                </Button>
+              )}
+              <span className="text-[11px] text-muted-foreground tabular-nums ml-auto">
+                {teams.length} de {allTeams.length}
+              </span>
+            </div>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-[13px]">
@@ -158,7 +219,9 @@ const Equipes = () => {
                   </td></tr>
                 )}
                 {!isLoading && teams.length === 0 && (
-                  <tr><td colSpan={canEdit ? 8 : 7} className="px-5 py-6 text-center text-muted-foreground">Nenhuma equipe cadastrada.</td></tr>
+                  <tr><td colSpan={canEdit ? 8 : 7} className="px-5 py-6 text-center text-muted-foreground">
+                    {filtersActive ? "Nenhuma equipe encontrada para os filtros atuais." : "Nenhuma equipe cadastrada."}
+                  </td></tr>
                 )}
                 {teams.map(t => {
                   const meta = STATUS_META[t.status];

@@ -21,6 +21,7 @@ import { AlertCard } from "@/components/vegia/AlertCard";
 import { WeatherForecast } from "@/components/vegia/WeatherForecast";
 import { AIChatWidget } from "@/components/vegia/AIChatWidget";
 import { GlobalFilters } from "@/components/vegia/GlobalFilters";
+import { HighwaySelect } from "@/components/vegia/HighwaySelect";
 import { useFilters } from "@/contexts/FiltersContext";
 import { useTotalCoverage, useWorkOrders } from "@/hooks/useVegiaData";
 import { ircForSegment } from "@/lib/irc";
@@ -34,16 +35,21 @@ const Dashboard = () => {
   const qc = useQueryClient();
   const fetching = useIsFetching();
   const [refreshing, setRefreshing] = useState(false);
-  const { matches, activeCount } = useFilters();
+  const { matches, activeCount, rodovia } = useFilters();
 
   const {
     segments: allSegments, highlights, rain5d, teamsAvailable, teamsTotal, isLoading, isError,
-  } = useDashboardData();
-  const { data: coverage = 0 } = useTotalCoverage();
+    kmCoverage,
+  } = useDashboardData(rodovia ?? undefined);
+  const { data: totalCoverage = 0 } = useTotalCoverage();
+  const coverage = rodovia ? kmCoverage : totalCoverage;
   const { data: workOrders = [] } = useWorkOrders();
 
   const segments = useMemo(
-    () => allSegments.filter(s => matches({ status: s.status, kmStart: s.kmStart })),
+    () => allSegments.filter(s => matches({
+      status: s.status, kmStart: s.kmStart, rodovia: s.rodovia ?? null,
+      text: `${s.km} ${s.tipo} ${s.id}`,
+    })),
     [allSegments, matches]
   );
 
@@ -67,8 +73,9 @@ const Dashboard = () => {
     () => new Map(segments.map(s => [s.id, ircForSegment(s, rain5d).score])),
     [segments, rain5d]
   );
+  const segmentIds = useMemo(() => new Set(segments.map(s => s.id)), [segments]);
   const pendingOrders = workOrders.filter(
-    o => o.status === "pendente" || o.status === "em_andamento"
+    o => (o.status === "pendente" || o.status === "em_andamento") && segmentIds.has(o.segment_id)
   ).length;
 
   const recommendations = useMemo(
@@ -97,6 +104,7 @@ const Dashboard = () => {
         showLastReading
         rightSlot={
           <>
+            <HighwaySelect className="hidden sm:inline-flex" />
             <GlobalFilters />
             <button
               onClick={async () => {
@@ -192,8 +200,21 @@ const Dashboard = () => {
 
         {/* 5 — Visão executiva */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5">
-          <StatisticCard icon={DollarSign} label="Economia estimada/ano" value={fmtBRL(economiaAnual)} hint="vs. modelo tradicional" tone="positive" />
-          <StatisticCard icon={TrendingDown} label="Custos evitados" value={fmtBRL(custosEvitados)} hint="multas + deslocamentos" />
+          <StatisticCard
+            icon={DollarSign}
+            label="Economia estimada/ano"
+            value={fmtBRL(economiaAnual)}
+            hint="vs. modelo tradicional"
+            tone="positive"
+            info={`Projeção anual da redução de custo de roçada com manutenção guiada por satélite. Cálculo: ${coverage.toFixed(1).replace(".", ",")} km monitorados × R$ 4.200 por km/mês (custo médio de ciclo) × 12 meses × 28% de ganho médio de eficiência ao substituir o calendário fixo pela priorização por NDVI/IRC.`}
+          />
+          <StatisticCard
+            icon={TrendingDown}
+            label="Custos evitados"
+            value={fmtBRL(custosEvitados)}
+            hint="multas + deslocamentos"
+            info="Parcela da economia que corresponde a perdas evitadas — multas contratuais por descumprimento de altura de vegetação e deslocamentos desnecessários de equipe. Estimado em 35% da economia anual projetada, com base no histórico de notificações e viagens improdutivas."
+          />
           <StatisticCard icon={CalendarCheck} label="Ordens em aberto" value={String(pendingOrders)} hint="pendentes e em andamento" tone={pendingOrders > 0 ? "warning" : "positive"} onClick={() => navigate("/ordens")} />
           <StatisticCard icon={Users} label="Equipes" value={`${teamsAvailable} / ${teamsTotal}`} hint="Disponíveis para deslocamento" tone={teamsAvailable > 0 ? "positive" : "warning"} onClick={() => navigate("/equipes")} />
         </div>

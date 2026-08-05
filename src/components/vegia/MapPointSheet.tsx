@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { formatKmPrecise } from "@/lib/km";
 
 export interface PointInsightResult {
   point: { lat: number; lng: number };
@@ -19,6 +20,8 @@ export interface PointInsightResult {
 interface Props {
   open: boolean;
   point: { lat: number; lng: number; label?: string } | null;
+  /** Localização precisa projetada sobre o eixo da rodovia. */
+  kmInfo?: { rodovia: string; km: number; offsetMeters: number } | null;
   onClose: () => void;
 }
 
@@ -28,7 +31,7 @@ const riskColor = (r?: string) =>
   r === "moderado" ? "text-primary bg-primary/10" :
   "text-turquoise bg-turquoise/10";
 
-export const MapPointSheet = ({ open, point, onClose }: Props) => {
+export const MapPointSheet = ({ open, point, kmInfo, onClose }: Props) => {
   const navigate = useNavigate();
   const [data, setData] = useState<PointInsightResult | null>(null);
   const [loading, setLoading] = useState(false);
@@ -64,6 +67,18 @@ export const MapPointSheet = ({ open, point, onClose }: Props) => {
             <p className="text-xs text-muted-foreground font-mono">
               {point.lat.toFixed(5)}, {point.lng.toFixed(5)}
             </p>
+          )}
+          {kmInfo && (
+            <div className="mt-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2">
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Localização na rodovia</div>
+              <div className="text-sm font-semibold text-foreground">
+                {kmInfo.rodovia} · {formatKmPrecise(kmInfo.km)}
+              </div>
+              <div className="text-[11px] text-muted-foreground">
+                Desvio do eixo: {kmInfo.offsetMeters} m
+                {kmInfo.offsetMeters > 150 && " — ponto fora da faixa de domínio"}
+              </div>
+            </div>
           )}
         </SheetHeader>
 

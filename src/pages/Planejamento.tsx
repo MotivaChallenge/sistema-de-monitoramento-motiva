@@ -9,6 +9,10 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useFilters } from "@/contexts/FiltersContext";
+import { HighwaySelect } from "@/components/vegia/HighwaySelect";
+import { GlobalFilters } from "@/components/vegia/GlobalFilters";
+import { formatKmPrecise } from "@/lib/km";
 
 const DAYS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 
@@ -27,15 +31,32 @@ const addBusinessDays = (base: Date, offset: number): string => {
 };
 
 const Planejamento = () => {
-  const { data: segmentsRaw = [], isLoading } = useSegments();
+  const { data: allSegments = [], isLoading } = useSegments();
   const { data: teamsRaw = [], isLoading: teamsLoading } = useFieldTeams();
   const { data: weather } = useWeather();
   const rain5d = weather?.summary.totalRainMm ?? 8;
   const [horizonte, setHorizonte] = useState<"semana" | "mes">("semana");
+  const [regiao, setRegiao] = useState<string>("todas");
   const qc = useQueryClient();
+  const { matches, rodovia } = useFilters();
+
+  const segmentsRaw = useMemo(
+    () => allSegments.filter(s => matches({
+      status: s.status, kmStart: s.kmStart, rodovia: s.rodovia ?? null,
+      text: `${s.km} ${s.tipo} ${s.id}`,
+    })),
+    [allSegments, matches]
+  );
 
   const teams: FieldTeam[] = useMemo(
-    () => teamsRaw.filter(t => t.status === "disponivel" || t.status === "campo"),
+    () => teamsRaw
+      .filter(t => t.status === "disponivel" || t.status === "campo")
+      .filter(t => regiao === "todas" || t.regiao === regiao),
+    [teamsRaw, regiao]
+  );
+
+  const regioes = useMemo(
+    () => Array.from(new Set(teamsRaw.map(t => t.regiao))).sort(),
     [teamsRaw]
   );
 
@@ -129,6 +150,17 @@ const Planejamento = () => {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            <HighwaySelect />
+            <select
+              value={regiao}
+              onChange={e => setRegiao(e.target.value)}
+              aria-label="Filtrar equipes por região"
+              className="h-9 px-3 rounded-lg border border-border bg-surface-lowest text-[12px] font-semibold"
+            >
+              <option value="todas">Todas as regiões</option>
+              {regioes.map(r => <option key={r} value={r}>{r}</option>)}
+            </select>
+            <GlobalFilters />
             <div className="inline-flex bg-surface-high rounded-md p-0.5">
               {(["semana", "mes"] as const).map(h => (
                 <button
@@ -230,9 +262,9 @@ const Planejamento = () => {
                                   background: it.s._score >= 75 ? "hsl(var(--destructive) / 0.15)" : it.s._score >= 55 ? "hsl(var(--tertiary) / 0.15)" : "hsl(var(--primary) / 0.12)",
                                   color: it.s._score >= 75 ? "hsl(var(--destructive))" : it.s._score >= 55 ? "hsl(var(--tertiary))" : "hsl(var(--primary))",
                                 }}
-                                title={`KM ${it.s.km} · IRC ${it.s._score}`}
+                                title={`${formatKmPrecise(it.s.kmStart)} · ${it.s.tipo} · IRC ${it.s._score}`}
                               >
-                                KM {it.s.km}
+                                {formatKmPrecise(it.s.kmStart).replace(/^km\s/, "")}
                               </div>
                             ))}
                             {items.length > 4 && (
@@ -252,7 +284,7 @@ const Planejamento = () => {
         <div className="bg-secondary-container/40 border border-secondary-container rounded-xl p-4 text-[12px] text-secondary-on-container flex items-start gap-3">
           <Gauge className="h-4 w-4 mt-0.5 shrink-0" />
           <div>
-            <b>Otimização ORION:</b> a alocação prioriza trechos com IRC {">"} 55,
+            <b>Otimização Motiva:</b> a alocação prioriza trechos com IRC {">"} 55,
             balanceando carga por equipe e respeitando regionalização. Janela
             recalculada automaticamente conforme novas leituras NDVI e previsão de chuva.
           </div>
