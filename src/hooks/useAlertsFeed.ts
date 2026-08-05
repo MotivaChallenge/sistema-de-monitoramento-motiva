@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Status } from "@/types/domain";
+import { toast } from "sonner";
 
 export interface AlertFeedItem {
   id: string;
@@ -47,7 +48,17 @@ export const useAlertsFeed = () => {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "alerts" },
-        () => qc.invalidateQueries({ queryKey: QUERY_KEY })
+        (payload) => {
+          qc.invalidateQueries({ queryKey: QUERY_KEY });
+          qc.invalidateQueries({ queryKey: ["alerts-active-count"] });
+          if (payload.eventType === "INSERT") {
+            const row: any = payload.new;
+            const msg = row?.message ?? "Novo evento registrado na malha.";
+            if (row?.status === "critico") toast.error("Novo alerta crítico", { description: msg });
+            else if (row?.status === "atencao") toast.warning("Trecho em atenção", { description: msg });
+            else toast.success("Trecho regularizado", { description: msg });
+          }
+        }
       )
       .subscribe();
     return () => {
