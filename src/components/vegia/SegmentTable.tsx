@@ -5,6 +5,7 @@ import { ClausePill } from "./MonoClause";
 import { Search, ArrowUpDown, Download, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { formatKmRange } from "@/lib/km";
 
 const NDVIBar = ({ value }: { value: number }) => {
   const color = value >= 0.6 ? "bg-primary" : value >= 0.4 ? "bg-tertiary" : "bg-destructive";
@@ -37,6 +38,7 @@ export const SegmentTable = ({ rows }: { rows: Segment[] }) => {
   const [q, setQ] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [clausula, setClausula] = useState<string>("all");
+  const [rodovia, setRodovia] = useState<string>("all");
   /** `null` = toda a malha; o limite vem dos próprios dados. */
   const [kmRange, setKmRange] = useState<[number, number] | null>(null);
   const [sortDesc, setSortDesc] = useState(true);
@@ -52,22 +54,28 @@ export const SegmentTable = ({ rows }: { rows: Segment[] }) => {
     [rows]
   );
 
+  const rodoviaOptions = useMemo(
+    () => Array.from(new Set(rows.map(r => r.rodovia).filter(Boolean) as string[])).sort(),
+    [rows]
+  );
+
   const data = useMemo(() => {
     const filtered = rows.filter(r => {
       if (q && !`${r.km} ${r.tipo}`.toLowerCase().includes(q.toLowerCase())) return false;
       if (statusFilter !== "all" && r.status !== statusFilter) return false;
       if (clausula !== "all" && r.clausula !== clausula) return false;
+      if (rodovia !== "all" && r.rodovia !== rodovia) return false;
       if (kmRange && (r.kmStart < kmRange[0] || r.kmStart > kmRange[1])) return false;
       return true;
     });
     return [...filtered].sort((a, b) => sortDesc ? b.altura - a.altura : a.altura - b.altura);
-  }, [rows, q, statusFilter, clausula, kmRange, sortDesc]);
+  }, [rows, q, statusFilter, clausula, rodovia, kmRange, sortDesc]);
 
   const kmActive = !!kmRange && (kmRange[0] > 0 || kmRange[1] < kmMax);
-  const activeFilters = (statusFilter !== "all" ? 1 : 0) + (clausula !== "all" ? 1 : 0) + (kmActive ? 1 : 0) + (q ? 1 : 0);
+  const activeFilters = (statusFilter !== "all" ? 1 : 0) + (clausula !== "all" ? 1 : 0) + (rodovia !== "all" ? 1 : 0) + (kmActive ? 1 : 0) + (q ? 1 : 0);
 
   const resetFilters = () => {
-    setQ(""); setStatusFilter("all"); setClausula("all"); setKmRange(null);
+    setQ(""); setStatusFilter("all"); setClausula("all"); setRodovia("all"); setKmRange(null);
   };
 
   const generatedAt = useMemo(
@@ -143,6 +151,21 @@ export const SegmentTable = ({ rows }: { rows: Segment[] }) => {
           </div>
         </div>
 
+        {rodoviaOptions.length > 1 && (
+          <div className="flex items-center gap-3">
+            <span className="label-md">Rodovia</span>
+            <select
+              value={rodovia}
+              onChange={e => setRodovia(e.target.value)}
+              aria-label="Filtrar por rodovia"
+              className="bg-surface-high rounded-md h-7 px-2 text-[12px] font-mono outline-none"
+            >
+              <option value="all">Todas</option>
+              {rodoviaOptions.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+        )}
+
         {/* Cláusula */}
         <div className="flex items-center gap-3">
           <span className="label-md">Cláusula</span>
@@ -211,7 +234,12 @@ export const SegmentTable = ({ rows }: { rows: Segment[] }) => {
             onClick={() => navigate(`/segmento/${r.id}`)}
             className={`w-full text-left grid grid-cols-[1.4fr_1.2fr_1.1fr_0.8fr_1.1fr_0.9fr_0.9fr] items-center px-3 py-3.5 rounded-md hover:bg-surface-low transition ${i % 2 === 1 ? "bg-surface-low/60" : ""}`}
           >
-            <span className="text-[14px] font-medium">{r.km}</span>
+            <span className="text-[14px] font-medium leading-tight">
+              {r.km}
+              <span className="block text-[11px] text-muted-foreground font-normal tabular-nums">
+                {formatKmRange(r.kmStart, r.kmEnd)}
+              </span>
+            </span>
             <span className="text-[13px] text-muted-foreground">{r.tipo}</span>
             <NDVIBar value={r.ndvi} />
             <span className="text-[13px] tabular-nums">{r.altura}cm</span>
