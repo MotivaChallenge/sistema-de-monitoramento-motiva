@@ -1,25 +1,27 @@
 import { useMemo } from "react";
 import { TopHeader } from "@/components/vegia/TopHeader";
 import { GlobalFilters } from "@/components/vegia/GlobalFilters";
+import { HighwaySelect } from "@/components/vegia/HighwaySelect";
+import { Input } from "@/components/ui/input";
 import { useAlertsFeed, markAllSeen } from "@/hooks/useAlertsFeed";
 import { useFilters } from "@/contexts/FiltersContext";
 import { ComplianceBadge } from "@/components/vegia/ComplianceBadge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { QueryErrorState } from "@/components/vegia/QueryErrorState";
 import { useNavigate } from "react-router-dom";
-import { BellRing, CheckCheck } from "lucide-react";
+import { BellRing, CheckCheck, Search } from "lucide-react";
 import { useEffect } from "react";
 
 const Alertas = () => {
   const { data: feed = [], isLoading, isError, refetch } = useAlertsFeed();
-  const { matches } = useFilters();
+  const { matches, search, setSearch } = useFilters();
   const navigate = useNavigate();
 
   const items = useMemo(
     () => feed.filter(a => {
       const m = a.km.match(/(\d+)[+](\d+)/);
       const kmStart = m ? Number(m[1]) + Number(m[2]) / 1000 : 0;
-      return matches({ status: a.status, kmStart });
+      return matches({ status: a.status, kmStart, text: `${a.km} ${a.message}` });
     }),
     [feed, matches]
   );
@@ -48,7 +50,20 @@ const Alertas = () => {
           </div>
         </div>
 
-        <GlobalFilters />
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative flex-1 min-w-[220px] max-w-[320px]">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Buscar por KM ou mensagem…"
+              aria-label="Buscar alertas"
+              className="pl-8 h-9 text-[13px]"
+            />
+          </div>
+          <HighwaySelect />
+          <GlobalFilters showSearch={false} />
+        </div>
 
         <div className="rounded-xl border border-border bg-surface-low overflow-hidden">
           {isError ? (
