@@ -264,7 +264,7 @@ const Planejamento = () => {
                                 }}
                                 title={`${formatKmPrecise(it.s.kmStart)} · ${it.s.tipo} · IRC ${it.s._score}`}
                               >
-                                {formatKmPrecise(it.s.kmStart)}
+                                {formatKmPrecise(it.s.kmStart).replace(/^km\s/, "")}
                               </div>
                             ))}
                             {items.length > 4 && (
