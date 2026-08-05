@@ -138,6 +138,9 @@ const Mapa = () => {
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
+    toast.success("GeoJSON exportado", {
+      description: `${currentHighway.code} · ${features.length} feições (traçado, marcos e segmentos).`,
+    });
   };
 
   const highwaysByConcession = useMemo(() => {
