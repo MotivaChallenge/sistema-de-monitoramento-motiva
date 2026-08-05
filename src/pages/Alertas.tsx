@@ -18,11 +18,14 @@ const Alertas = () => {
   const navigate = useNavigate();
 
   const items = useMemo(
-    () => feed.filter(a => {
-      const m = a.km.match(/(\d+)[+](\d+)/);
-      const kmStart = m ? Number(m[1]) + Number(m[2]) / 1000 : 0;
-      return matches({ status: a.status, kmStart, text: `${a.km} ${a.message}` });
-    }),
+    () => feed.filter(a =>
+      matches({
+        status: a.status,
+        kmStart: a.kmStart,
+        rodovia: a.rodovia,
+        text: `${a.km} ${a.message} ${a.rodovia ?? ""}`,
+      })
+    ),
     [feed, matches]
   );
 
