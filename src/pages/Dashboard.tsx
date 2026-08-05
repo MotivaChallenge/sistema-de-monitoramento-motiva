@@ -1,14 +1,14 @@
 import { lazy, Suspense, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Activity, AlertTriangle, CalendarCheck, DollarSign, Gauge, Inbox, Leaf,
-  RefreshCw, Sparkles, TrendingDown, Users,
+  Activity, AlertTriangle, BellRing, CalendarCheck, CloudRain, Gauge, Inbox, Leaf,
+  RefreshCw, ShieldCheck, Sparkles, Users,
 } from "lucide-react";
 import { useIsFetching, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { TopHeader } from "@/components/vegia/TopHeader";
 import { AutoCarousel } from "@/components/dashboard/AutoCarousel";
-import { StatisticCard } from "@/components/dashboard/StatisticCard";
+import { KpiCarousel } from "@/components/dashboard/KpiCarousel";
 import { InfoBanner } from "@/components/dashboard/InfoBanner";
 import { OpsSummaryBar } from "@/components/dashboard/OpsSummaryBar";
 import { PriorityList } from "@/components/dashboard/PriorityList";
@@ -63,11 +63,6 @@ const Dashboard = () => {
     ? Math.round(segments.reduce((a, s) => a + ircForSegment(s, rain5d).score, 0) / total)
     : 0;
   const conformidadePct = total ? Math.round((conformes / total) * 100) : 0;
-
-  const economiaAnual = Math.round(coverage * 4200 * 12 * 0.28);
-  const custosEvitados = Math.round(economiaAnual * 0.35);
-  const fmtBRL = (v: number) =>
-    v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0, notation: "compact" });
 
   const ircById = useMemo(
     () => new Map(segments.map(s => [s.id, ircForSegment(s, rain5d).score])),
