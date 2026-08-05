@@ -235,6 +235,26 @@ const Dashboard = () => {
                 <NDVIBarChart height={140} />
               </Suspense>
             </section>
+
+            {/* Recomendações da IA */}
+            <section className="bg-surface-lowest rounded-xl p-4 md:p-5 border border-border/40 shadow-card">
+              <h2 className="flex items-center gap-2 text-[13px] uppercase tracking-wider font-semibold mb-3">
+                <Sparkles className="h-3.5 w-3.5 text-primary" /> Recomendações da IA
+              </h2>
+              {recommendations.length === 0 ? (
+                <div className="text-[12px] text-muted-foreground px-4 py-6 text-center">
+                  Sem dados suficientes para gerar recomendações.
+                </div>
+              ) : (
+                <AutoCarousel
+                  ariaLabel="Recomendações geradas por inteligência artificial"
+                  interval={6000}
+                  slides={recommendations.map(r => (
+                    <InfoBanner key={r.id} status={r.tone} local="Sugestão automática" title={r.title} detail={r.detail} />
+                  ))}
+                />
+              )}
+            </section>
           </div>
 
           <aside className="bg-surface-lowest rounded-xl p-5 h-fit border border-border/40 shadow-card xl:sticky xl:top-[88px]">
@@ -271,32 +291,6 @@ const Dashboard = () => {
               Ver todos os alertas
             </button>
           </aside>
-        </div>
-
-        {/* 8 — Recomendações da IA */}
-        <div>
-          <h2 className="flex items-center gap-2 text-[12px] uppercase tracking-wider text-muted-foreground font-semibold mb-3">
-            <Sparkles className="h-3.5 w-3.5 text-primary" /> Recomendações da IA
-          </h2>
-          {recommendations.length === 0 ? (
-            <div className="text-[12px] text-muted-foreground bg-surface-lowest border border-border/40 rounded-xl px-4 py-6 text-center">
-              Sem dados suficientes para gerar recomendações.
-            </div>
-          ) : (
-          <AutoCarousel
-            ariaLabel="Recomendações geradas por inteligência artificial"
-            interval={6000}
-            slides={recommendations.map(r => (
-              <InfoBanner
-                key={r.id}
-                status={r.tone}
-                local="Sugestão automática"
-                title={r.title}
-                detail={r.detail}
-              />
-            ))}
-          />
-          )}
         </div>
       </div>
 
