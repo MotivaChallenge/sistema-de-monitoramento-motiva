@@ -152,7 +152,7 @@ const Mapa = () => {
     () =>
       segmentsRaw
         .filter(s => (s.rodovia ?? "SP-021") === selectedHighway)
-        .filter(s => matches({ status: s.status, kmStart: s.kmStart })),
+        .filter(s => matches({ status: s.status, kmStart: s.kmStart, text: `${s.km} ${s.tipo} ${s.id}` })),
     [segmentsRaw, matches, selectedHighway]
   );
 
@@ -204,11 +204,17 @@ const Mapa = () => {
           lat: p.lat,
           lng: p.lng,
           status: s.status as "critico" | "atencao" | "conforme",
-          label: `${s.km} · ${s.tipo}`,
+          label: `${formatKmRange(s.kmStart, s.kmEnd)} · ${s.tipo}`,
         };
       })
       .filter(Boolean) as { lat: number; lng: number; status: any; label: string }[];
   }, [segments, kmMarkers]);
+
+  /** Localização precisa (km + metros) do ponto clicado no eixo da rodovia. */
+  const pointKm = useMemo(
+    () => (mapPoint ? kmForCoords(kmMarkers, { lat: mapPoint.lat, lng: mapPoint.lng }) : null),
+    [mapPoint, kmMarkers]
+  );
 
   return (
     <>
