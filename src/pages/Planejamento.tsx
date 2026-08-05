@@ -9,6 +9,10 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useFilters } from "@/contexts/FiltersContext";
+import { HighwaySelect } from "@/components/vegia/HighwaySelect";
+import { GlobalFilters } from "@/components/vegia/GlobalFilters";
+import { formatKmPrecise } from "@/lib/km";
 
 const DAYS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 
@@ -27,15 +31,32 @@ const addBusinessDays = (base: Date, offset: number): string => {
 };
 
 const Planejamento = () => {
-  const { data: segmentsRaw = [], isLoading } = useSegments();
+  const { data: allSegments = [], isLoading } = useSegments();
   const { data: teamsRaw = [], isLoading: teamsLoading } = useFieldTeams();
   const { data: weather } = useWeather();
   const rain5d = weather?.summary.totalRainMm ?? 8;
   const [horizonte, setHorizonte] = useState<"semana" | "mes">("semana");
+  const [regiao, setRegiao] = useState<string>("todas");
   const qc = useQueryClient();
+  const { matches, rodovia } = useFilters();
+
+  const segmentsRaw = useMemo(
+    () => allSegments.filter(s => matches({
+      status: s.status, kmStart: s.kmStart, rodovia: s.rodovia ?? null,
+      text: `${s.km} ${s.tipo} ${s.id}`,
+    })),
+    [allSegments, matches]
+  );
 
   const teams: FieldTeam[] = useMemo(
-    () => teamsRaw.filter(t => t.status === "disponivel" || t.status === "campo"),
+    () => teamsRaw
+      .filter(t => t.status === "disponivel" || t.status === "campo")
+      .filter(t => regiao === "todas" || t.regiao === regiao),
+    [teamsRaw, regiao]
+  );
+
+  const regioes = useMemo(
+    () => Array.from(new Set(teamsRaw.map(t => t.regiao))).sort(),
     [teamsRaw]
   );
 
