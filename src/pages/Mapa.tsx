@@ -102,7 +102,7 @@ const Mapa = () => {
     segmentsRaw
       .filter(s => (s.rodovia ?? "SP-021") === selectedHighway)
       .forEach(s => {
-        const marker = kmMarkers.find(m => Math.round(m.km) === Math.round(s.kmStart));
+        const marker = coordsForKm(kmMarkers, s.kmStart);
         if (!marker) return;
         features.push({
           type: "Feature",
@@ -111,6 +111,7 @@ const Mapa = () => {
             kind: "segmento",
             id: s.id,
             km: s.km,
+            km_preciso: formatKmPrecise(s.kmStart),
             km_start: s.kmStart,
             km_end: s.kmEnd,
             tipo: s.tipo,
@@ -571,6 +572,11 @@ const Mapa = () => {
       <MapPointSheet
         open={!!mapPoint}
         point={mapPoint}
+        kmInfo={
+          pointKm
+            ? { rodovia: selectedHighway, km: pointKm.km, offsetMeters: pointKm.offsetMeters }
+            : null
+        }
         onClose={() => setMapPoint(null)}
       />
     </>
