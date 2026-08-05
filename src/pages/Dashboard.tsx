@@ -1,14 +1,14 @@
 import { lazy, Suspense, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Activity, AlertTriangle, CalendarCheck, DollarSign, Gauge, Inbox, Leaf,
-  RefreshCw, Sparkles, TrendingDown, Users,
+  Activity, AlertTriangle, BellRing, CalendarCheck, CloudRain, Gauge, Inbox, Leaf,
+  RefreshCw, ShieldCheck, Sparkles, Users,
 } from "lucide-react";
 import { useIsFetching, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { TopHeader } from "@/components/vegia/TopHeader";
 import { AutoCarousel } from "@/components/dashboard/AutoCarousel";
-import { StatisticCard } from "@/components/dashboard/StatisticCard";
+import { KpiCarousel } from "@/components/dashboard/KpiCarousel";
 import { InfoBanner } from "@/components/dashboard/InfoBanner";
 import { OpsSummaryBar } from "@/components/dashboard/OpsSummaryBar";
 import { PriorityList } from "@/components/dashboard/PriorityList";
@@ -63,11 +63,6 @@ const Dashboard = () => {
     ? Math.round(segments.reduce((a, s) => a + ircForSegment(s, rain5d).score, 0) / total)
     : 0;
   const conformidadePct = total ? Math.round((conformes / total) * 100) : 0;
-
-  const economiaAnual = Math.round(coverage * 4200 * 12 * 0.28);
-  const custosEvitados = Math.round(economiaAnual * 0.35);
-  const fmtBRL = (v: number) =>
-    v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0, notation: "compact" });
 
   const ircById = useMemo(
     () => new Map(segments.map(s => [s.id, ircForSegment(s, rain5d).score])),
@@ -127,7 +122,7 @@ const Dashboard = () => {
         }
       />
 
-      <div className="px-4 md:px-8 lg:px-10 pt-2 pb-12 space-y-6">
+      <div className="px-4 md:px-8 lg:px-10 pt-2 pb-12 space-y-5">
         <h1 className="sr-only">Painel de monitoramento de vegetação rodoviária</h1>
         {isError && <QueryErrorState onRetry={() => qc.invalidateQueries()} />}
 
@@ -172,63 +167,65 @@ const Dashboard = () => {
         {/* 3 — Clima em destaque */}
         <WeatherForecast />
 
-        {/* 4 — Indicadores da malha */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5">
-          <MetricCard icon={Activity} label="Cobertura Total" value={coverage.toFixed(1).replace(".", ",")} unit="km" footer={<div className="h-1.5 rounded-full bg-surface-high overflow-hidden"><div className="h-full w-full rounded-full bg-gradient-primary" /></div>} />
-          <MetricCard icon={AlertTriangle} label="Trechos Críticos" value={String(criticos)} unit={`de ${total} segmentos`} variant="danger" footer={
-            <div className="h-1.5 rounded-full bg-surface-high">
-              <div className="h-full rounded-full bg-destructive transition-smooth" style={{ width: `${total ? (criticos / total) * 100 : 0}%` }} />
-            </div>
-          } />
-          <MetricCard icon={Leaf} label="NDVI Médio" value={ndviAvg.toFixed(2).replace(".", ",")} unit="global" footer={
-            <div className="flex h-1.5 gap-0.5 rounded-full overflow-hidden">
-              <div className="flex-1 bg-destructive/30" /><div className="flex-1 bg-tertiary/40" /><div className="flex-[2] bg-primary" />
-            </div>
-          } />
-          <MetricCard icon={Gauge} label="IRC Médio" value={String(ircAvg)} unit="/ 100" variant={ircAvg >= 75 ? "danger" : undefined} footer={
-            <div className="h-1.5 rounded-full bg-surface-high">
-              <div
-                className="h-full rounded-full transition-smooth"
-                style={{
-                  width: `${ircAvg}%`,
-                  background: ircAvg >= 75 ? "hsl(var(--destructive))" : ircAvg >= 55 ? "hsl(var(--tertiary))" : "hsl(var(--primary))",
-                }}
-              />
-            </div>
-          } />
-        </div>
-
-        {/* 5 — Visão executiva */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5">
-          <StatisticCard
-            icon={DollarSign}
-            label="Economia estimada/ano"
-            value={fmtBRL(economiaAnual)}
-            hint="vs. modelo tradicional"
-            tone="positive"
-            info={`Projeção anual da redução de custo de roçada com manutenção guiada por satélite. Cálculo: ${coverage.toFixed(1).replace(".", ",")} km monitorados × R$ 4.200 por km/mês (custo médio de ciclo) × 12 meses × 28% de ganho médio de eficiência ao substituir o calendário fixo pela priorização por NDVI/IRC.`}
+        {/* 4 — Indicadores operacionais (carrossel) */}
+        {isLoading ? (
+          <Skeleton className="h-[150px] w-full rounded-xl" />
+        ) : (
+          <KpiCarousel
+            ariaLabel="Indicadores operacionais da malha"
+            items={[
+              <MetricCard key="cob" icon={Activity} label="Cobertura Total" value={coverage.toFixed(1).replace(".", ",")} unit="km" footer={<div className="h-1.5 rounded-full bg-surface-high overflow-hidden"><div className="h-full w-full rounded-full bg-gradient-primary" /></div>} />,
+              <MetricCard key="cri" icon={AlertTriangle} label="Trechos Críticos" value={String(criticos)} unit={`de ${total} segmentos`} variant="danger" footer={
+                <div className="h-1.5 rounded-full bg-surface-high">
+                  <div className="h-full rounded-full bg-destructive transition-smooth" style={{ width: `${total ? (criticos / total) * 100 : 0}%` }} />
+                </div>
+              } />,
+              <MetricCard key="ndvi" icon={Leaf} label="NDVI Médio" value={ndviAvg.toFixed(2).replace(".", ",")} unit="global" footer={
+                <div className="flex h-1.5 gap-0.5 rounded-full overflow-hidden">
+                  <div className="flex-1 bg-destructive/30" /><div className="flex-1 bg-tertiary/40" /><div className="flex-[2] bg-primary" />
+                </div>
+              } />,
+              <MetricCard key="irc" icon={Gauge} label="IRC Médio" value={String(ircAvg)} unit="/ 100" variant={ircAvg >= 75 ? "danger" : undefined} footer={
+                <div className="h-1.5 rounded-full bg-surface-high">
+                  <div className="h-full rounded-full transition-smooth" style={{
+                    width: `${ircAvg}%`,
+                    background: ircAvg >= 75 ? "hsl(var(--destructive))" : ircAvg >= 55 ? "hsl(var(--tertiary))" : "hsl(var(--primary))",
+                  }} />
+                </div>
+              } />,
+              <MetricCard key="conf" icon={ShieldCheck} label="Conformidade" value={String(conformidadePct)} unit="% dos trechos" variant={conformidadePct < 70 ? "danger" : undefined} footer={
+                <div className="h-1.5 rounded-full bg-surface-high">
+                  <div className="h-full rounded-full bg-turquoise transition-smooth" style={{ width: `${conformidadePct}%` }} />
+                </div>
+              } />,
+              <MetricCard key="ale" icon={BellRing} label="Alertas Ativos" value={String(totalAlerts)} unit="em aberto" variant={totalAlerts > 0 ? "danger" : undefined} footer={
+                <p className="text-[11px] text-muted-foreground">{criticos} críticos · {Math.max(totalAlerts - criticos, 0)} em atenção</p>
+              } />,
+              <MetricCard key="os" icon={CalendarCheck} label="Ordens em Aberto" value={String(pendingOrders)} unit="pendentes / em andamento" footer={
+                <button onClick={() => navigate("/ordens")} className="text-[11px] font-semibold uppercase tracking-wider text-primary hover:underline">Ver ordens</button>
+              } />,
+              <MetricCard key="eq" icon={Users} label="Equipes Disponíveis" value={`${teamsAvailable}`} unit={`de ${teamsTotal} equipes`} variant={teamsAvailable === 0 ? "danger" : undefined} footer={
+                <button onClick={() => navigate("/equipes")} className="text-[11px] font-semibold uppercase tracking-wider text-primary hover:underline">Gerenciar equipes</button>
+              } />,
+              <MetricCard key="rain" icon={CloudRain} label="Chuva 5 dias" value={rain5d.toFixed(1).replace(".", ",")} unit="mm acumulados" variant={rain5d >= 40 ? "danger" : undefined} footer={
+                <p className="text-[11px] text-muted-foreground">
+                  {rain5d >= 40 ? "Alto risco de crescimento acelerado" : rain5d >= 15 ? "Crescimento moderado esperado" : "Baixo impacto na vegetação"}
+                </p>
+              } />,
+            ]}
           />
-          <StatisticCard
-            icon={TrendingDown}
-            label="Custos evitados"
-            value={fmtBRL(custosEvitados)}
-            hint="multas + deslocamentos"
-            info="Parcela da economia que corresponde a perdas evitadas — multas contratuais por descumprimento de altura de vegetação e deslocamentos desnecessários de equipe. Estimado em 35% da economia anual projetada, com base no histórico de notificações e viagens improdutivas."
-          />
-          <StatisticCard icon={CalendarCheck} label="Ordens em aberto" value={String(pendingOrders)} hint="pendentes e em andamento" tone={pendingOrders > 0 ? "warning" : "positive"} onClick={() => navigate("/ordens")} />
-          <StatisticCard icon={Users} label="Equipes" value={`${teamsAvailable} / ${teamsTotal}`} hint="Disponíveis para deslocamento" tone={teamsAvailable > 0 ? "positive" : "warning"} onClick={() => navigate("/equipes")} />
-        </div>
+        )}
 
         {/* 6 — Painel operacional do dia */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 items-stretch">
           <PriorityList segments={segments} rain5d={rain5d} />
           <UpcomingMaintenance />
           <TeamsStatus />
         </div>
 
         {/* 7 — Análises e alertas */}
-        <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6">
-          <div className="space-y-6">
+        <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-4 items-start">
+          <div className="space-y-4">
             <section className="bg-surface-lowest rounded-xl p-4 md:p-5 border border-border/40 shadow-card">
               <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                 <h3 className="text-[13px] font-semibold tracking-wider uppercase">Tendência NDVI</h3>
@@ -237,6 +234,26 @@ const Dashboard = () => {
               <Suspense fallback={<Skeleton className="h-[140px] w-full" />}>
                 <NDVIBarChart height={140} />
               </Suspense>
+            </section>
+
+            {/* Recomendações da IA */}
+            <section className="bg-surface-lowest rounded-xl p-4 md:p-5 border border-border/40 shadow-card">
+              <h2 className="flex items-center gap-2 text-[13px] uppercase tracking-wider font-semibold mb-3">
+                <Sparkles className="h-3.5 w-3.5 text-primary" /> Recomendações da IA
+              </h2>
+              {recommendations.length === 0 ? (
+                <div className="text-[12px] text-muted-foreground px-4 py-6 text-center">
+                  Sem dados suficientes para gerar recomendações.
+                </div>
+              ) : (
+                <AutoCarousel
+                  ariaLabel="Recomendações geradas por inteligência artificial"
+                  interval={6000}
+                  slides={recommendations.map(r => (
+                    <InfoBanner key={r.id} status={r.tone} local="Sugestão automática" title={r.title} detail={r.detail} />
+                  ))}
+                />
+              )}
             </section>
           </div>
 
@@ -274,32 +291,6 @@ const Dashboard = () => {
               Ver todos os alertas
             </button>
           </aside>
-        </div>
-
-        {/* 8 — Recomendações da IA */}
-        <div>
-          <h2 className="flex items-center gap-2 text-[12px] uppercase tracking-wider text-muted-foreground font-semibold mb-3">
-            <Sparkles className="h-3.5 w-3.5 text-primary" /> Recomendações da IA
-          </h2>
-          {recommendations.length === 0 ? (
-            <div className="text-[12px] text-muted-foreground bg-surface-lowest border border-border/40 rounded-xl px-4 py-6 text-center">
-              Sem dados suficientes para gerar recomendações.
-            </div>
-          ) : (
-          <AutoCarousel
-            ariaLabel="Recomendações geradas por inteligência artificial"
-            interval={6000}
-            slides={recommendations.map(r => (
-              <InfoBanner
-                key={r.id}
-                status={r.tone}
-                local="Sugestão automática"
-                title={r.title}
-                detail={r.detail}
-              />
-            ))}
-          />
-          )}
         </div>
       </div>
 
