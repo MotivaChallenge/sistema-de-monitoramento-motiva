@@ -6,13 +6,17 @@ import { GlobalFilters } from "@/components/vegia/GlobalFilters";
 import { MapPointSheet } from "@/components/vegia/MapPointSheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertTriangle, Activity, Inbox, Eye, Layers, Crosshair, Route, Network, Download, Building2, Leaf, ShieldCheck } from "lucide-react";
-import { useState, useMemo, lazy, Suspense } from "react";
+import { useState, useMemo, lazy, Suspense, useEffect } from "react";
+import { toast } from "sonner";
+import { coordsForKm, kmForCoords, formatKmPrecise, formatKmRange } from "@/lib/km";
 
 const OSMMap = lazy(() => import("@/components/vegia/OSMMap").then(m => ({ default: m.OSMMap })));
 
 const Mapa = () => {
   const { data: highways = [] } = useHighways();
-  const [selectedHighway, setSelectedHighway] = useState<string>("SP-021");
+  const { matches, activeCount, rodovia, setRodovia } = useFilters();
+  const selectedHighway = rodovia ?? "SP-021";
+  const setSelectedHighway = (code: string) => setRodovia(code);
   const { data: segmentsRaw = [] } = useSegments();
   const { data: kmMarkers = [] } = useKmMarkers(selectedHighway);
   const { data: routed, isLoading: routeLoading, isFetching: routeFetching } = useRoadRoute(
@@ -22,7 +26,6 @@ const Mapa = () => {
   const routedLine = routed?.line;
   const routeSource = routed?.source;
   const { data: coverage = 0 } = useTotalCoverage();
-  const { matches, activeCount } = useFilters();
   const [mapPoint, setMapPoint] = useState<{ lat: number; lng: number; label?: string } | null>(null);
   const [baseLayer, setBaseLayer] = useState<"street" | "satellite" | "hybrid">("hybrid");
   const [showPolyline, setShowPolyline] = useState(true);
