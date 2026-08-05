@@ -150,6 +150,17 @@ const Planejamento = () => {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            <HighwaySelect />
+            <select
+              value={regiao}
+              onChange={e => setRegiao(e.target.value)}
+              aria-label="Filtrar equipes por região"
+              className="h-9 px-3 rounded-lg border border-border bg-surface-lowest text-[12px] font-semibold"
+            >
+              <option value="todas">Todas as regiões</option>
+              {regioes.map(r => <option key={r} value={r}>{r}</option>)}
+            </select>
+            <GlobalFilters />
             <div className="inline-flex bg-surface-high rounded-md p-0.5">
               {(["semana", "mes"] as const).map(h => (
                 <button
@@ -251,9 +262,9 @@ const Planejamento = () => {
                                   background: it.s._score >= 75 ? "hsl(var(--destructive) / 0.15)" : it.s._score >= 55 ? "hsl(var(--tertiary) / 0.15)" : "hsl(var(--primary) / 0.12)",
                                   color: it.s._score >= 75 ? "hsl(var(--destructive))" : it.s._score >= 55 ? "hsl(var(--tertiary))" : "hsl(var(--primary))",
                                 }}
-                                title={`KM ${it.s.km} · IRC ${it.s._score}`}
+                                title={`${formatKmPrecise(it.s.kmStart)} · ${it.s.tipo} · IRC ${it.s._score}`}
                               >
-                                KM {it.s.km}
+                                {formatKmPrecise(it.s.kmStart)}
                               </div>
                             ))}
                             {items.length > 4 && (
