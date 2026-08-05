@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { QueryErrorState } from "@/components/vegia/QueryErrorState";
 import { useNavigate } from "react-router-dom";
 import { BellRing, CheckCheck, Search } from "lucide-react";
+import { formatKmPrecise } from "@/lib/km";
 import { useEffect } from "react";
 
 const Alertas = () => {
@@ -98,7 +99,9 @@ const Alertas = () => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2 mb-0.5">
-                        <span className="font-semibold text-[14px] truncate">{a.km}</span>
+                        <span className="font-semibold text-[14px] truncate">
+                          {a.rodovia ? `${a.rodovia} · ` : ""}{formatKmPrecise(a.kmStart)}
+                        </span>
                         <ComplianceBadge status={a.status} />
                       </div>
                       <p className="text-sm text-muted-foreground line-clamp-2">{a.message}</p>

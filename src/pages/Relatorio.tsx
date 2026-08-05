@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { QueryErrorState } from "@/components/vegia/QueryErrorState";
 import { useFilters } from "@/contexts/FiltersContext";
 import { GlobalFilters } from "@/components/vegia/GlobalFilters";
+import { HighwaySelect } from "@/components/vegia/HighwaySelect";
 import { generateConformityPdf } from "@/lib/pdf-export";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -18,7 +19,10 @@ const Relatorio = () => {
   const { matches } = useFilters();
   const { user } = useAuth();
   const segments = useMemo(
-    () => segmentsRaw.filter(s => matches({ status: s.status, kmStart: s.kmStart })),
+    () => segmentsRaw.filter(s => matches({
+      status: s.status, kmStart: s.kmStart, rodovia: s.rodovia ?? null,
+      text: `${s.km} ${s.tipo} ${s.id}`,
+    })),
     [segmentsRaw, matches]
   );
   const [reportId, setReportId] = useState<number | undefined>(undefined);
@@ -80,6 +84,7 @@ const Relatorio = () => {
       showTabs
       rightSlot={
         <>
+          <HighwaySelect className="hidden md:inline-flex" />
           <GlobalFilters />
            <span className="ml-2 hidden lg:inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary-container text-[12px] font-semibold tracking-wider uppercase text-secondary-on-container">
             <ShieldCheck className="h-3.5 w-3.5" /> Monitoramento Ativo
