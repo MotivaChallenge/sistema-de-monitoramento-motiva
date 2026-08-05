@@ -49,7 +49,7 @@ export const KpiCarousel = ({ items, ariaLabel, className }: Props) => {
         {items.map((item, i) => (
           <div
             key={i}
-            className="snap-start shrink-0 basis-[78%] sm:basis-[calc((100%-0.75rem)/2)] lg:basis-[calc((100%-2rem)/3)] xl:basis-[calc((100%-3rem)/4)]"
+            className="snap-start shrink-0 [&>*]:h-full basis-[78%] sm:basis-[calc((100%-0.75rem)/2)] lg:basis-[calc((100%-2rem)/3)] xl:basis-[calc((100%-3rem)/4)]"
           >
             {item}
           </div>
