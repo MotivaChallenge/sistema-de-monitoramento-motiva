@@ -90,13 +90,13 @@ const Auth = () => {
 
         <form onSubmit={submit} className="space-y-4" noValidate>
           <div>
-            <label htmlFor="email" className="label-md mb-1.5 block">Email</label>
+            <label htmlFor="email" className="label-md !text-primary-foreground/90 mb-1.5 block">Email</label>
             <input id="email" type="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} required className="w-full h-11 px-3 rounded-lg bg-background/15 border border-primary-foreground/25 text-primary-foreground placeholder:text-primary-foreground/50 outline-none focus:ring-2 focus:ring-primary-foreground/40 text-[14px]" />
             {errors.email && <p className="text-[11px] text-destructive mt-1">{errors.email}</p>}
           </div>
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label htmlFor="password" className="label-md">Senha</label>
+              <label htmlFor="password" className="label-md !text-primary-foreground/90">Senha</label>
               <button type="button" onClick={onForgot} className="text-[11px] text-primary-foreground/80 hover:underline">
                 Esqueci minha senha
               </button>
