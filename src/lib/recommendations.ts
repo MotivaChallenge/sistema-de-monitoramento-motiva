@@ -1,4 +1,5 @@
 import type { Segment, Status } from "@/types/domain";
+import { formatDateBR } from "@/lib/utils";
 
 export interface OpsRecommendation {
   id: string;
