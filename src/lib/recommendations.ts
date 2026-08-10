@@ -1,4 +1,5 @@
 import type { Segment, Status } from "@/types/domain";
+import { formatDateBR } from "@/lib/utils";
 
 export interface OpsRecommendation {
   id: string;
@@ -57,7 +58,7 @@ export const buildRecommendations = ({
       id: "rec-irc",
       tone: irc(top) >= 75 ? "critico" : irc(top) >= 55 ? "atencao" : "conforme",
       title: `Maior IRC da malha: ${irc(top)}/100 em ${fmtKm(top)}`,
-      detail: `${top.tipo} · NDVI ${top.ndvi.toFixed(2).replace(".", ",")} · última roçada em ${top.ultimaRocada}. Acima de 75 o risco de descumprimento é alto.`,
+      detail: `${top.tipo} · NDVI ${top.ndvi.toFixed(2).replace(".", ",")} · última roçada em ${formatDateBR(top.ultimaRocada)}. Acima de 75 o risco de descumprimento é alto.`,
     });
   }
 

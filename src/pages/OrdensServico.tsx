@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { formatDateBR } from "@/lib/utils";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -176,7 +177,7 @@ const OrdensServico = () => {
 
   return (
     <>
-      <TopHeader />
+      <TopHeader current="Ordens de Serviço" breadcrumb={[{ label: "RODOANEL SP-021", to: "/dashboard" }]} />
       <div className="px-4 md:px-8 lg:px-10 pt-2 pb-12 space-y-6">
         <header className="flex items-start justify-between gap-4 flex-wrap">
           <div>
@@ -305,7 +306,7 @@ const OrdensServico = () => {
                       <td className="px-3 py-3 capitalize">{o.tipo_servico}</td>
                       <td className="px-3 py-3">{team?.nome ?? <span className="text-muted-foreground">—</span>}</td>
                       <td className="px-3 py-3"><span className="font-semibold" style={{ color: pm.fg }}>{pm.label}</span></td>
-                      <td className="px-3 py-3 tabular-nums text-muted-foreground">{o.scheduled_for ?? "—"}</td>
+                      <td className="px-3 py-3 tabular-nums text-muted-foreground">{o.scheduled_for ? formatDateBR(o.scheduled_for) : "—"}</td>
                       <td className="px-5 py-3">
                         <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-[11px] font-semibold" style={{ background: sm.bg, color: sm.fg }}>
                           {o.status === "concluida" && <CheckCircle2 className="h-3 w-3" />}

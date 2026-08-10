@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { useIsFetching, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { formatDateBR } from "@/lib/utils";
 import { TopHeader } from "@/components/vegia/TopHeader";
 import { AutoCarousel } from "@/components/dashboard/AutoCarousel";
 import { KpiCarousel } from "@/components/dashboard/KpiCarousel";
@@ -116,7 +117,7 @@ const Dashboard = () => {
               className="ml-1 inline-flex items-center gap-1.5 px-3 h-9 rounded-lg bg-gradient-to-b from-primary to-primary-glow text-primary-foreground text-[11px] font-semibold tracking-wider uppercase whitespace-nowrap disabled:opacity-60"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${refreshing || fetching > 0 ? "animate-spin" : ""}`} />
-              <span className="hidden md:inline">{refreshing ? "Atualizando" : "Atualizar"}</span> Dados
+              <span className="hidden xl:inline">{refreshing ? "Atualizando" : "Atualizar"} Dados</span>
             </button>
           </>
         }
@@ -147,7 +148,7 @@ const Dashboard = () => {
                 local={`${s.rodovia ?? "Malha"} · Km ${s.kmStart}`}
                 title={`${s.km} — ${s.tipo}`}
                 detail={s.insight ?? `Altura ${s.altura} cm (limite ${s.limite} cm) · NDVI ${s.ndvi.toFixed(2).replace(".", ",")}`}
-                meta={`Última roçada ${s.ultimaRocada}`}
+                meta={`Última roçada ${formatDateBR(s.ultimaRocada)}`}
                 onClick={() => navigate(`/segmento/${s.id}`)}
               />
             ))}

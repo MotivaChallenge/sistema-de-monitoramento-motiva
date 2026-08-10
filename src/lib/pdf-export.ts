@@ -1,5 +1,6 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { formatDateBR } from "@/lib/utils";
 
 export interface PdfReportInput {
   reportCode: string;
@@ -153,7 +154,7 @@ export const generateConformityPdf = (input: PdfReportInput) => {
       String(s.altura),
       String(s.limite),
       statusLabel(s.status),
-      s.ultimaRocada,
+      formatDateBR(s.ultimaRocada),
     ]),
     styles: { fontSize: 9, cellPadding: 5 },
     headStyles: { fillColor: [20, 30, 48], textColor: 255 },

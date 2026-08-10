@@ -28,8 +28,8 @@ export const TopHeader = ({ breadcrumb = [{ label: "RODOANEL SP-021" }], current
     : "—";
   const refresh = () => { qc.invalidateQueries(); toast.success("Atualizando dados…"); };
   return (
-    <header className="h-[72px] px-4 md:px-6 flex items-center justify-between gap-4 bg-background/85 backdrop-blur-md sticky top-0 z-30 border-b border-border/40">
-      <div className="flex items-center gap-2 text-[12px] tracking-wider min-w-0 shrink">
+    <header className="h-[72px] px-4 md:px-6 flex items-center justify-between gap-3 bg-background/85 backdrop-blur-md sticky top-0 z-30 border-b border-border/40 overflow-hidden">
+      <div className="flex items-center gap-2 text-[12px] tracking-wider min-w-0 shrink overflow-hidden">
         {breadcrumb.map((b, i) => (
           <span key={i} className="text-muted-foreground uppercase font-medium whitespace-nowrap truncate">
             {b.to ? <Link to={b.to} className="hover:text-foreground transition-smooth">{b.label}</Link> : b.label}
@@ -47,9 +47,9 @@ export const TopHeader = ({ breadcrumb = [{ label: "RODOANEL SP-021" }], current
         </nav>
       )}
 
-      <div className="flex items-center gap-2 shrink-0">
+      <div className="flex items-center gap-2 min-w-0 shrink">
         {showStatusBadges && (
-          <div className="hidden md:flex items-center gap-1.5">
+          <div className="hidden 2xl:flex items-center gap-1.5 shrink-0">
             <span className="px-2.5 py-1 rounded-full bg-destructive/10 text-destructive text-[11px] font-semibold flex items-center gap-1.5 whitespace-nowrap tabular-nums">
               <span className="h-1.5 w-1.5 rounded-full bg-destructive" /> {criticos} <span className="hidden xl:inline">CRÍTICOS</span><span className="xl:hidden">CRIT</span>
             </span>
@@ -59,7 +59,7 @@ export const TopHeader = ({ breadcrumb = [{ label: "RODOANEL SP-021" }], current
           </div>
         )}
         {showLastReading && (
-          <div className="hidden xl:block text-right leading-tight pl-2">
+          <div className="hidden 2xl:block text-right leading-tight pl-2">
             <div className="label-md">Última leitura Sentinel-2</div>
             <div className="text-[12px] font-medium">Hoje, {lastReading}</div>
           </div>
