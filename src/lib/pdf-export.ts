@@ -1,5 +1,6 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { formatDateBR } from "@/lib/utils";
 
 export interface PdfReportInput {
   reportCode: string;
