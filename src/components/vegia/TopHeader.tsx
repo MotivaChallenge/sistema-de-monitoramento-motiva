@@ -49,7 +49,7 @@ export const TopHeader = ({ breadcrumb = [{ label: "RODOANEL SP-021" }], current
 
       <div className="flex items-center gap-2 min-w-0 shrink">
         {showStatusBadges && (
-          <div className="hidden xl:flex items-center gap-1.5 shrink-0">
+          <div className="hidden 2xl:flex items-center gap-1.5 shrink-0">
             <span className="px-2.5 py-1 rounded-full bg-destructive/10 text-destructive text-[11px] font-semibold flex items-center gap-1.5 whitespace-nowrap tabular-nums">
               <span className="h-1.5 w-1.5 rounded-full bg-destructive" /> {criticos} <span className="hidden xl:inline">CRÍTICOS</span><span className="xl:hidden">CRIT</span>
             </span>
@@ -59,7 +59,7 @@ export const TopHeader = ({ breadcrumb = [{ label: "RODOANEL SP-021" }], current
           </div>
         )}
         {showLastReading && (
-          <div className="hidden xl:block text-right leading-tight pl-2">
+          <div className="hidden 2xl:block text-right leading-tight pl-2">
             <div className="label-md">Última leitura Sentinel-2</div>
             <div className="text-[12px] font-medium">Hoje, {lastReading}</div>
           </div>
