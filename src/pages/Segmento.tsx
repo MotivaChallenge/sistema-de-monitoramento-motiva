@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { OperatorActions } from "@/components/vegia/OperatorActions";
 import { RocadaTimeline } from "@/components/vegia/RocadaTimeline";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatDateBR } from "@/lib/utils";
 
 const OSMMap = lazy(() => import("@/components/vegia/OSMMap").then(m => ({ default: m.OSMMap })));
 const NDVILineChart = lazy(() => import("@/components/vegia/NDVILineChart").then(m => ({ default: m.NDVILineChart })));
@@ -101,7 +102,7 @@ const Segmento = () => {
                   </span>
                 } />
                 <Row label="Limite Contratual" value={`${seg.limite} cm`} />
-                <Row label="Última Roçada Executada" value={seg.ultimaRocada} />
+                <Row label="Última Roçada Executada" value={formatDateBR(seg.ultimaRocada)} />
                 {recommended && (
                   <Row label="Equipamento Recomendado" value={
                     <span className="text-[13px] font-medium text-foreground">{recommended.classe}</span>
