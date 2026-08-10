@@ -116,7 +116,7 @@ const Dashboard = () => {
               className="ml-1 inline-flex items-center gap-1.5 px-3 h-9 rounded-lg bg-gradient-to-b from-primary to-primary-glow text-primary-foreground text-[11px] font-semibold tracking-wider uppercase whitespace-nowrap disabled:opacity-60"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${refreshing || fetching > 0 ? "animate-spin" : ""}`} />
-              <span className="hidden md:inline">{refreshing ? "Atualizando" : "Atualizar"}</span> Dados
+              <span className="hidden xl:inline">{refreshing ? "Atualizando" : "Atualizar"} Dados</span>
             </button>
           </>
         }
