@@ -21,10 +21,6 @@ export interface SegmentObservation {
 }
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
-const todayBR = () => {
-  const d = new Date();
-  return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
-};
 
 export const useRocadaEvents = (segmentId?: string) =>
   useQuery({
