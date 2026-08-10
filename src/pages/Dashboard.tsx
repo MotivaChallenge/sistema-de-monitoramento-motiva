@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { useIsFetching, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { formatDateBR } from "@/lib/utils";
 import { TopHeader } from "@/components/vegia/TopHeader";
 import { AutoCarousel } from "@/components/dashboard/AutoCarousel";
 import { KpiCarousel } from "@/components/dashboard/KpiCarousel";
