@@ -5,7 +5,6 @@ import { useRealtimeRefresh } from "@/hooks/useRealtimeRefresh";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { useState } from "react";
-import { DemoTour } from "./DemoTour";
 
 const RealtimeMount = () => { useRealtimeRefresh(); return null; };
 
@@ -33,7 +32,6 @@ export const AppLayout = () => {
         <main className="flex-1 min-w-0">
           <Outlet />
         </main>
-        <DemoTour />
       </div>
     </FiltersProvider>
   );
