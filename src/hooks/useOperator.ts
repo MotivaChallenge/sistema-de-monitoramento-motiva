@@ -89,7 +89,7 @@ export const useRegisterRocada = () => {
       // Atualiza segments.ultima_rocada (campo legado) e zera altura para refletir intervenção
       const { error: segErr } = await supabase
         .from("segments")
-        .update({ ultima_rocada: todayBR(), altura: 0, status: "conforme" })
+        .update({ ultima_rocada: todayISO(), altura: 0, status: "conforme" })
         .eq("id", input.segmentId);
       if (segErr) throw segErr;
       // Remove alertas vinculados ao segmento
