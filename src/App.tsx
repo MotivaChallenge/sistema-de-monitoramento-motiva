@@ -24,6 +24,7 @@ const Planejamento = lazy(() => import("./pages/Planejamento"));
 const Equipes = lazy(() => import("./pages/Equipes"));
 const Mapa = lazy(() => import("./pages/Mapa"));
 const OrdensServico = lazy(() => import("./pages/OrdensServico"));
+const Prototipo = lazy(() => import("./pages/Prototipo"));
 
 const RouteFallback = () => (
   <div className="min-h-[60vh] flex items-center justify-center text-muted-foreground text-sm">
@@ -67,6 +68,7 @@ const App = () => (
               <Route path="/planejamento" element={<Planejamento />} />
               <Route path="/equipes" element={<Equipes />} />
               <Route path="/ordens" element={<OrdensServico />} />
+              <Route path="/prototipo" element={<Prototipo />} />
               <Route path="/segmento/:id" element={<Segmento />} />
               <Route path="/relatorio" element={<Relatorio />} />
               <Route path="/alertas" element={<Alertas />} />
