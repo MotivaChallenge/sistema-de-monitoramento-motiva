@@ -147,7 +147,7 @@ const Dashboard = () => {
                 local={`${s.rodovia ?? "Malha"} · Km ${s.kmStart}`}
                 title={`${s.km} — ${s.tipo}`}
                 detail={s.insight ?? `Altura ${s.altura} cm (limite ${s.limite} cm) · NDVI ${s.ndvi.toFixed(2).replace(".", ",")}`}
-                meta={`Última roçada ${s.ultimaRocada}`}
+                meta={`Última roçada ${formatDateBR(s.ultimaRocada)}`}
                 onClick={() => navigate(`/segmento/${s.id}`)}
               />
             ))}
