@@ -1,12 +1,11 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Cloud, Droplets, Sparkles, MapPin, ArrowRight, AlertTriangle } from "lucide-react";
+import { Cloud, Droplets, Sparkles, MapPin, ArrowRight, AlertTriangle, Satellite } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { formatKmPrecise } from "@/lib/km";
-import { Satellite } from "lucide-react";
 import { useGeeNdvi } from "@/hooks/useGeeNdvi";
 
 export interface PointInsightResult {
