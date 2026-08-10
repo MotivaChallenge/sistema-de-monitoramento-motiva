@@ -116,7 +116,7 @@ const Equipes = () => {
 
   return (
     <>
-      <TopHeader />
+      <TopHeader current="Equipes" breadcrumb={[{ label: "RODOANEL SP-021", to: "/dashboard" }]} />
       <div className="px-4 md:px-8 lg:px-10 pt-2 pb-12 space-y-6">
         <header className="flex items-start justify-between gap-4 flex-wrap">
           <div>
