@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { LayoutDashboard, Map, TrendingUp, CalendarDays, Users, BarChart3, Settings, LogOut, User, ClipboardList, PanelLeftClose, PanelLeftOpen, FlaskConical } from "lucide-react";
+import { LayoutDashboard, Map, TrendingUp, CalendarDays, Users, BarChart3, Settings, LogOut, User, ClipboardList, PanelLeftClose, PanelLeftOpen, FlaskConical, Database } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useActiveAlertsCount } from "@/hooks/useAlertsFeed";
 import motivaLogo from "@/assets/motiva-logo.webp.asset.json";
@@ -15,6 +15,7 @@ const items = [
   { to: "/equipes", label: "Equipes", icon: Users },
   { to: "/ordens", label: "Ordens de Serviço", icon: ClipboardList },
   { to: "/prototipo", label: "Testes do Protótipo", icon: FlaskConical },
+  { to: "/dataset", label: "Gerador de Dataset", icon: Database },
   { to: "/relatorio", label: "Relatórios", icon: BarChart3 },
   { to: "/configuracoes", label: "Configurações", icon: Settings },
 ];
