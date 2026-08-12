@@ -81,10 +81,14 @@ function ndviExpression(lat: number, lng: number, start: string, end: string, ra
       byDate: f("Collection.filter", {
         collection: ref("byBounds"),
         filter: f("Filter.and", {
-          filters: c([
-            f("Filter.greaterThanOrEquals", { leftField: c("system:time_start"), rightValue: c(startMs) }),
-            f("Filter.lessThan", { leftField: c("system:time_start"), rightValue: c(endMs) }),
-          ]),
+          filters: {
+            arrayValue: {
+              values: [
+                f("Filter.greaterThanOrEquals", { leftField: c("system:time_start"), rightValue: c(startMs) }),
+                f("Filter.lessThan", { leftField: c("system:time_start"), rightValue: c(endMs) }),
+              ],
+            },
+          },
         }),
       }),
       byCloud: f("Collection.filter", {
