@@ -69,14 +69,34 @@ function ndviExpression(lat: number, lng: number, start: string, end: string, ra
   });
   const ref = (k: string) => ({ valueReference: k });
   const c = (v: unknown) => ({ constantValue: v });
+  const startMs = Date.parse(`${start}T00:00:00Z`);
+  const endMs = Date.parse(`${end}T23:59:59Z`);
 
   return {
     values: {
       point: f("GeometryConstructors.Point", { coordinates: c([lng, lat]) }),
       region: f("Geometry.buffer", { geometry: ref("point"), distance: c(radius) }),
       col: f("ImageCollection.load", { id: c("COPERNICUS/S2_SR_HARMONIZED") }),
-      byBounds: f("Collection.filterBounds", { collection: ref("col"), geometry: ref("region") }),
-      byDate: f("Collection.filterDate", { collection: ref("byBounds"), start: c(start), end: c(end) }),
+      byBounds: f("Collection.filter", {
+        collection: ref("col"),
+        filter: f("Filter.intersects", {
+          leftField: c(".all"),
+          rightValue: f("Feature", { geometry: ref("region") }),
+        }),
+      }),
+      byDate: f("Collection.filter", {
+        collection: ref("byBounds"),
+        filter: f("Filter.and", {
+          filters: {
+            arrayValue: {
+              values: [
+                f("Filter.greaterThanOrEquals", { leftField: c("system:time_start"), rightValue: c(startMs) }),
+                f("Filter.lessThan", { leftField: c("system:time_start"), rightValue: c(endMs) }),
+              ],
+            },
+          },
+        }),
+      }),
       byCloud: f("Collection.filter", {
         collection: ref("byDate"),
         filter: f("Filter.lessThan", { leftField: c("CLOUDY_PIXEL_PERCENTAGE"), rightValue: c(60) }),
