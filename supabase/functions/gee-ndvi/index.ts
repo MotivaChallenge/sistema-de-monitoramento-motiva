@@ -77,7 +77,13 @@ function ndviExpression(lat: number, lng: number, start: string, end: string, ra
       point: f("GeometryConstructors.Point", { coordinates: c([lng, lat]) }),
       region: f("Geometry.buffer", { geometry: ref("point"), distance: c(radius) }),
       col: f("ImageCollection.load", { id: c("COPERNICUS/S2_SR_HARMONIZED") }),
-      byBounds: f("Collection.filterBounds", { collection: ref("col"), geometry: ref("region") }),
+      byBounds: f("Collection.filter", {
+        collection: ref("col"),
+        filter: f("Filter.intersects", {
+          leftField: c(".all"),
+          rightValue: f("Feature", { geometry: ref("region") }),
+        }),
+      }),
       byDate: f("Collection.filter", {
         collection: ref("byBounds"),
         filter: f("Filter.and", {
