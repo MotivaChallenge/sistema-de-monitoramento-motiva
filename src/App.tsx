@@ -9,23 +9,48 @@ import Auth from "./pages/Auth";
 import { AuthProvider } from "./hooks/useAuth";
 import { ProtectedRoute } from "./components/vegia/ProtectedRoute";
 import { SettingsProvider } from "./hooks/useSettings";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, type ComponentType } from "react";
 
 // Code splitting por rota — reduz bundle inicial.
-const Dashboard = lazy(() => import("./pages/Dashboard"));
-const Segmento = lazy(() => import("./pages/Segmento"));
-const Relatorio = lazy(() => import("./pages/Relatorio"));
-const AnaliseCV = lazy(() => import("./pages/AnaliseCV"));
-const Configuracoes = lazy(() => import("./pages/Configuracoes"));
-const Alertas = lazy(() => import("./pages/Alertas"));
-const ResetPassword = lazy(() => import("./pages/ResetPassword"));
-const Previsoes = lazy(() => import("./pages/Previsoes"));
-const Planejamento = lazy(() => import("./pages/Planejamento"));
-const Equipes = lazy(() => import("./pages/Equipes"));
-const Mapa = lazy(() => import("./pages/Mapa"));
-const OrdensServico = lazy(() => import("./pages/OrdensServico"));
-const Prototipo = lazy(() => import("./pages/Prototipo"));
-const Dataset = lazy(() => import("./pages/Dataset"));
+// Após um novo deploy, os chunks antigos deixam de existir e o import dinâmico falha.
+// Tentamos novamente uma vez e, se persistir, recarregamos a página (uma única vez).
+const RELOAD_KEY = "chunk-reload-at";
+function lazyWithRetry<T extends ComponentType<unknown>>(factory: () => Promise<{ default: T }>) {
+  return lazy(async () => {
+    try {
+      const mod = await factory();
+      sessionStorage.removeItem(RELOAD_KEY);
+      return mod;
+    } catch (err) {
+      try {
+        return await factory();
+      } catch (err2) {
+        const last = Number(sessionStorage.getItem(RELOAD_KEY) ?? 0);
+        if (Date.now() - last > 10_000) {
+          sessionStorage.setItem(RELOAD_KEY, String(Date.now()));
+          window.location.reload();
+          return new Promise<never>(() => {});
+        }
+        throw err2;
+      }
+    }
+  });
+}
+
+const Dashboard = lazyWithRetry(() => import("./pages/Dashboard"));
+const Segmento = lazyWithRetry(() => import("./pages/Segmento"));
+const Relatorio = lazyWithRetry(() => import("./pages/Relatorio"));
+const AnaliseCV = lazyWithRetry(() => import("./pages/AnaliseCV"));
+const Configuracoes = lazyWithRetry(() => import("./pages/Configuracoes"));
+const Alertas = lazyWithRetry(() => import("./pages/Alertas"));
+const ResetPassword = lazyWithRetry(() => import("./pages/ResetPassword"));
+const Previsoes = lazyWithRetry(() => import("./pages/Previsoes"));
+const Planejamento = lazyWithRetry(() => import("./pages/Planejamento"));
+const Equipes = lazyWithRetry(() => import("./pages/Equipes"));
+const Mapa = lazyWithRetry(() => import("./pages/Mapa"));
+const OrdensServico = lazyWithRetry(() => import("./pages/OrdensServico"));
+const Prototipo = lazyWithRetry(() => import("./pages/Prototipo"));
+const Dataset = lazyWithRetry(() => import("./pages/Dataset"));
 
 const RouteFallback = () => (
   <div className="min-h-[60vh] flex items-center justify-center text-muted-foreground text-sm">
