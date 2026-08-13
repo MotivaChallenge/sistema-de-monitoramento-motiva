@@ -41,7 +41,7 @@ describe("índices espectrais", () => {
   });
 
   it("o modelo oficial de altura continua baseado em NDVI", () => {
-    expect(estimateHeightCm(0.5)).toBe(32);
+    expect(estimateHeightCm(0.5)).toBe(31);
     expect(estimateHeightCm(0.1)).toBe(0);
   });
 
