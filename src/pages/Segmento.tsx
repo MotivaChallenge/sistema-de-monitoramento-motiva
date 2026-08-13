@@ -10,6 +10,7 @@ import { OperatorActions } from "@/components/vegia/OperatorActions";
 import { RocadaTimeline } from "@/components/vegia/RocadaTimeline";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDateBR } from "@/lib/utils";
+import { VegetationIndicesPanel } from "@/components/vegia/VegetationIndicesPanel";
 
 const OSMMap = lazy(() => import("@/components/vegia/OSMMap").then(m => ({ default: m.OSMMap })));
 const NDVILineChart = lazy(() => import("@/components/vegia/NDVILineChart").then(m => ({ default: m.NDVILineChart })));
@@ -131,6 +132,12 @@ const Segmento = () => {
             </section>
 
             {seg.insight && <AIInsightBubble>{seg.insight}</AIInsightBubble>}
+
+            <VegetationIndicesPanel
+              lat={lat}
+              lng={lng}
+              contexto={{ rodovia: seg.rodovia ?? undefined, trecho: seg.km }}
+            />
 
             <RocadaTimeline segmentId={seg.id} />
           </div>
