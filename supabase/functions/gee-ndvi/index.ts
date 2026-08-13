@@ -169,7 +169,7 @@ function indicesExpression(o: GraphOpts) {
         image1: ref("nir"),
         image2: f("Image.multiply", { image1: ref("red"), image2: img(6) }),
       }),
-      image2: f("Image.multiply", { image1: ref("blue"), image2: c(7.5) }),
+      image2: f("Image.multiply", { image1: ref("blue"), image2: img(7.5) }),
     }),
     image2: img(1),
   });
