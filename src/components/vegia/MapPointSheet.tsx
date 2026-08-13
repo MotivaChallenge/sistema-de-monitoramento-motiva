@@ -1,12 +1,12 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Cloud, Droplets, Sparkles, MapPin, ArrowRight, AlertTriangle, Satellite } from "lucide-react";
+import { Cloud, Droplets, Sparkles, MapPin, ArrowRight, AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { formatKmPrecise } from "@/lib/km";
-import { useGeeNdvi } from "@/hooks/useGeeNdvi";
+import { VegetationIndicesPanel } from "@/components/vegia/VegetationIndicesPanel";
 
 export interface PointInsightResult {
   point: { lat: number; lng: number };
@@ -36,7 +36,6 @@ export const MapPointSheet = ({ open, point, kmInfo, onClose }: Props) => {
   const navigate = useNavigate();
   const [data, setData] = useState<PointInsightResult | null>(null);
   const [loading, setLoading] = useState(false);
-  const gee = useGeeNdvi(point?.lat, point?.lng, open);
 
   useEffect(() => {
     if (!open || !point) { setData(null); return; }
@@ -93,39 +92,14 @@ export const MapPointSheet = ({ open, point, kmInfo, onClose }: Props) => {
         )}
 
         {open && point && (
-          <section className="rounded-xl border border-border bg-surface-low p-4 mb-5">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2 text-[12px] font-semibold uppercase tracking-wider text-muted-foreground">
-                <Satellite className="h-4 w-4 text-primary" /> NDVI satélite (GEE)
-              </div>
-              {gee.data && (
-                <span className="text-[10px] text-muted-foreground">{gee.data.imagens} imagens · 150 m</span>
-              )}
-            </div>
-            {gee.isLoading ? (
-              <Skeleton className="h-16 w-full" />
-            ) : gee.data?.ndvi !== null && gee.data ? (
-              <div className="flex items-end gap-6">
-                <div>
-                  <div className="text-3xl font-bold leading-none tabular-nums">{gee.data.ndvi?.toFixed(2)}</div>
-                  <div className="text-[11px] text-muted-foreground mt-1">NDVI mediano</div>
-                </div>
-                <div>
-                  <div className="text-xl font-semibold leading-none tabular-nums">
-                    {gee.data.alturaEstimadaCm} <span className="text-[12px] font-normal text-muted-foreground">cm</span>
-                  </div>
-                  <div className="text-[11px] text-muted-foreground mt-1">Altura estimada</div>
-                </div>
-                <div className="ml-auto text-right text-[10px] text-muted-foreground leading-tight">
-                  Sentinel-2<br />{gee.data.periodo.de} → {gee.data.periodo.ate}
-                </div>
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                Dados de satélite indisponíveis para este ponto no momento.
-              </p>
-            )}
-          </section>
+          <div className="mb-5">
+            <VegetationIndicesPanel
+              lat={point.lat}
+              lng={point.lng}
+              enabled={open}
+              contexto={{ rodovia: kmInfo?.rodovia, trecho: kmInfo ? formatKmPrecise(kmInfo.km) : undefined }}
+            />
+          </div>
         )}
 
         {!loading && data && (
