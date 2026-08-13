@@ -85,6 +85,8 @@ const f = (functionName: string, args: Record<string, unknown>) => ({
 const ref = (k: string) => ({ valueReference: k });
 const c = (v: unknown) => ({ constantValue: v });
 const arr = (values: unknown[]) => ({ arrayValue: { values } });
+/** Constante numérica como Image (o EE não faz cast automático em args de Image). */
+const img = (v: number) => f("Image.constant", { value: c(v) });
 
 interface GraphOpts {
   lat: number; lng: number; start: string; end: string; radius: number;
@@ -97,7 +99,7 @@ function indicesExpression(o: GraphOpts) {
   const endMs = Date.parse(`${o.end}T23:59:59Z`);
   const band = (name: string) => f("Image.divide", {
     image1: f("Image.select", { input: ref("masked"), bandSelectors: c([name]) }),
-    image2: c(10000),
+    image2: img(10000),
   });
 
   const values: Record<string, unknown> = {
@@ -132,14 +134,14 @@ function indicesExpression(o: GraphOpts) {
     keep: f("Image.or", {
       image1: f("Image.or", {
         image1: f("Image.or", {
-          image1: f("Image.eq", { image1: ref("sclRound"), image2: c(4) }),
-          image2: f("Image.eq", { image1: ref("sclRound"), image2: c(5) }),
+          image1: f("Image.eq", { image1: ref("sclRound"), image2: img(4) }),
+          image2: f("Image.eq", { image1: ref("sclRound"), image2: img(5) }),
         }),
-        image2: f("Image.eq", { image1: ref("sclRound"), image2: c(6) }),
+        image2: f("Image.eq", { image1: ref("sclRound"), image2: img(6) }),
       }),
       image2: f("Image.or", {
-        image1: f("Image.eq", { image1: ref("sclRound"), image2: c(7) }),
-        image2: f("Image.eq", { image1: ref("sclRound"), image2: c(11) }),
+        image1: f("Image.eq", { image1: ref("sclRound"), image2: img(7) }),
+        image2: f("Image.eq", { image1: ref("sclRound"), image2: img(11) }),
       }),
     }),
     maskedRaw: f("Image.updateMask", { image: ref("median"), mask: ref("keep") }),
@@ -165,18 +167,18 @@ function indicesExpression(o: GraphOpts) {
     image1: f("Image.subtract", {
       image1: f("Image.add", {
         image1: ref("nir"),
-        image2: f("Image.multiply", { image1: ref("red"), image2: c(6) }),
+        image2: f("Image.multiply", { image1: ref("red"), image2: img(6) }),
       }),
       image2: f("Image.multiply", { image1: ref("blue"), image2: c(7.5) }),
     }),
-    image2: c(1),
+    image2: img(1),
   });
   values.eviRaw = f("Image.multiply", {
     image1: f("Image.divide", {
       image1: f("Image.subtract", { image1: ref("nir"), image2: ref("red") }),
       image2: ref("eviDen"),
     }),
-    image2: c(2.5),
+    image2: img(2.5),
   });
   values.evi = f("Image.rename", { input: ref("eviRaw"), names: c(["evi"]) });
 
@@ -186,10 +188,10 @@ function indicesExpression(o: GraphOpts) {
       image1: f("Image.subtract", { image1: ref("nir"), image2: ref("red") }),
       image2: f("Image.add", {
         image1: f("Image.add", { image1: ref("nir"), image2: ref("red") }),
-        image2: c(o.L),
+        image2: img(o.L),
       }),
     }),
-    image2: c(1 + o.L),
+    image2: img(1 + o.L),
   });
   values.savi = f("Image.rename", { input: ref("saviRaw"), names: c(["savi"]) });
 
