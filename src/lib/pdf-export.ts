@@ -180,7 +180,7 @@ export const generateConformityPdf = (input: PdfReportInput) => {
     doc.setFontSize(8);
     doc.setTextColor(140, 140, 140);
     doc.text(
-      `Vegia · Gerado em ${new Date().toLocaleString("pt-BR")}`,
+      `Motiva Monitoramento · Gerado em ${new Date().toLocaleString("pt-BR")}`,
       margin, doc.internal.pageSize.getHeight() - 20
     );
     doc.text(

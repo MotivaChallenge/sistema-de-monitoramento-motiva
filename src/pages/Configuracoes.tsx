@@ -122,7 +122,7 @@ const Configuracoes = () => {
         <div className="flex items-end justify-between mb-8 gap-4 flex-wrap">
           <div>
             <h1 className="text-[34px] font-bold tracking-tight">Configurações</h1>
-            <p className="text-muted-foreground mt-1">Personalize sua experiência e ajuste os parâmetros operacionais do Vegia.</p>
+            <p className="text-muted-foreground mt-1">Personalize sua experiência e ajuste os parâmetros operacionais do sistema.</p>
           </div>
           <div className="flex items-center gap-2">
             <button
