@@ -54,18 +54,52 @@ const AnaliseCV = () => {
       <Skeleton className="h-[420px] w-full" />
     </div>
   );
-  if (!seg) return (
-    <div className="p-10 text-center text-muted-foreground text-sm">
-      <p className="mb-3">Segmento não encontrado.</p>
-      <button onClick={() => navigate("/dashboard")} className="px-4 py-2 rounded-lg border border-border hover:bg-surface-low text-foreground text-[12px] font-semibold uppercase tracking-wider">
-        Voltar ao mapa
-      </button>
-    </div>
-  );
+  if (!seg) {
+    const kmGuess = id?.match(/(\d+)[-+](\d+)/);
+    const rodoviaGuess = id?.match(/^([A-Z]{2}-\d{3}[A-Z-]*)/i)?.[1] ?? "não informada";
+    return (
+      <>
+        <TopHeader breadcrumb={[{ label: "Motiva", to: "/dashboard" }]} current="Análise Visual" />
+        <div className="px-4 md:px-10 pb-12 max-w-2xl">
+          <h1 className="text-[26px] font-bold tracking-tight">Trecho não encontrado</h1>
+          <p className="text-muted-foreground mt-2 text-[13.5px]">
+            Não localizamos nenhum segmento cadastrado com o identificador recebido. Volte ao relatório
+            para escolher um trecho válido ou abra o mapa operacional.
+          </p>
+          <dl className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {[
+              { t: "Rodovia", v: rodoviaGuess },
+              { t: "KM", v: kmGuess ? `km ${kmGuess[1]}+${kmGuess[2]}` : "não identificado" },
+              { t: "Parâmetro recebido", v: id ?? "—" },
+            ].map(x => (
+              <div key={x.t} className="bg-surface-lowest border border-border/40 rounded-xl p-4">
+                <dt className="text-[10.5px] uppercase tracking-wider text-muted-foreground">{x.t}</dt>
+                <dd className="text-[14px] font-semibold mt-1 break-all">{x.v}</dd>
+              </div>
+            ))}
+          </dl>
+          <div className="flex flex-wrap gap-3 mt-6">
+            <button
+              onClick={() => navigate("/relatorio")}
+              className="h-10 px-5 rounded-lg bg-gradient-to-b from-primary to-primary-glow text-primary-foreground text-[12px] font-semibold uppercase tracking-wider"
+            >
+              Voltar ao relatório
+            </button>
+            <button
+              onClick={() => navigate("/mapa")}
+              className="h-10 px-5 rounded-lg border border-border hover:bg-surface-low text-[12px] font-semibold uppercase tracking-wider"
+            >
+              Ir para o mapa
+            </button>
+          </div>
+        </div>
+      </>
+    );
+  }
   return (
     <>
       <TopHeader
-        breadcrumb={[{ label: "RODOANEL SP-021", to: "/dashboard" }]}
+        breadcrumb={[{ label: seg.rodovia ?? "Rodoanel SP-021", to: "/mapa" }]}
         current="Análise Visual"
         showTabs
         rightSlot={
