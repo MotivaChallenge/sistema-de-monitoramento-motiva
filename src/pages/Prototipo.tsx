@@ -62,7 +62,14 @@ const Prototipo = () => {
 
   const worst = useMemo(() => [...rows].sort((a, b) => Math.abs(b.erro) - Math.abs(a.erro)).slice(0, 8), [rows]);
   const scatter = useMemo(() => rows.slice(0, 400).map(r => ({ x: r.medido, y: r.previsto })), [rows]);
-  const cvAvg = cv.length ? (cv.reduce((a, c) => a + c.confidence, 0) / cv.length) * 100 : 0;
+  // As confianças são gravadas em escala 0–100; valores 0–1 são normalizados.
+  const cvAvg = useMemo(() => {
+    if (!cv.length) return 0;
+    const vals = cv
+      .map(c => (Number.isFinite(c.confidence) ? (c.confidence <= 1 ? c.confidence * 100 : c.confidence) : 0))
+      .map(v => Math.min(100, Math.max(0, v)));
+    return vals.reduce((a, v) => a + v, 0) / vals.length;
+  }, [cv]);
 
   return (
     <>

@@ -23,6 +23,9 @@ export const TopHeader = ({ breadcrumb = [{ label: "RODOANEL SP-021" }], current
   const { data: segments = [], dataUpdatedAt } = useSegments();
   const criticos = segments.filter(s => s.status === "critico").length;
   const atencao = segments.filter(s => s.status === "atencao").length;
+  // Usa sempre um segmento real existente (o primeiro crítico, se houver).
+  const analysisSegment = segments.find(s => s.status === "critico") ?? segments[0];
+  const analysisTo = analysisSegment ? `/analise-cv/${analysisSegment.id}` : "/relatorio";
   const lastReading = dataUpdatedAt
     ? new Date(dataUpdatedAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
     : "—";
@@ -43,7 +46,7 @@ export const TopHeader = ({ breadcrumb = [{ label: "RODOANEL SP-021" }], current
         <nav className="hidden lg:flex items-center gap-6 text-[12px] tracking-wider font-medium uppercase">
           <Link to="/dashboard" className={pathname==="/dashboard" ? "text-primary" : "text-muted-foreground hover:text-foreground"}>Visão Geral</Link>
           <Link to="/relatorio" className={pathname==="/relatorio" ? "text-primary" : "text-muted-foreground hover:text-foreground"}>Trechos</Link>
-          <Link to="/analise-cv/5-800" className={pathname.startsWith("/analise-cv") ? "text-primary" : "text-muted-foreground hover:text-foreground"}>Contratos</Link>
+          <Link to={analysisTo} className={pathname.startsWith("/analise-cv") ? "text-primary" : "text-muted-foreground hover:text-foreground"}>Análise visual</Link>
         </nav>
       )}
 

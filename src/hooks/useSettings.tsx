@@ -46,20 +46,54 @@ const SettingsCtx = createContext<Ctx>({
   reset: () => {},
 });
 
+const LS_KEY = "motiva:settings";
+
+const readLocal = (): UserSettings | null => {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    return raw ? { ...DEFAULT_SETTINGS, ...JSON.parse(raw) } : null;
+  } catch { return null; }
+};
+
+/** Validação compartilhada (client + antes de persistir). */
+export const validateSettings = (s: UserSettings): string | null => {
+  const nums: [string, number][] = [
+    ["Peso do NDVI", s.irc_weight_ndvi],
+    ["Peso da altura", s.irc_weight_altura],
+    ["Peso da idade da roçada", s.irc_weight_idade],
+    ["Peso da chuva", s.irc_weight_chuva],
+    ["Altura de atenção", s.altura_atencao_cm],
+    ["Altura crítica", s.altura_critica_cm],
+  ];
+  for (const [label, v] of nums) {
+    if (v === null || v === undefined || Number.isNaN(v)) return `${label}: preencha um valor numérico.`;
+    if (!Number.isFinite(v)) return `${label}: valor inválido.`;
+    if (v < 0) return `${label}: não pode ser negativo.`;
+  }
+  if (s.altura_atencao_cm < 1) return "Altura de atenção deve ser de pelo menos 1 cm.";
+  if (s.altura_critica_cm < 1) return "Altura crítica deve ser de pelo menos 1 cm.";
+  const sum = s.irc_weight_ndvi + s.irc_weight_altura + s.irc_weight_idade + s.irc_weight_chuva;
+  if (sum !== 100) return `Os pesos do IRC devem somar 100 (atual: ${sum}).`;
+  if (s.altura_critica_cm < s.altura_atencao_cm) {
+    return "Altura crítica deve ser maior ou igual à altura de atenção.";
+  }
+  return null;
+};
+
 export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
-  const [settings, setSettings] = useState<UserSettings>(DEFAULT_SETTINGS);
+  const [settings, setSettings] = useState<UserSettings>(() => readLocal() ?? DEFAULT_SETTINGS);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     let active = true;
-    if (!user) { setSettings(DEFAULT_SETTINGS); setLoading(false); return; }
+    if (!user) { setSettings(readLocal() ?? DEFAULT_SETTINGS); setLoading(false); return; }
     setLoading(true);
     supabase.from("user_settings").select("*").eq("user_id", user.id).maybeSingle().then(({ data }) => {
       if (!active) return;
       if (data) {
-        setSettings({
+        const next: UserSettings = {
           theme: (data.theme as any) ?? "dark",
           density: (data.density as any) ?? "comfortable",
           irc_weight_ndvi: data.irc_weight_ndvi,
@@ -71,7 +105,9 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
           notify_critico: data.notify_critico,
           notify_atencao: data.notify_atencao,
           notify_email: data.notify_email,
-        });
+        };
+        setSettings(next);
+        try { localStorage.setItem(LS_KEY, JSON.stringify(next)); } catch { /* ignore */ }
       }
       setLoading(false);
     });
@@ -87,11 +123,8 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
 
   const save = useCallback(async (next: UserSettings) => {
     if (!user) return { error: "Não autenticado" };
-    const sum = next.irc_weight_ndvi + next.irc_weight_altura + next.irc_weight_idade + next.irc_weight_chuva;
-    if (sum !== 100) return { error: `Os pesos do IRC devem somar 100 (atual: ${sum}).` };
-    if (next.altura_atencao_cm >= next.altura_critica_cm) {
-      return { error: "Altura de atenção deve ser menor que a crítica." };
-    }
+    const invalid = validateSettings(next);
+    if (invalid) return { error: invalid };
     setSaving(true);
     const { error } = await supabase
       .from("user_settings")
@@ -99,6 +132,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     setSaving(false);
     if (error) return { error: error.message };
     setSettings(next);
+    try { localStorage.setItem(LS_KEY, JSON.stringify(next)); } catch { /* ignore */ }
     return {};
   }, [user]);
 

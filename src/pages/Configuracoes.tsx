@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { TopHeader } from "@/components/vegia/TopHeader";
-import { useSettings, DEFAULT_SETTINGS, UserSettings } from "@/hooks/useSettings";
+import { useSettings, DEFAULT_SETTINGS, UserSettings, validateSettings } from "@/hooks/useSettings";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -33,19 +33,39 @@ const Field = ({ label, hint, children, htmlFor }: { label: string; hint?: strin
   </div>
 );
 
-const NumberInput = ({ id, value, onChange, min, max, suffix }: { id: string; value: number; onChange: (n: number) => void; min: number; max: number; suffix?: string }) => (
+const NumberInput = ({ id, value, onChange, min, max, suffix, invalid }: { id: string; value: number; onChange: (n: number) => void; min: number; max: number; suffix?: string; invalid?: boolean }) => (
   <div className="flex items-center gap-2">
     <input
       id={id}
       type="number"
       min={min}
       max={max}
-      value={value}
-      onChange={(e) => onChange(Number(e.target.value))}
-      className="h-10 w-full px-3 rounded-lg bg-surface-high border border-border text-[13px] font-medium outline-none focus:ring-2 focus:ring-primary/40"
+      value={Number.isFinite(value) ? value : ""}
+      aria-invalid={invalid || undefined}
+      onChange={(e) => onChange(e.target.value === "" ? NaN : Number(e.target.value))}
+      className={`h-10 w-full px-3 rounded-lg bg-surface-high border text-[13px] font-medium outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${
+        invalid ? "border-destructive" : "border-border"
+      }`}
     />
     {suffix && <span className="text-[12px] text-muted-foreground whitespace-nowrap">{suffix}</span>}
   </div>
+);
+
+const SwitchField = ({ id, label, hint, checked, onChange }: { id: string; label: string; hint?: string; checked: boolean; onChange: (v: boolean) => void }) => (
+  <Field label={label} hint={hint} htmlFor={id}>
+    <div className="flex items-center gap-3">
+      <Switch
+        id={id}
+        checked={checked}
+        onCheckedChange={onChange}
+        aria-label={label}
+        className="focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2"
+      />
+      <span className={`text-[12px] font-semibold ${checked ? "text-primary" : "text-muted-foreground"}`} aria-hidden>
+        {checked ? "Ligado" : "Desligado"}
+      </span>
+    </div>
+  </Field>
 );
 
 const Configuracoes = () => {
@@ -66,11 +86,24 @@ const Configuracoes = () => {
 
   const ircSum = draft.irc_weight_ndvi + draft.irc_weight_altura + draft.irc_weight_idade + draft.irc_weight_chuva;
   const dirty = JSON.stringify(draft) !== JSON.stringify(settings);
+  const validationError = validateSettings(draft);
+  const invalidNum = (v: number) => !Number.isFinite(v) || v < 0;
 
   const onSave = async () => {
+    if (validationError) {
+      toast.error("Revise as configurações", { description: validationError });
+      return;
+    }
     const { error } = await save(draft);
     if (error) toast.error("Não foi possível salvar", { description: error });
     else toast.success("Configurações salvas");
+  };
+
+  const onRestoreDefaults = () => {
+    if (window.confirm("Restaurar todas as configurações para o padrão? As alterações não salvas serão perdidas.")) {
+      setDraft(DEFAULT_SETTINGS);
+      toast.info("Padrões restaurados", { description: "Clique em Salvar alterações para confirmar." });
+    }
   };
 
   const onSaveProfile = async () => {
@@ -93,20 +126,27 @@ const Configuracoes = () => {
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setDraft(DEFAULT_SETTINGS)}
-              className="h-10 px-4 rounded-lg border border-border text-[12px] font-semibold uppercase tracking-wider inline-flex items-center gap-2 hover:bg-surface-high"
+              onClick={onRestoreDefaults}
+              className="h-10 px-4 rounded-lg border border-border text-[12px] font-semibold uppercase tracking-wider inline-flex items-center gap-2 hover:bg-surface-high focus-visible:ring-2 focus-visible:ring-primary/40 outline-none"
             >
               <RotateCcw className="h-4 w-4" /> Restaurar padrão
             </button>
             <button
               onClick={onSave}
-              disabled={!dirty || saving}
-              className="h-10 px-5 rounded-lg bg-gradient-to-b from-primary to-primary-glow text-primary-foreground text-[12px] font-semibold uppercase tracking-wider inline-flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
+              disabled={!dirty || saving || !!validationError}
+              title={validationError ?? undefined}
+              className="h-10 px-5 rounded-lg bg-gradient-to-b from-primary to-primary-glow text-primary-foreground text-[12px] font-semibold uppercase tracking-wider inline-flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-primary/40 outline-none"
             >
               <Save className="h-4 w-4" /> {saving ? "Salvando…" : "Salvar alterações"}
             </button>
           </div>
         </div>
+
+        {validationError && !loading && (
+          <div role="alert" className="mb-6 rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-[12.5px] text-destructive font-medium">
+            {validationError}
+          </div>
+        )}
 
         {loading ? (
           <div className="space-y-4">
@@ -174,16 +214,16 @@ const Configuracoes = () => {
 
             <Section icon={Sliders} title="Pesos do IRC" desc={`Como o Índice de Risco de Crescimento é calculado. Os 4 pesos devem somar 100. Atualmente: ${ircSum}.`}>
               <Field label="NDVI (cobertura vegetal)" htmlFor="w1" hint="Quanto maior, mais peso para o índice de vegetação.">
-                <NumberInput id="w1" value={draft.irc_weight_ndvi} min={0} max={100} suffix="%" onChange={n => setDraft({ ...draft, irc_weight_ndvi: n })} />
+                <NumberInput id="w1" invalid={invalidNum(draft.irc_weight_ndvi)} value={draft.irc_weight_ndvi} min={0} max={100} suffix="%" onChange={n => setDraft({ ...draft, irc_weight_ndvi: n })} />
               </Field>
               <Field label="Altura vs. limite contratual" htmlFor="w2">
-                <NumberInput id="w2" value={draft.irc_weight_altura} min={0} max={100} suffix="%" onChange={n => setDraft({ ...draft, irc_weight_altura: n })} />
+                <NumberInput id="w2" invalid={invalidNum(draft.irc_weight_altura)} value={draft.irc_weight_altura} min={0} max={100} suffix="%" onChange={n => setDraft({ ...draft, irc_weight_altura: n })} />
               </Field>
               <Field label="Dias desde a última roçada" htmlFor="w3">
-                <NumberInput id="w3" value={draft.irc_weight_idade} min={0} max={100} suffix="%" onChange={n => setDraft({ ...draft, irc_weight_idade: n })} />
+                <NumberInput id="w3" invalid={invalidNum(draft.irc_weight_idade)} value={draft.irc_weight_idade} min={0} max={100} suffix="%" onChange={n => setDraft({ ...draft, irc_weight_idade: n })} />
               </Field>
               <Field label="Chuva acumulada (5 dias)" htmlFor="w4">
-                <NumberInput id="w4" value={draft.irc_weight_chuva} min={0} max={100} suffix="%" onChange={n => setDraft({ ...draft, irc_weight_chuva: n })} />
+                <NumberInput id="w4" invalid={invalidNum(draft.irc_weight_chuva)} value={draft.irc_weight_chuva} min={0} max={100} suffix="%" onChange={n => setDraft({ ...draft, irc_weight_chuva: n })} />
               </Field>
               <div className={`text-[12px] font-semibold mt-2 ${ircSum === 100 ? "text-primary" : "text-destructive"}`}>
                 Soma dos pesos: {ircSum}/100 {ircSum === 100 ? "✓" : "(ajuste para 100 antes de salvar)"}
@@ -192,20 +232,28 @@ const Configuracoes = () => {
 
             <Section icon={Sliders} title="Limiares de altura" desc="Define quando um trecho entra em atenção ou estado crítico.">
               <Field label="Altura de atenção" htmlFor="ha" hint="A partir desta altura o trecho recebe alerta amarelo.">
-                <NumberInput id="ha" value={draft.altura_atencao_cm} min={1} max={200} suffix="cm" onChange={n => setDraft({ ...draft, altura_atencao_cm: n })} />
+                <NumberInput id="ha" invalid={invalidNum(draft.altura_atencao_cm)} value={draft.altura_atencao_cm} min={1} max={200} suffix="cm" onChange={n => setDraft({ ...draft, altura_atencao_cm: n })} />
               </Field>
-              <Field label="Altura crítica" htmlFor="hc" hint="A partir desta altura o trecho fica em estado crítico (Nível 3).">
-                <NumberInput id="hc" value={draft.altura_critica_cm} min={1} max={300} suffix="cm" onChange={n => setDraft({ ...draft, altura_critica_cm: n })} />
+              <Field label="Altura crítica" htmlFor="hc" hint="Deve ser maior ou igual à altura de atenção.">
+                <NumberInput id="hc" invalid={invalidNum(draft.altura_critica_cm) || draft.altura_critica_cm < draft.altura_atencao_cm} value={draft.altura_critica_cm} min={1} max={300} suffix="cm" onChange={n => setDraft({ ...draft, altura_critica_cm: n })} />
               </Field>
             </Section>
 
             <Section icon={Bell} title="Notificações" desc="Escolha quando e como ser avisado.">
-              <Field label="Alertas de trechos críticos">
-                <Switch checked={draft.notify_critico} onCheckedChange={v => setDraft({ ...draft, notify_critico: v })} />
-              </Field>
-              <Field label="Alertas de trechos em atenção">
-                <Switch checked={draft.notify_atencao} onCheckedChange={v => setDraft({ ...draft, notify_atencao: v })} />
-              </Field>
+              <SwitchField
+                id="notify-critico"
+                label="Alertas de trechos críticos"
+                hint="Avisos para vegetação acima do limite contratual."
+                checked={draft.notify_critico}
+                onChange={v => setDraft({ ...draft, notify_critico: v })}
+              />
+              <SwitchField
+                id="notify-atencao"
+                label="Alertas de trechos em atenção"
+                hint="Avisos preventivos antes de o trecho ficar crítico."
+                checked={draft.notify_atencao}
+                onChange={v => setDraft({ ...draft, notify_atencao: v })}
+              />
             </Section>
           </div>
         )}

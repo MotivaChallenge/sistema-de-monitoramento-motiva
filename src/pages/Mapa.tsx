@@ -5,10 +5,15 @@ import { useFilters } from "@/contexts/FiltersContext";
 import { GlobalFilters } from "@/components/vegia/GlobalFilters";
 import { MapPointSheet } from "@/components/vegia/MapPointSheet";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertTriangle, Activity, Inbox, Eye, Layers, Crosshair, Route, Network, Download, Building2, Leaf, ShieldCheck } from "lucide-react";
+import { AlertTriangle, Activity, Inbox, Eye, Layers, Crosshair, Route, Network, Download, Building2, Leaf, ShieldCheck, ChevronDown, ChevronUp, Search, ListFilter, X } from "lucide-react";
 import { useState, useMemo, lazy, Suspense, useEffect } from "react";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { toast } from "sonner";
 import { coordsForKm, kmForCoords, formatKmPrecise, formatKmRange } from "@/lib/km";
+
+type StatusKey = "critico" | "atencao" | "conforme";
+const PRIORIDADE: Record<StatusKey, string> = { critico: "Alta", atencao: "Média", conforme: "Baixa" };
+const PAGE_SIZE = 40;
 
 const OSMMap = lazy(() => import("@/components/vegia/OSMMap").then(m => ({ default: m.OSMMap })));
 
@@ -29,6 +34,12 @@ const Mapa = () => {
   const [mapPoint, setMapPoint] = useState<{ lat: number; lng: number; label?: string } | null>(null);
   const [baseLayer, setBaseLayer] = useState<"street" | "satellite" | "hybrid">("hybrid");
   const [showPolyline, setShowPolyline] = useState(true);
+  const [kpisOpen, setKpisOpen] = useState(true);
+  const [listOpen, setListOpen] = useState(true);
+  const [listSearch, setListSearch] = useState("");
+  const [listStatus, setListStatus] = useState<"todos" | StatusKey>("todos");
+  const [page, setPage] = useState(1);
+  const [focus, setFocus] = useState<{ lat: number; lng: number; key: string } | null>(null);
 
   const currentHighway = highways.find(h => h.code === selectedHighway);
   const currentConcession = currentHighway?.concessao;
@@ -205,19 +216,156 @@ const Mapa = () => {
         const p = locate(s.kmStart);
         if (!p) return null;
         return {
+          id: s.id,
           lat: p.lat,
           lng: p.lng,
           status: s.status as "critico" | "atencao" | "conforme",
+          tipo: s.tipo,
+          kmLabel: formatKmRange(s.kmStart, s.kmEnd),
           label: `${formatKmRange(s.kmStart, s.kmEnd)} · ${s.tipo}`,
         };
       })
-      .filter(Boolean) as { lat: number; lng: number; status: any; label: string }[];
+      .filter(Boolean) as {
+        id: string; lat: number; lng: number; status: StatusKey; tipo: string; kmLabel: string; label: string;
+      }[];
   }, [segments, kmMarkers]);
+
+  const listItems = useMemo(() => {
+    const q = listSearch.trim().toLowerCase();
+    return segmentMarkers.filter(m => {
+      if (listStatus !== "todos" && m.status !== listStatus) return false;
+      if (!q) return true;
+      return `${m.kmLabel} ${m.tipo} ${m.id}`.toLowerCase().includes(q);
+    });
+  }, [segmentMarkers, listSearch, listStatus]);
+
+  const pageCount = Math.max(1, Math.ceil(listItems.length / PAGE_SIZE));
+  const pageItems = useMemo(
+    () => listItems.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+    [listItems, page]
+  );
+  useEffect(() => { setPage(1); }, [listSearch, listStatus, selectedHighway]);
+  useEffect(() => { if (page > pageCount) setPage(1); }, [page, pageCount]);
+
+  const selectItem = (m: { id: string; lat: number; lng: number; label: string }) => {
+    setFocus({ lat: m.lat, lng: m.lng, key: `${m.id}-${Date.now()}` });
+    setMapPoint({ lat: m.lat, lng: m.lng, label: m.label });
+  };
 
   /** Localização precisa (km + metros) do ponto clicado no eixo da rodovia. */
   const pointKm = useMemo(
     () => (mapPoint ? kmForCoords(kmMarkers, { lat: mapPoint.lat, lng: mapPoint.lng }) : null),
     [mapPoint, kmMarkers]
+  );
+
+  const listPanel = (
+    <div className="flex flex-col h-full min-h-0">
+      <div className="px-3 py-2.5 border-b border-border/40 space-y-2">
+        <label className="relative block">
+          <span className="sr-only">Buscar segmento por KM, tipo ou identificador</span>
+          <Search className="h-3.5 w-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <input
+            value={listSearch}
+            onChange={e => setListSearch(e.target.value)}
+            placeholder="Buscar por KM, tipo ou ID"
+            className="w-full h-9 pl-8 pr-8 rounded-lg bg-surface-low border border-border/50 text-[12px] outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          />
+          {listSearch && (
+            <button
+              onClick={() => setListSearch("")}
+              aria-label="Limpar busca"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </label>
+        <div className="flex items-center gap-1" role="group" aria-label="Filtrar por status">
+          {([
+            { v: "todos", label: "Todos" },
+            { v: "critico", label: "Críticos" },
+            { v: "atencao", label: "Atenção" },
+            { v: "conforme", label: "Conformes" },
+          ] as const).map(f => (
+            <button
+              key={f.v}
+              onClick={() => setListStatus(f.v as any)}
+              aria-pressed={listStatus === f.v}
+              className={`flex-1 h-7 rounded-md text-[11px] font-semibold transition-smooth ${
+                listStatus === f.v
+                  ? "bg-primary/10 text-primary border border-primary/20"
+                  : "text-muted-foreground hover:text-foreground border border-transparent"
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-3 space-y-2 min-h-0">
+        {pageItems.length === 0 && (
+          <div className="text-center py-8 text-muted-foreground">
+            <div className="h-10 w-10 mx-auto mb-2 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+              <Inbox className="h-4 w-4" />
+            </div>
+            <p className="text-[12px] font-semibold text-foreground">Nenhum segmento</p>
+            <p className="text-[11px] mt-1">Ajuste a busca ou os filtros para exibir dados.</p>
+          </div>
+        )}
+        {pageItems.map(m => (
+          <button
+            key={m.id}
+            onClick={() => selectItem(m)}
+            className="w-full text-left px-3 py-2.5 rounded-lg border border-border/40 bg-surface-low hover:bg-surface-high transition-smooth focus-visible:ring-2 focus-visible:ring-primary/40 outline-none"
+          >
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[12px] font-semibold tabular-nums">{m.kmLabel}</span>
+              <span
+                className={`h-2 w-2 rounded-full shrink-0 ${
+                  m.status === "critico" ? "bg-destructive" : m.status === "atencao" ? "bg-tertiary" : "bg-primary"
+                }`}
+              />
+            </div>
+            <div className="mt-1 flex items-center gap-2 text-[10.5px]">
+              <span
+                className={`px-1.5 py-0.5 rounded font-semibold ${
+                  m.status === "critico"
+                    ? "bg-destructive/10 text-destructive"
+                    : m.status === "atencao"
+                    ? "bg-tertiary/15 text-tertiary"
+                    : "bg-primary/10 text-primary"
+                }`}
+              >
+                Prioridade {PRIORIDADE[m.status]}
+              </span>
+              <span className="text-muted-foreground truncate">{m.tipo}</span>
+            </div>
+          </button>
+        ))}
+      </div>
+
+      <div className="px-3 py-2 border-t border-border/40 flex items-center justify-between text-[11px] text-muted-foreground">
+        <span className="tabular-nums">{listItems.length} segmento{listItems.length === 1 ? "" : "s"}</span>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setPage(p => Math.max(1, p - 1))}
+            disabled={page <= 1}
+            className="px-2 h-6 rounded border border-border/50 disabled:opacity-40 hover:bg-surface-high"
+          >
+            Anterior
+          </button>
+          <span className="tabular-nums px-1">{page}/{pageCount}</span>
+          <button
+            onClick={() => setPage(p => Math.min(pageCount, p + 1))}
+            disabled={page >= pageCount}
+            className="px-2 h-6 rounded border border-border/50 disabled:opacity-40 hover:bg-surface-high"
+          >
+            Próxima
+          </button>
+        </div>
+      </div>
+    </div>
   );
 
   return (
@@ -237,6 +385,7 @@ const Mapa = () => {
               polyline={polyline}
               markers={segmentMarkers}
               fitBounds
+              focus={focus}
               onPointSelect={(lat, lng, label) => setMapPoint({ lat, lng, label })}
               baseLayer={baseLayer}
             />
@@ -244,7 +393,7 @@ const Mapa = () => {
         </div>
 
         {/* Floating overlay: KPIs + Camadas + Legenda (left column, scrollable) */}
-        <div className="absolute top-4 left-4 bottom-6 z-[400] flex flex-col gap-3 overflow-y-auto pr-1 pb-1 [scrollbar-width:thin]">
+        <div className="absolute top-4 left-4 bottom-6 z-[400] hidden md:flex flex-col gap-3 overflow-y-auto pr-1 pb-1 [scrollbar-width:thin]">
           {/* Concession + highway selector */}
           <div className="bg-background/90 backdrop-blur-md border border-border/50 rounded-xl p-4 shadow-card w-[280px] shrink-0">
             <div className="flex items-center justify-between mb-3">
@@ -287,10 +436,18 @@ const Mapa = () => {
               <Download className="h-3.5 w-3.5" />
               Exportar GeoJSON
             </button>
+            <button
+              onClick={() => setKpisOpen(o => !o)}
+              aria-expanded={kpisOpen}
+              className="mt-2 w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-smooth"
+            >
+              {kpisOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+              {kpisOpen ? "Ocultar indicadores" : "Mostrar indicadores"}
+            </button>
           </div>
 
           {/* KPIs agregados da concessão selecionada */}
-          {currentConcession && (
+          {kpisOpen && currentConcession && (
             <div className="bg-background/90 backdrop-blur-md border border-border/50 rounded-xl p-4 shadow-card w-[280px] shrink-0">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-1.5">
@@ -392,7 +549,7 @@ const Mapa = () => {
             </div>
           )}
 
-          <div className="bg-background/90 backdrop-blur-md border border-border/50 rounded-xl p-4 shadow-card w-[240px] shrink-0">
+          <div className={`bg-background/90 backdrop-blur-md border border-border/50 rounded-xl p-4 shadow-card w-[240px] shrink-0 ${kpisOpen ? "" : "hidden"}`}>
             <div className="flex items-center justify-between mb-3">
               <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Resumo da malha</span>
               <Route className="h-3.5 w-3.5 text-primary" />
@@ -461,14 +618,19 @@ const Mapa = () => {
                 <button
                   key={l.key}
                   onClick={() => setBaseLayer(l.key)}
+                  aria-pressed={baseLayer === l.key}
                   className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-[12px] font-medium transition-smooth ${
                     baseLayer === l.key
-                      ? "bg-primary/10 text-primary border border-primary/20"
+                      ? "bg-primary/15 text-primary border border-primary/40 ring-1 ring-primary/30 font-semibold"
                       : "bg-surface-low text-foreground hover:bg-surface-high border border-transparent"
                   }`}
                 >
                   <span>{l.label}</span>
-                  {baseLayer === l.key && <Eye className="h-3 w-3" />}
+                  {baseLayer === l.key && (
+                    <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider">
+                      <Eye className="h-3 w-3" /> Ativo
+                    </span>
+                  )}
                 </button>
               ))}
               <div className="border-t border-border/40 pt-2 mt-2">
@@ -520,55 +682,85 @@ const Mapa = () => {
           </div>
         </div>
 
-        {/* Floating overlay: Segment list (right side) */}
-        <div
-          className={`absolute top-4 right-4 bottom-6 z-[400] w-[280px] flex-col transition-opacity ${
-            mapPoint ? "hidden" : "flex"
-          }`}
-        >
-          <div className="bg-background/90 backdrop-blur-md border border-border/50 rounded-xl shadow-card flex flex-col h-full overflow-hidden">
+        {/* Floating overlay: Segment list (right side, desktop) */}
+        <div className="absolute top-4 right-4 bottom-6 z-[400] w-[280px] hidden md:flex flex-col">
+          <div className={`bg-background/90 backdrop-blur-md border border-border/50 rounded-xl shadow-card flex flex-col overflow-hidden ${listOpen ? "h-full" : ""}`}>
             <div className="flex items-center justify-between px-4 py-3 border-b border-border/40">
               <h3 className="text-[12px] font-semibold uppercase tracking-wider flex items-center gap-2">
-                <AlertTriangle className="h-3.5 w-3.5 text-destructive" />
+                <ListFilter className="h-3.5 w-3.5 text-primary" />
                 Segmentos no mapa
               </h3>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold tabular-nums">{segmentMarkers.length}</span>
-            </div>
-            <div className="flex-1 overflow-y-auto p-3 space-y-2">
-              {segmentMarkers.length === 0 && (
-                <div className="text-center py-8 text-muted-foreground">
-                  <div className="h-10 w-10 mx-auto mb-2 rounded-full bg-turquoise/10 text-turquoise flex items-center justify-center">
-                    <Inbox className="h-4 w-4" />
-                  </div>
-                  <p className="text-[12px] font-semibold text-foreground">Nenhum segmento</p>
-                  <p className="text-[11px] mt-1">Ajuste os filtros para exibir dados.</p>
-                </div>
-              )}
-              {segmentMarkers.map((m, i) => (
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold tabular-nums">
+                  {listItems.length}
+                </span>
                 <button
-                  key={i}
-                  onClick={() => setMapPoint({ lat: m.lat, lng: m.lng, label: m.label })}
-                  className="w-full text-left px-3 py-2.5 rounded-lg border border-border/40 bg-surface-low hover:bg-surface-high transition-smooth group"
+                  onClick={() => setListOpen(o => !o)}
+                  aria-expanded={listOpen}
+                  aria-label={listOpen ? "Recolher lista de segmentos" : "Expandir lista de segmentos"}
+                  className="h-6 w-6 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-surface-high"
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="text-[12px] font-medium">{m.label}</span>
-                    <span
-                      className={`h-2 w-2 rounded-full shrink-0 ${
-                        m.status === "critico"
-                          ? "bg-destructive"
-                          : m.status === "atencao"
-                          ? "bg-tertiary"
-                          : "bg-primary"
-                      }`}
-                    />
-                  </div>
-                  <div className="text-[10px] text-muted-foreground mt-0.5 font-mono">
-                    {m.lat.toFixed(5)}, {m.lng.toFixed(5)}
-                  </div>
+                  {listOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
                 </button>
-              ))}
+              </div>
             </div>
+            {listOpen && listPanel}
           </div>
+        </div>
+
+        {/* Mobile: bottom sheet with the same list */}
+        <div className="md:hidden absolute bottom-4 inset-x-4 z-[400] flex items-center gap-2">
+          <Sheet>
+            <SheetTrigger asChild>
+              <button className="flex-1 h-11 rounded-xl bg-background/95 backdrop-blur-md border border-border/60 shadow-card text-[13px] font-semibold inline-flex items-center justify-center gap-2">
+                <ListFilter className="h-4 w-4 text-primary" />
+                Segmentos ({listItems.length})
+              </button>
+            </SheetTrigger>
+            <SheetContent side="bottom" className="h-[70vh] p-0 flex flex-col">
+              <div className="px-4 py-3 border-b border-border/40">
+                <h3 className="text-[13px] font-semibold uppercase tracking-wider">Segmentos no mapa</h3>
+              </div>
+              <div className="flex-1 min-h-0">{listPanel}</div>
+            </SheetContent>
+          </Sheet>
+          <Sheet>
+            <SheetTrigger asChild>
+              <button aria-label="Camadas e indicadores" className="h-11 w-11 rounded-xl bg-background/95 backdrop-blur-md border border-border/60 shadow-card inline-flex items-center justify-center">
+                <Layers className="h-4 w-4 text-primary" />
+              </button>
+            </SheetTrigger>
+            <SheetContent side="bottom" className="h-[55vh] overflow-y-auto">
+              <h3 className="text-[13px] font-semibold uppercase tracking-wider mb-3">Camadas</h3>
+              <div className="space-y-2">
+                {([
+                  { key: "street", label: "Mapa" },
+                  { key: "satellite", label: "Satélite" },
+                  { key: "hybrid", label: "Híbrido" },
+                ] as const).map(l => (
+                  <button
+                    key={l.key}
+                    onClick={() => setBaseLayer(l.key)}
+                    aria-pressed={baseLayer === l.key}
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-[13px] font-medium ${
+                      baseLayer === l.key
+                        ? "bg-primary/15 text-primary border border-primary/40 font-semibold"
+                        : "bg-surface-low border border-transparent"
+                    }`}
+                  >
+                    {l.label}
+                    {baseLayer === l.key && <span className="text-[10px] uppercase tracking-wider">Ativo</span>}
+                  </button>
+                ))}
+              </div>
+              <div className="mt-5 grid grid-cols-2 gap-3 text-[12px]">
+                <div><span className="text-muted-foreground">Segmentos</span><div className="text-[18px] font-bold tabular-nums">{total}</div></div>
+                <div><span className="text-muted-foreground">Críticos</span><div className="text-[18px] font-bold tabular-nums text-destructive">{criticos}</div></div>
+                <div><span className="text-muted-foreground">Atenção</span><div className="text-[18px] font-bold tabular-nums text-tertiary">{atencao}</div></div>
+                <div><span className="text-muted-foreground">Conformidade</span><div className="text-[18px] font-bold tabular-nums">{conformidadePct}%</div></div>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
 
