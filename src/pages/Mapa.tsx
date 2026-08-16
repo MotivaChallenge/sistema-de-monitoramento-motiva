@@ -436,10 +436,18 @@ const Mapa = () => {
               <Download className="h-3.5 w-3.5" />
               Exportar GeoJSON
             </button>
+            <button
+              onClick={() => setKpisOpen(o => !o)}
+              aria-expanded={kpisOpen}
+              className="mt-2 w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-smooth"
+            >
+              {kpisOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+              {kpisOpen ? "Ocultar indicadores" : "Mostrar indicadores"}
+            </button>
           </div>
 
           {/* KPIs agregados da concessão selecionada */}
-          {currentConcession && (
+          {kpisOpen && currentConcession && (
             <div className="bg-background/90 backdrop-blur-md border border-border/50 rounded-xl p-4 shadow-card w-[280px] shrink-0">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-1.5">
