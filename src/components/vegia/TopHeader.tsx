@@ -16,7 +16,7 @@ interface Props {
   showLastReading?: boolean;
 }
 
-export const TopHeader = ({ breadcrumb = [{ label: "RODOANEL SP-021" }], current = "Dashboard", rightSlot, showStatusBadges, showTabs, showLastReading }: Props) => {
+export const TopHeader = ({ breadcrumb = [{ label: "Rodoanel SP-021" }], current = "Dashboard", rightSlot, showStatusBadges, showTabs, showLastReading }: Props) => {
   const { pathname } = useLocation();
   const { signOut, user } = useAuth();
   const qc = useQueryClient();

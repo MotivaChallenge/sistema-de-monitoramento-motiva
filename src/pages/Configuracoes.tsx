@@ -117,7 +117,7 @@ const Configuracoes = () => {
 
   return (
     <>
-      <TopHeader breadcrumb={[{ label: "RODOANEL SP-021", to: "/dashboard" }]} current="Configurações" />
+      <TopHeader breadcrumb={[{ label: "Rodoanel SP-021", to: "/dashboard" }]} current="Configurações" />
       <div className="px-10 pb-12 max-w-5xl">
         <div className="flex items-end justify-between mb-8 gap-4 flex-wrap">
           <div>
