@@ -1,5 +1,5 @@
-import { useMemo } from "react";
-import { MapPin, Satellite, Ruler, RefreshCw, FlaskConical } from "lucide-react";
+import { useMemo, useState } from "react";
+import { MapPin, Satellite, Ruler, RefreshCw, FlaskConical, ImageOff } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useGeeNdvi } from "@/hooks/useGeeNdvi";
 import { estimateHeightCm } from "@/lib/height-model";
@@ -29,6 +29,8 @@ interface Props {
 
 export const GeeFieldTest = ({ label, lat, lng, dms }: Props) => {
   const { data, isLoading, isFetching, isError, refetch } = useGeeNdvi(lat, lng);
+  const [imgState, setImgState] = useState<"loading" | "ok" | "error">("loading");
+  const [imgAttempt, setImgAttempt] = useState(0);
 
   const view = useMemo(() => {
     if (data?.hasData && data.ndvi !== null) {
@@ -55,7 +57,7 @@ export const GeeFieldTest = ({ label, lat, lng, dms }: Props) => {
   const bbox = [lng - d, lat - d, lng + d, lat + d].map((v) => v.toFixed(6)).join(",");
   const satUrl =
     `https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export` +
-    `?bbox=${bbox}&bboxSR=4326&imageSR=3857&size=640,440&format=jpg&f=image`;
+    `?bbox=${bbox}&bboxSR=4326&imageSR=3857&size=640,440&format=jpg&f=image&_r=${imgAttempt}`;
 
   const conf = view.simulado ? "simulada" : pixelConfidence(view.pixels);
 
@@ -106,15 +108,34 @@ export const GeeFieldTest = ({ label, lat, lng, dms }: Props) => {
       </div>
 
       <figure className="mt-4 rounded-lg overflow-hidden border border-border/40 relative">
-        <img
-          src={satUrl}
-          alt={`Imagem de satélite da área analisada em ${lat.toFixed(6)}, ${lng.toFixed(6)}`}
-          loading="lazy"
-          className="w-full h-[190px] object-cover"
-        />
-        <figcaption className="absolute bottom-0 inset-x-0 bg-background/70 backdrop-blur-sm px-2 py-1 text-[10px] text-muted-foreground">
-          Esri World Imagery · área aproximada de 300 m no entorno do ponto
-        </figcaption>
+        {imgState === "error" ? (
+          <div className="h-[190px] w-full bg-surface-low flex flex-col items-center justify-center text-center px-4">
+            <ImageOff className="h-5 w-5 text-muted-foreground mb-2" />
+            <p className="text-[12px] font-semibold">Não foi possível carregar a imagem de satélite</p>
+            <button
+              onClick={() => { setImgState("loading"); setImgAttempt(a => a + 1); }}
+              className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11.5px] font-semibold bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-smooth"
+            >
+              <RefreshCw className="h-3.5 w-3.5" /> Tentar novamente
+            </button>
+          </div>
+        ) : (
+          <>
+            {imgState === "loading" && <Skeleton className="absolute inset-0 h-[190px] w-full" />}
+            <img
+              key={imgAttempt}
+              src={satUrl}
+              alt={`Imagem de satélite da área analisada em ${lat.toFixed(6)}, ${lng.toFixed(6)}`}
+              loading="lazy"
+              onLoad={() => setImgState("ok")}
+              onError={() => setImgState("error")}
+              className="w-full h-[190px] object-cover"
+            />
+            <figcaption className="absolute bottom-0 inset-x-0 bg-background/70 backdrop-blur-sm px-2 py-1 text-[10px] text-muted-foreground">
+              Esri World Imagery · área aproximada de 300 m no entorno do ponto
+            </figcaption>
+          </>
+        )}
       </figure>
 
       <div className="grid grid-cols-3 gap-2 mt-3">
