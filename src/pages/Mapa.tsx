@@ -549,7 +549,7 @@ const Mapa = () => {
             </div>
           )}
 
-          <div className="bg-background/90 backdrop-blur-md border border-border/50 rounded-xl p-4 shadow-card w-[240px] shrink-0">
+          <div className={`bg-background/90 backdrop-blur-md border border-border/50 rounded-xl p-4 shadow-card w-[240px] shrink-0 ${kpisOpen ? "" : "hidden"}`}>
             <div className="flex items-center justify-between mb-3">
               <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Resumo da malha</span>
               <Route className="h-3.5 w-3.5 text-primary" />
@@ -618,14 +618,19 @@ const Mapa = () => {
                 <button
                   key={l.key}
                   onClick={() => setBaseLayer(l.key)}
+                  aria-pressed={baseLayer === l.key}
                   className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-[12px] font-medium transition-smooth ${
                     baseLayer === l.key
-                      ? "bg-primary/10 text-primary border border-primary/20"
+                      ? "bg-primary/15 text-primary border border-primary/40 ring-1 ring-primary/30 font-semibold"
                       : "bg-surface-low text-foreground hover:bg-surface-high border border-transparent"
                   }`}
                 >
                   <span>{l.label}</span>
-                  {baseLayer === l.key && <Eye className="h-3 w-3" />}
+                  {baseLayer === l.key && (
+                    <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider">
+                      <Eye className="h-3 w-3" /> Ativo
+                    </span>
+                  )}
                 </button>
               ))}
               <div className="border-t border-border/40 pt-2 mt-2">
