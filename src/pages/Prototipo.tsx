@@ -11,6 +11,12 @@ import { HighwaySelect } from "@/components/vegia/HighwaySelect";
 import { useCvResults, useSegments } from "@/hooks/useVegiaData";
 import { useFilters } from "@/contexts/FiltersContext";
 import { estimateHeightCm, heightModelSummary } from "@/lib/height-model";
+import { GeeFieldTest } from "@/components/vegia/GeeFieldTest";
+
+const PONTOS_TESTE = [
+  { label: "Ponto de teste 1", lat: -23.443071, lng: -46.035497 },
+  { label: "Ponto de teste 2", lat: -23.547778, lng: -46.755083, dms: `23°32'52,0"S 46°45'18,3"W` },
+];
 
 const fmt = (n: number, d = 1) => n.toFixed(d).replace(".", ",");
 
@@ -91,6 +97,21 @@ const Prototipo = () => {
         </section>
 
         {/* Métricas de validação */}
+        <section className="space-y-3">
+          <h2 className="flex items-center gap-2 text-[13px] font-semibold uppercase tracking-wider">
+            <Satellite className="h-4 w-4 text-primary" /> Leitura orbital nas coordenadas de teste
+          </h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            {PONTOS_TESTE.map((p) => (
+              <GeeFieldTest key={p.label} {...p} />
+            ))}
+          </div>
+          <p className="text-[11px] text-muted-foreground">
+            Consulta ao Sentinel-2 via Google Earth Engine em um raio de 150 m, com máscara de nuvens.
+            Quando não há cena válida no período, o cartão exibe um valor simulado, sinalizado como tal.
+          </p>
+        </section>
+
         {isLoading || !stats ? (
           <Skeleton className="h-[130px] w-full rounded-xl" />
         ) : (
