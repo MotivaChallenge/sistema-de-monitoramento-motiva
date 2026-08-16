@@ -3,7 +3,8 @@ import { useSegments, useFieldTeams, FieldTeam } from "@/hooks/useVegiaData";
 import { useWeather } from "@/hooks/useWeather";
 import { ircForSegment } from "@/lib/irc";
 import { useMemo, useState } from "react";
-import { CalendarDays, Users, Gauge, MapPin, Loader2, ClipboardPlus } from "lucide-react";
+import { CalendarDays, Users, Gauge, MapPin, Loader2, ClipboardPlus, TrendingUp } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -148,6 +149,20 @@ const Planejamento = () => {
               Distribuição automática de trechos por equipe baseada em criticidade,
               capacidade diária e região atendida.
             </p>
+            <div className="flex items-center gap-2 mt-3">
+              <Link
+                to="/previsoes"
+                className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg border border-border bg-surface-lowest text-[12px] font-semibold hover:bg-surface-low transition-smooth"
+              >
+                <TrendingUp className="h-3.5 w-3.5 text-primary" /> Previsões
+              </Link>
+              <Link
+                to="/equipes"
+                className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg border border-border bg-surface-lowest text-[12px] font-semibold hover:bg-surface-low transition-smooth"
+              >
+                <Users className="h-3.5 w-3.5 text-primary" /> Equipes
+              </Link>
+            </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <HighwaySelect />

@@ -1,31 +1,156 @@
-import { NavLink, useLocation } from "react-router-dom";
-import { LayoutDashboard, Map, TrendingUp, CalendarDays, Users, BarChart3, Settings, LogOut, User, ClipboardList, PanelLeftClose, PanelLeftOpen, FlaskConical, Database } from "lucide-react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { LayoutDashboard, Map, TrendingUp, CalendarDays, Users, BarChart3, Settings, LogOut, User, ClipboardList, PanelLeftClose, PanelLeftOpen, FlaskConical, Database, ChevronDown, Plus } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useActiveAlertsCount } from "@/hooks/useAlertsFeed";
+import { useWorkOrders } from "@/hooks/useVegiaData";
 import motivaLogo from "@/assets/motiva-logo.webp.asset.json";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
-const items = [
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, badgeKey: "alerts" as const },
-  { to: "/mapa", label: "Mapa Operacional", icon: Map, match: ["/segmento"] },
-  { to: "/previsoes", label: "Previsões", icon: TrendingUp },
-  { to: "/planejamento", label: "Planejamento", icon: CalendarDays },
-  { to: "/equipes", label: "Equipes", icon: Users },
-  { to: "/ordens", label: "Ordens de Serviço", icon: ClipboardList },
-  { to: "/prototipo", label: "Testes do Protótipo", icon: FlaskConical },
-  { to: "/dataset", label: "Gerador de Dataset", icon: Database },
-  { to: "/relatorio", label: "Relatórios", icon: BarChart3 },
-  { to: "/configuracoes", label: "Configurações", icon: Settings },
+type Item = {
+  to: string;
+  label: string;
+  icon: React.ElementType;
+  match?: string[];
+  badgeKey?: "alerts" | "orders";
+  children?: Item[];
+};
+
+type Group = { id: string; label: string; defaultCollapsed?: boolean; items: Item[] };
+
+const groups: Group[] = [
+  {
+    id: "operacao",
+    label: "Operação",
+    items: [
+      { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, badgeKey: "alerts" },
+      { to: "/mapa", label: "Mapa Operacional", icon: Map, match: ["/segmento", "/analise-cv"] },
+      { to: "/ordens", label: "Ordens de Serviço", icon: ClipboardList, badgeKey: "orders" },
+    ],
+  },
+  {
+    id: "planejamento",
+    label: "Planejamento",
+    items: [
+      {
+        to: "/planejamento",
+        label: "Planejamento",
+        icon: CalendarDays,
+        children: [
+          { to: "/previsoes", label: "Previsões", icon: TrendingUp },
+          { to: "/equipes", label: "Equipes", icon: Users },
+        ],
+      },
+      { to: "/relatorio", label: "Relatórios", icon: BarChart3 },
+    ],
+  },
+  {
+    id: "ferramentas",
+    label: "Ferramentas",
+    defaultCollapsed: true,
+    items: [
+      { to: "/prototipo", label: "Testes do Protótipo", icon: FlaskConical },
+      { to: "/dataset", label: "Gerador de Dataset", icon: Database },
+    ],
+  },
 ];
+
+const GROUP_KEY = "sidebar-groups-open";
 
 interface SidebarBodyProps { onNavigate?: () => void; collapsed?: boolean; onToggle?: () => void }
 
 export const SidebarBody = ({ onNavigate, collapsed = false, onToggle }: SidebarBodyProps) => {
   const { pathname } = useLocation();
-  const { signOut, user } = useAuth();
+  const navigate = useNavigate();
+  const { signOut, user, canEdit } = useAuth();
   const { data: activeAlerts = 0 } = useActiveAlertsCount();
+  const { data: workOrders = [] } = useWorkOrders();
+  const pendingOrders = workOrders.filter(o => o.status === "pendente").length;
+
+  const isActive = (it: Item) => pathname === it.to || (it.match ?? []).some(m => pathname.startsWith(m));
+  const groupHasActive = (g: Group) =>
+    g.items.some(it => isActive(it) || (it.children ?? []).some(c => isActive(c)));
+
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
+    let stored: Record<string, boolean> = {};
+    try { stored = JSON.parse(localStorage.getItem(GROUP_KEY) ?? "{}"); } catch { /* noop */ }
+    return Object.fromEntries(
+      groups.map(g => [g.id, stored[g.id] ?? (!g.defaultCollapsed || groupHasActive(g))]),
+    );
+  });
+
+  useEffect(() => {
+    localStorage.setItem(GROUP_KEY, JSON.stringify(openGroups));
+  }, [openGroups]);
+
+  // Abre automaticamente o grupo que contém a rota ativa.
+  useEffect(() => {
+    const g = groups.find(gr => groupHasActive(gr));
+    if (g) setOpenGroups(prev => (prev[g.id] ? prev : { ...prev, [g.id]: true }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+
+  const badgeFor = (it: Item) =>
+    it.badgeKey === "alerts" ? activeAlerts : it.badgeKey === "orders" ? pendingOrders : 0;
+
+  const renderLink = (it: Item, opts: { sub?: boolean } = {}) => {
+    const active = isActive(it);
+    const count = badgeFor(it);
+    const showBadge = count > 0;
+    const danger = it.badgeKey === "alerts";
+    const link = (
+      <NavLink
+        to={it.to}
+        onClick={onNavigate}
+        aria-label={it.label}
+        aria-current={active ? "page" : undefined}
+        className={cn(
+          "group relative flex items-center rounded-xl transition-all duration-200",
+          opts.sub ? "text-[13px] font-normal" : "text-[14px] font-medium",
+          collapsed ? "justify-center h-11 w-11 mx-auto" : opts.sub ? "gap-3 pl-9 pr-3 py-2" : "gap-3 px-4 py-2.5",
+          active
+            ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
+            : "text-sidebar-foreground/75 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground hover:translate-x-0.5",
+        )}
+      >
+        {active && !collapsed && (
+          <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-gradient-to-b from-primary-glow to-primary" />
+        )}
+        <span className="relative shrink-0">
+          <it.icon
+            className={cn(
+              "transition-colors",
+              opts.sub ? "h-4 w-4" : "h-[18px] w-[18px]",
+              active ? "text-primary-glow" : "group-hover:text-sidebar-foreground",
+            )}
+          />
+          {showBadge && collapsed && (
+            <span className={cn("absolute -top-1.5 -right-1.5 h-2.5 w-2.5 rounded-full", danger ? "bg-destructive animate-pulse" : "bg-primary-glow")} />
+          )}
+        </span>
+        {!collapsed && <span className="flex-1 whitespace-nowrap truncate">{it.label}</span>}
+        {showBadge && !collapsed && (
+          <span
+            className={cn(
+              "ml-auto h-5 min-w-5 px-1.5 rounded-full text-[10px] font-bold flex items-center justify-center shadow-sm",
+              danger ? "bg-destructive text-destructive-foreground animate-pulse" : "bg-sidebar-accent text-sidebar-foreground",
+            )}
+          >
+            {count > 99 ? "99+" : count}
+          </span>
+        )}
+      </NavLink>
+    );
+    return collapsed ? (
+      <Tooltip key={it.to} delayDuration={100}>
+        <TooltipTrigger asChild>{link}</TooltipTrigger>
+        <TooltipContent side="right">{it.label}</TooltipContent>
+      </Tooltip>
+    ) : (
+      <div key={it.to}>{link}</div>
+    );
+  };
 
   return (
     <div
@@ -57,50 +182,68 @@ export const SidebarBody = ({ onNavigate, collapsed = false, onToggle }: Sidebar
         </div>
       </div>
 
-      <nav className={cn("flex-1 space-y-1", collapsed ? "px-3" : "px-3")}>
-        {items.map((it, i) => {
-          const active = pathname === it.to || (it.match || []).some(m => pathname.startsWith(m));
-          const showBadge = it.badgeKey === "alerts" && activeAlerts > 0;
-          const link = (
-            <NavLink
-              to={it.to}
-              onClick={onNavigate}
-              aria-label={it.label}
-              aria-current={active ? "page" : undefined}
-              className={cn(
-                "group relative flex items-center rounded-xl text-[14px] font-medium transition-all duration-200",
-                collapsed ? "justify-center h-11 w-11 mx-auto" : "gap-3 px-4 py-2.5",
-                active
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
-                  : "text-sidebar-foreground/75 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground hover:translate-x-0.5",
-              )}
-            >
-              {active && !collapsed && (
-                <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-gradient-to-b from-primary-glow to-primary" />
-              )}
-              <span className="relative shrink-0">
-                <it.icon className={cn("h-[18px] w-[18px] transition-colors", active ? "text-primary-glow" : "group-hover:text-sidebar-foreground")} />
-                {showBadge && collapsed && (
-                  <span className="absolute -top-1.5 -right-1.5 h-2.5 w-2.5 rounded-full bg-destructive animate-pulse" />
-                )}
-              </span>
-              {!collapsed && <span className="flex-1 whitespace-nowrap">{it.label}</span>}
-              {showBadge && !collapsed && (
-                <span className="ml-auto h-5 min-w-5 px-1.5 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-sm animate-pulse">
-                  {activeAlerts > 99 ? "99+" : activeAlerts}
-                </span>
-              )}
-            </NavLink>
-          );
-          return collapsed ? (
-            <Tooltip key={i} delayDuration={100}>
-              <TooltipTrigger asChild>{link}</TooltipTrigger>
-              <TooltipContent side="right">{it.label}</TooltipContent>
+      {canEdit && (
+        <div className={cn("pb-3", collapsed ? "px-3" : "px-4")}>
+          {collapsed ? (
+            <Tooltip delayDuration={100}>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => { navigate("/ordens?new=1"); onNavigate?.(); }}
+                  aria-label="Nova ordem de serviço"
+                  className="h-10 w-10 mx-auto flex items-center justify-center rounded-xl bg-gradient-primary text-primary-foreground shadow-glow hover:opacity-90 transition-smooth"
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right">Nova ordem de serviço</TooltipContent>
             </Tooltip>
           ) : (
-            <div key={i}>{link}</div>
+            <button
+              onClick={() => { navigate("/ordens?new=1"); onNavigate?.(); }}
+              className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-primary text-primary-foreground text-[13px] font-semibold py-2.5 shadow-glow hover:opacity-90 transition-smooth"
+            >
+              <Plus className="h-4 w-4" /> Nova ordem de serviço
+            </button>
+          )}
+        </div>
+      )}
+
+      <nav className="flex-1 px-3 overflow-y-auto space-y-4">
+        {groups.map(g => {
+          const open = openGroups[g.id] ?? true;
+          return (
+            <div key={g.id} className="space-y-1">
+              {collapsed ? (
+                <div className="h-px bg-sidebar-border/60 mx-2 my-2" />
+              ) : (
+                <button
+                  onClick={() => setOpenGroups(prev => ({ ...prev, [g.id]: !open }))}
+                  aria-expanded={open}
+                  className="w-full flex items-center gap-2 px-4 py-1.5 text-[10px] uppercase tracking-[0.16em] font-semibold text-sidebar-foreground/45 hover:text-sidebar-foreground/70 transition-colors"
+                >
+                  <span className="flex-1 text-left">{g.label}</span>
+                  <ChevronDown className={cn("h-3.5 w-3.5 transition-transform duration-200", open ? "" : "-rotate-90")} />
+                </button>
+              )}
+              {(open || collapsed) && (
+                <div className="space-y-1 animate-fade-in">
+                  {g.items.map(it => (
+                    <div key={it.to} className="space-y-1">
+                      {renderLink(it)}
+                      {!collapsed && (it.children ?? []).map(c => renderLink(c, { sub: true }))}
+                      {collapsed && (it.children ?? []).map(c => renderLink(c))}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           );
         })}
+
+        <div className="pt-1">
+          {collapsed && <div className="h-px bg-sidebar-border/60 mx-2 mb-2" />}
+          {renderLink({ to: "/configuracoes", label: "Configurações", icon: Settings })}
+        </div>
       </nav>
 
       {onToggle && (
