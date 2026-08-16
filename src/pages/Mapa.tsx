@@ -682,55 +682,85 @@ const Mapa = () => {
           </div>
         </div>
 
-        {/* Floating overlay: Segment list (right side) */}
-        <div
-          className={`absolute top-4 right-4 bottom-6 z-[400] w-[280px] flex-col transition-opacity ${
-            mapPoint ? "hidden" : "flex"
-          }`}
-        >
-          <div className="bg-background/90 backdrop-blur-md border border-border/50 rounded-xl shadow-card flex flex-col h-full overflow-hidden">
+        {/* Floating overlay: Segment list (right side, desktop) */}
+        <div className="absolute top-4 right-4 bottom-6 z-[400] w-[280px] hidden md:flex flex-col">
+          <div className={`bg-background/90 backdrop-blur-md border border-border/50 rounded-xl shadow-card flex flex-col overflow-hidden ${listOpen ? "h-full" : ""}`}>
             <div className="flex items-center justify-between px-4 py-3 border-b border-border/40">
               <h3 className="text-[12px] font-semibold uppercase tracking-wider flex items-center gap-2">
-                <AlertTriangle className="h-3.5 w-3.5 text-destructive" />
+                <ListFilter className="h-3.5 w-3.5 text-primary" />
                 Segmentos no mapa
               </h3>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold tabular-nums">{segmentMarkers.length}</span>
-            </div>
-            <div className="flex-1 overflow-y-auto p-3 space-y-2">
-              {segmentMarkers.length === 0 && (
-                <div className="text-center py-8 text-muted-foreground">
-                  <div className="h-10 w-10 mx-auto mb-2 rounded-full bg-turquoise/10 text-turquoise flex items-center justify-center">
-                    <Inbox className="h-4 w-4" />
-                  </div>
-                  <p className="text-[12px] font-semibold text-foreground">Nenhum segmento</p>
-                  <p className="text-[11px] mt-1">Ajuste os filtros para exibir dados.</p>
-                </div>
-              )}
-              {segmentMarkers.map((m, i) => (
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold tabular-nums">
+                  {listItems.length}
+                </span>
                 <button
-                  key={i}
-                  onClick={() => setMapPoint({ lat: m.lat, lng: m.lng, label: m.label })}
-                  className="w-full text-left px-3 py-2.5 rounded-lg border border-border/40 bg-surface-low hover:bg-surface-high transition-smooth group"
+                  onClick={() => setListOpen(o => !o)}
+                  aria-expanded={listOpen}
+                  aria-label={listOpen ? "Recolher lista de segmentos" : "Expandir lista de segmentos"}
+                  className="h-6 w-6 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-surface-high"
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="text-[12px] font-medium">{m.label}</span>
-                    <span
-                      className={`h-2 w-2 rounded-full shrink-0 ${
-                        m.status === "critico"
-                          ? "bg-destructive"
-                          : m.status === "atencao"
-                          ? "bg-tertiary"
-                          : "bg-primary"
-                      }`}
-                    />
-                  </div>
-                  <div className="text-[10px] text-muted-foreground mt-0.5 font-mono">
-                    {m.lat.toFixed(5)}, {m.lng.toFixed(5)}
-                  </div>
+                  {listOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
                 </button>
-              ))}
+              </div>
             </div>
+            {listOpen && listPanel}
           </div>
+        </div>
+
+        {/* Mobile: bottom sheet with the same list */}
+        <div className="md:hidden absolute bottom-4 inset-x-4 z-[400] flex items-center gap-2">
+          <Sheet>
+            <SheetTrigger asChild>
+              <button className="flex-1 h-11 rounded-xl bg-background/95 backdrop-blur-md border border-border/60 shadow-card text-[13px] font-semibold inline-flex items-center justify-center gap-2">
+                <ListFilter className="h-4 w-4 text-primary" />
+                Segmentos ({listItems.length})
+              </button>
+            </SheetTrigger>
+            <SheetContent side="bottom" className="h-[70vh] p-0 flex flex-col">
+              <div className="px-4 py-3 border-b border-border/40">
+                <h3 className="text-[13px] font-semibold uppercase tracking-wider">Segmentos no mapa</h3>
+              </div>
+              <div className="flex-1 min-h-0">{listPanel}</div>
+            </SheetContent>
+          </Sheet>
+          <Sheet>
+            <SheetTrigger asChild>
+              <button aria-label="Camadas e indicadores" className="h-11 w-11 rounded-xl bg-background/95 backdrop-blur-md border border-border/60 shadow-card inline-flex items-center justify-center">
+                <Layers className="h-4 w-4 text-primary" />
+              </button>
+            </SheetTrigger>
+            <SheetContent side="bottom" className="h-[55vh] overflow-y-auto">
+              <h3 className="text-[13px] font-semibold uppercase tracking-wider mb-3">Camadas</h3>
+              <div className="space-y-2">
+                {([
+                  { key: "street", label: "Mapa" },
+                  { key: "satellite", label: "Satélite" },
+                  { key: "hybrid", label: "Híbrido" },
+                ] as const).map(l => (
+                  <button
+                    key={l.key}
+                    onClick={() => setBaseLayer(l.key)}
+                    aria-pressed={baseLayer === l.key}
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-[13px] font-medium ${
+                      baseLayer === l.key
+                        ? "bg-primary/15 text-primary border border-primary/40 font-semibold"
+                        : "bg-surface-low border border-transparent"
+                    }`}
+                  >
+                    {l.label}
+                    {baseLayer === l.key && <span className="text-[10px] uppercase tracking-wider">Ativo</span>}
+                  </button>
+                ))}
+              </div>
+              <div className="mt-5 grid grid-cols-2 gap-3 text-[12px]">
+                <div><span className="text-muted-foreground">Segmentos</span><div className="text-[18px] font-bold tabular-nums">{total}</div></div>
+                <div><span className="text-muted-foreground">Críticos</span><div className="text-[18px] font-bold tabular-nums text-destructive">{criticos}</div></div>
+                <div><span className="text-muted-foreground">Atenção</span><div className="text-[18px] font-bold tabular-nums text-tertiary">{atencao}</div></div>
+                <div><span className="text-muted-foreground">Conformidade</span><div className="text-[18px] font-bold tabular-nums">{conformidadePct}%</div></div>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
 
