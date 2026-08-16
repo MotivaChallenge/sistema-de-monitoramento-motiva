@@ -5,10 +5,15 @@ import { useFilters } from "@/contexts/FiltersContext";
 import { GlobalFilters } from "@/components/vegia/GlobalFilters";
 import { MapPointSheet } from "@/components/vegia/MapPointSheet";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertTriangle, Activity, Inbox, Eye, Layers, Crosshair, Route, Network, Download, Building2, Leaf, ShieldCheck } from "lucide-react";
+import { AlertTriangle, Activity, Inbox, Eye, Layers, Crosshair, Route, Network, Download, Building2, Leaf, ShieldCheck, ChevronDown, ChevronUp, Search, ListFilter, X } from "lucide-react";
 import { useState, useMemo, lazy, Suspense, useEffect } from "react";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { toast } from "sonner";
 import { coordsForKm, kmForCoords, formatKmPrecise, formatKmRange } from "@/lib/km";
+
+type StatusKey = "critico" | "atencao" | "conforme";
+const PRIORIDADE: Record<StatusKey, string> = { critico: "Alta", atencao: "Média", conforme: "Baixa" };
+const PAGE_SIZE = 40;
 
 const OSMMap = lazy(() => import("@/components/vegia/OSMMap").then(m => ({ default: m.OSMMap })));
 
@@ -29,6 +34,12 @@ const Mapa = () => {
   const [mapPoint, setMapPoint] = useState<{ lat: number; lng: number; label?: string } | null>(null);
   const [baseLayer, setBaseLayer] = useState<"street" | "satellite" | "hybrid">("hybrid");
   const [showPolyline, setShowPolyline] = useState(true);
+  const [kpisOpen, setKpisOpen] = useState(true);
+  const [listOpen, setListOpen] = useState(true);
+  const [listSearch, setListSearch] = useState("");
+  const [listStatus, setListStatus] = useState<"todos" | StatusKey>("todos");
+  const [page, setPage] = useState(1);
+  const [focus, setFocus] = useState<{ lat: number; lng: number; key: string } | null>(null);
 
   const currentHighway = highways.find(h => h.code === selectedHighway);
   const currentConcession = currentHighway?.concessao;
