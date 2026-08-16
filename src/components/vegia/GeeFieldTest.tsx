@@ -50,6 +50,13 @@ export const GeeFieldTest = ({ label, lat, lng, dms }: Props) => {
 
   if (isLoading || !view) return <Skeleton className="h-[188px] w-full rounded-xl" />;
 
+  // Imagem de satélite (Esri World Imagery) do mesmo raio analisado (~300 m de lado).
+  const d = 0.00175;
+  const bbox = [lng - d, lat - d, lng + d, lat + d].map((v) => v.toFixed(6)).join(",");
+  const satUrl =
+    `https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export` +
+    `?bbox=${bbox}&bboxSR=4326&imageSR=3857&size=640,440&format=jpg&f=image`;
+
   const conf = view.simulado ? "simulada" : pixelConfidence(view.pixels);
 
   return (
@@ -98,7 +105,19 @@ export const GeeFieldTest = ({ label, lat, lng, dms }: Props) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-2 mt-4">
+      <figure className="mt-4 rounded-lg overflow-hidden border border-border/40 relative">
+        <img
+          src={satUrl}
+          alt={`Imagem de satélite da área analisada em ${lat.toFixed(6)}, ${lng.toFixed(6)}`}
+          loading="lazy"
+          className="w-full h-[190px] object-cover"
+        />
+        <figcaption className="absolute bottom-0 inset-x-0 bg-background/70 backdrop-blur-sm px-2 py-1 text-[10px] text-muted-foreground">
+          Esri World Imagery · área aproximada de 300 m no entorno do ponto
+        </figcaption>
+      </figure>
+
+      <div className="grid grid-cols-3 gap-2 mt-3">
         {(["ndvi", "evi", "savi"] as IndexKey[]).map((k) => (
           <div key={k} className="rounded-lg border border-border/40 bg-surface-low p-2.5">
             <p className="text-[10.5px] uppercase tracking-wider text-muted-foreground">{INDEX_META[k].label}</p>
