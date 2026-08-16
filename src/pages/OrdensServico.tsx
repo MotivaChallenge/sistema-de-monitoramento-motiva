@@ -3,7 +3,8 @@ import { ClipboardList, Plus, Pencil, Trash2, CheckCircle2, Search, X, Loader2 }
 import { useFieldTeams, useWorkOrders, WorkOrder, WorkOrderPriority, WorkOrderStatus } from "@/hooks/useVegiaData";
 import { useSegments } from "@/hooks/useVegiaData";
 import { useAuth } from "@/hooks/useAuth";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatDateBR } from "@/lib/utils";
@@ -67,6 +68,7 @@ const OrdensServico = () => {
   const [form, setForm] = useState<FormState>(emptyForm);
   const [saving, setSaving] = useState(false);
   const [completingId, setCompletingId] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // Filtros específicos desta tela
   const [fStatus, setFStatus] = useState<WorkOrderStatus | "todos">("todos");
@@ -108,6 +110,16 @@ const OrdensServico = () => {
     setForm({ ...emptyForm, code: nextCode(), segment_id: segments[0]?.id ?? "" });
     setOpen(true);
   };
+
+  // Atalho "Nova OS" da sidebar (/ordens?new=1)
+  useEffect(() => {
+    if (searchParams.get("new") === "1" && canEdit) {
+      openCreate();
+      searchParams.delete("new");
+      setSearchParams(searchParams, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, canEdit, segments.length]);
   const openEdit = (o: WorkOrder) => {
     setEditing(o);
     setForm({
@@ -214,6 +226,27 @@ const OrdensServico = () => {
               </span>
             </div>
             <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-1 p-1 rounded-lg bg-surface-low">
+                {([
+                  { v: "todos", label: "Todas" },
+                  { v: "pendente", label: `Pendentes (${kpis.pendentes})` },
+                  { v: "em_andamento", label: `Em execução (${kpis.andamento})` },
+                  { v: "concluida", label: `Concluídas (${kpis.concluidas})` },
+                ] as const).map(t => (
+                  <button
+                    key={t.v}
+                    onClick={() => setFStatus(t.v as WorkOrderStatus | "todos")}
+                    aria-pressed={fStatus === t.v}
+                    className={`px-3 h-7 rounded-md text-[12px] font-semibold transition-smooth ${
+                      fStatus === t.v
+                        ? "bg-surface-lowest text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
               <div className="relative min-w-[200px] flex-1 max-w-[280px]">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                 <Input
