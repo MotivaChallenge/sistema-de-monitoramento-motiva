@@ -254,7 +254,10 @@ function indicesExpression(o: GraphOpts) {
     maxPixels: c(1e9),
     bestEffort: c(true),
   });
-  values.areaM2 = f("Geometry.area", { geometry: ref("region"), maxError: c(1) });
+  values.areaM2 = f("Geometry.area", {
+    geometry: ref("region"),
+    maxError: f("ErrorMargin", { value: c(1) }),
+  });
   values.withArea = f("Dictionary.set", { dictionary: ref("result"), key: c("bufferAreaM2"), value: ref("areaM2") });
   values.debugOut = f("Dictionary.combine", {
     first: ref("withArea"), second: ref("bandStats"), overwrite: c(true),
