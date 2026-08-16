@@ -312,6 +312,10 @@ Deno.serve(async (req) => {
     const end = new Date();
     const start = new Date(end.getTime() - days * 86_400_000);
     const iso = (d: Date) => d.toISOString().slice(0, 10);
+    /** Janela explícita (auditoria/retroativo): start=YYYY-MM-DD & end=YYYY-MM-DD. */
+    const isoRe = /^\d{4}-\d{2}-\d{2}$/;
+    const startStr = isoRe.test(String(body.start)) ? String(body.start) : iso(start);
+    const endStr = isoRe.test(String(body.end)) ? String(body.end) : iso(end);
 
     const token = await getAccessToken(sa);
     const project = sa.project_id;
@@ -323,7 +327,7 @@ Deno.serve(async (req) => {
           headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
           body: JSON.stringify({
             expression: indicesExpression({
-              lat, lng, start: iso(start), end: iso(end), radius, scale, resample, L, debug,
+              lat, lng, start: startStr, end: endStr, radius, scale, resample, L, debug,
             }),
           }),
         },
@@ -374,7 +378,7 @@ Deno.serve(async (req) => {
       source: "Sentinel-2 SR Harmonized · Google Earth Engine",
       point: { lat, lng },
       radiusMeters: radius,
-      periodo: { de: iso(start), ate: iso(end) },
+      periodo: { de: startStr, ate: endStr },
       imagens,
       hasData,
       /** Compatibilidade: NDVI médio e altura do modelo validado (ndvi_linear_v1). */
