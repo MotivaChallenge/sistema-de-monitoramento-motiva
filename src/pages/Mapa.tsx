@@ -216,14 +216,41 @@ const Mapa = () => {
         const p = locate(s.kmStart);
         if (!p) return null;
         return {
+          id: s.id,
           lat: p.lat,
           lng: p.lng,
           status: s.status as "critico" | "atencao" | "conforme",
+          tipo: s.tipo,
+          kmLabel: formatKmRange(s.kmStart, s.kmEnd),
           label: `${formatKmRange(s.kmStart, s.kmEnd)} · ${s.tipo}`,
         };
       })
-      .filter(Boolean) as { lat: number; lng: number; status: any; label: string }[];
+      .filter(Boolean) as {
+        id: string; lat: number; lng: number; status: StatusKey; tipo: string; kmLabel: string; label: string;
+      }[];
   }, [segments, kmMarkers]);
+
+  const listItems = useMemo(() => {
+    const q = listSearch.trim().toLowerCase();
+    return segmentMarkers.filter(m => {
+      if (listStatus !== "todos" && m.status !== listStatus) return false;
+      if (!q) return true;
+      return `${m.kmLabel} ${m.tipo} ${m.id}`.toLowerCase().includes(q);
+    });
+  }, [segmentMarkers, listSearch, listStatus]);
+
+  const pageCount = Math.max(1, Math.ceil(listItems.length / PAGE_SIZE));
+  const pageItems = useMemo(
+    () => listItems.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+    [listItems, page]
+  );
+  useEffect(() => { setPage(1); }, [listSearch, listStatus, selectedHighway]);
+  useEffect(() => { if (page > pageCount) setPage(1); }, [page, pageCount]);
+
+  const selectItem = (m: { id: string; lat: number; lng: number; label: string }) => {
+    setFocus({ lat: m.lat, lng: m.lng, key: `${m.id}-${Date.now()}` });
+    setMapPoint({ lat: m.lat, lng: m.lng, label: m.label });
+  };
 
   /** Localização precisa (km + metros) do ponto clicado no eixo da rodovia. */
   const pointKm = useMemo(
