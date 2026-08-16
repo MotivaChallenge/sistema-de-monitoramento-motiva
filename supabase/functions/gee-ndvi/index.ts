@@ -90,7 +90,7 @@ const img = (v: number) => f("Image.constant", { value: c(v) });
 
 interface GraphOpts {
   lat: number; lng: number; start: string; end: string; radius: number;
-  scale: number; resample: null | "bilinear" | "nearest"; L: number;
+  scale: number; resample: null | "bilinear" | "nearest"; L: number; debug?: boolean;
 }
 
 /** Grafo do Earth Engine: NDVI/EVI/SAVI + estatística zonal no buffer do ponto. */
@@ -234,7 +234,35 @@ function indicesExpression(o: GraphOpts) {
   });
   values.result = f("Dictionary.set", { dictionary: ref("stats"), key: c("images"), value: ref("count") });
 
-  return { values, result: "result" };
+  if (!o.debug) return { values, result: "result" };
+
+  // --- Modo auditoria: bandas brutas (escala 0-1), área do buffer e contagem SCL ---
+  values.bands = f("Image.addBands", {
+    dstImg: f("Image.addBands", {
+      dstImg: f("Image.rename", { input: ref("red"), names: c(["b4"]) }),
+      srcImg: f("Image.rename", { input: ref("nir"), names: c(["b8"]) }),
+      overwrite: c(true),
+    }),
+    srcImg: f("Image.rename", { input: ref("blue"), names: c(["b2"]) }),
+    overwrite: c(true),
+  });
+  values.bandStats = f("Image.reduceRegion", {
+    image: ref("bands"),
+    reducer: f("Reducer.combine", { reducer1: f("Reducer.mean", {}), reducer2: f("Reducer.count", {}), sharedInputs: c(true) }),
+    geometry: ref("region"),
+    scale: c(o.scale),
+    maxPixels: c(1e9),
+    bestEffort: c(true),
+  });
+  values.areaM2 = f("Geometry.area", {
+    geometry: ref("region"),
+    maxError: f("ErrorMargin", { value: c(1) }),
+  });
+  values.withArea = f("Dictionary.set", { dictionary: ref("result"), key: c("bufferAreaM2"), value: ref("areaM2") });
+  values.debugOut = f("Dictionary.combine", {
+    first: ref("withArea"), second: ref("bandStats"), overwrite: c(true),
+  });
+  return { values, result: "debugOut" };
 }
 
 const num = (v: unknown, digits = 4): number | null =>
@@ -278,11 +306,16 @@ Deno.serve(async (req) => {
     const days = Math.min(365, Math.max(10, Number(body.days) || 60));
     const L = Math.min(1, Math.max(0, Number.isFinite(Number(body.L)) ? Number(body.L) : 0.5));
     const experimental = body.resample5m === true;
+    const debug = body.debug === true;
     const resamplingMethod: "bilinear" | "nearest" =
       body.resamplingMethod === "nearest" ? "nearest" : "bilinear";
     const end = new Date();
     const start = new Date(end.getTime() - days * 86_400_000);
     const iso = (d: Date) => d.toISOString().slice(0, 10);
+    /** Janela explícita (auditoria/retroativo): start=YYYY-MM-DD & end=YYYY-MM-DD. */
+    const isoRe = /^\d{4}-\d{2}-\d{2}$/;
+    const startStr = isoRe.test(String(body.start)) ? String(body.start) : iso(start);
+    const endStr = isoRe.test(String(body.end)) ? String(body.end) : iso(end);
 
     const token = await getAccessToken(sa);
     const project = sa.project_id;
@@ -294,7 +327,7 @@ Deno.serve(async (req) => {
           headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
           body: JSON.stringify({
             expression: indicesExpression({
-              lat, lng, start: iso(start), end: iso(end), radius, scale, resample, L,
+              lat, lng, start: startStr, end: endStr, radius, scale, resample, L, debug,
             }),
           }),
         },
@@ -345,7 +378,7 @@ Deno.serve(async (req) => {
       source: "Sentinel-2 SR Harmonized · Google Earth Engine",
       point: { lat, lng },
       radiusMeters: radius,
-      periodo: { de: iso(start), ate: iso(end) },
+      periodo: { de: startStr, ate: endStr },
       imagens,
       hasData,
       /** Compatibilidade: NDVI médio e altura do modelo validado (ndvi_linear_v1). */
@@ -362,6 +395,21 @@ Deno.serve(async (req) => {
         lowPixelCount: indices.ndvi.validPixels < 20,
       },
       experimental5m: experimentalResult,
+      debug: debug
+        ? {
+            bufferAreaM2: num(out.bufferAreaM2, 1),
+            b4_mean: num(out.b4_mean, 6),
+            b8_mean: num(out.b8_mean, 6),
+            b2_mean: num(out.b2_mean, 6),
+            b4_count: out.b4_count ?? null,
+            b8_count: out.b8_count ?? null,
+            ndvi_from_band_means:
+              typeof out.b8_mean === "number" && typeof out.b4_mean === "number"
+                ? num(((out.b8_mean as number) - (out.b4_mean as number)) / ((out.b8_mean as number) + (out.b4_mean as number)), 4)
+                : null,
+            scaleUsedM: 10,
+          }
+        : undefined,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
     console.error("gee-ndvi error:", e);
