@@ -683,7 +683,12 @@ const Mapa = () => {
         </div>
 
         {/* Floating overlay: Segment list (right side, desktop) */}
-        <div className="absolute top-4 right-4 bottom-6 z-[400] w-[280px] hidden md:flex flex-col">
+        <div
+          className={`absolute top-4 right-4 bottom-6 z-[400] w-[280px] flex-col transition-opacity duration-200 ${
+            mapPoint ? "hidden" : "hidden md:flex"
+          }`}
+          aria-hidden={!!mapPoint}
+        >
           <div className={`bg-background/90 backdrop-blur-md border border-border/50 rounded-xl shadow-card flex flex-col overflow-hidden ${listOpen ? "h-full" : ""}`}>
             <div className="flex items-center justify-between px-4 py-3 border-b border-border/40">
               <h3 className="text-[12px] font-semibold uppercase tracking-wider flex items-center gap-2">
