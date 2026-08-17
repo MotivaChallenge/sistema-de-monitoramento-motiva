@@ -155,9 +155,9 @@ export const SidebarBody = ({ onNavigate, collapsed = false, onToggle }: Sidebar
   return (
     <div
       className={cn(
-        "h-full bg-gradient-sidebar text-sidebar-foreground flex flex-col border-r border-sidebar-border/50 overflow-hidden",
+        "h-[calc(100vh-16px)] my-2 ml-2 bg-gradient-sidebar text-sidebar-foreground flex flex-col border border-sidebar-border/40 overflow-hidden rounded-3xl shadow-2xl",
         "transition-[width] duration-300 ease-in-out",
-        collapsed ? "w-[76px]" : "w-[240px]",
+        collapsed ? "w-[72px]" : "w-[248px]",
       )}
     >
       <div className={cn("pt-6 pb-8 flex items-center gap-3", collapsed ? "px-4 justify-center" : "px-5")}>
