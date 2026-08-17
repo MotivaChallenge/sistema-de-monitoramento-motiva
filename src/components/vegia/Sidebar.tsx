@@ -183,16 +183,16 @@ export const SidebarBody = ({ onNavigate, collapsed = false, onToggle }: Sidebar
       </div>
 
       {canEdit && (
-        <div className={cn("pb-3", collapsed ? "px-3" : "px-4")}>
+        <div className={cn("pb-4", collapsed ? "px-3" : "px-4")}>
           {collapsed ? (
             <Tooltip delayDuration={100}>
               <TooltipTrigger asChild>
                 <button
                   onClick={() => { navigate("/ordens?new=1"); onNavigate?.(); }}
                   aria-label="Nova ordem de serviço"
-                  className="h-10 w-10 mx-auto flex items-center justify-center rounded-xl bg-gradient-primary text-primary-foreground shadow-glow hover:opacity-90 transition-smooth"
+                  className="h-11 w-11 mx-auto flex items-center justify-center rounded-2xl bg-gradient-primary text-primary-foreground shadow-glow hover:opacity-90 hover:scale-105 transition-all"
                 >
-                  <Plus className="h-4 w-4" />
+                  <Plus className="h-5 w-5" />
                 </button>
               </TooltipTrigger>
               <TooltipContent side="right">Nova ordem de serviço</TooltipContent>
@@ -200,7 +200,7 @@ export const SidebarBody = ({ onNavigate, collapsed = false, onToggle }: Sidebar
           ) : (
             <button
               onClick={() => { navigate("/ordens?new=1"); onNavigate?.(); }}
-              className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-primary text-primary-foreground text-[13px] font-semibold py-2.5 shadow-glow hover:opacity-90 transition-smooth"
+              className="w-full flex items-center justify-center gap-2 rounded-2xl bg-gradient-primary text-primary-foreground text-[13px] font-semibold py-3 shadow-glow hover:opacity-90 hover:scale-[1.02] transition-all"
             >
               <Plus className="h-4 w-4" /> Nova ordem de serviço
             </button>
