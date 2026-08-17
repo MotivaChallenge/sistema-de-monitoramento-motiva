@@ -106,16 +106,16 @@ export const SidebarBody = ({ onNavigate, collapsed = false, onToggle }: Sidebar
         aria-label={it.label}
         aria-current={active ? "page" : undefined}
         className={cn(
-          "group relative flex items-center rounded-xl transition-all duration-200",
+          "group relative flex items-center rounded-2xl transition-all duration-200",
           opts.sub ? "text-[13px] font-normal" : "text-[14px] font-medium",
-          collapsed ? "justify-center h-11 w-11 mx-auto" : opts.sub ? "gap-3 pl-9 pr-3 py-2" : "gap-3 px-4 py-2.5",
+          collapsed ? "justify-center h-11 w-11 mx-auto" : opts.sub ? "gap-3 pl-10 pr-3 py-2" : "gap-3 px-4 py-2.5",
           active
             ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
             : "text-sidebar-foreground/75 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground hover:translate-x-0.5",
         )}
       >
         {active && !collapsed && (
-          <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-gradient-to-b from-primary-glow to-primary" />
+          <span className="absolute left-1 top-2 bottom-2 w-[3px] rounded-full bg-gradient-to-b from-primary-glow to-primary" />
         )}
         <span className="relative shrink-0">
           <it.icon
