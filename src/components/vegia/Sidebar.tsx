@@ -160,12 +160,12 @@ export const SidebarBody = ({ onNavigate, collapsed = false, onToggle }: Sidebar
         collapsed ? "w-[72px]" : "w-[248px]",
       )}
     >
-      <div className={cn("pt-6 pb-8 flex items-center gap-3", collapsed ? "px-4 justify-center" : "px-5")}>
+      <div className={cn("pt-5 pb-6 flex items-center gap-3", collapsed ? "px-3 justify-center" : "px-5")}>
         <div className="relative shrink-0">
           <img
             src={motivaLogo.url}
             alt="Motiva"
-            className="h-10 w-10 rounded-xl object-contain shadow-glow transition-transform duration-300 hover:scale-105"
+            className="h-11 w-11 rounded-2xl object-contain shadow-glow transition-transform duration-300 hover:scale-105"
           />
           <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-turquoise ring-2 ring-sidebar" aria-label="Sistema online" />
         </div>
