@@ -714,7 +714,7 @@ const Mapa = () => {
         </div>
 
         {/* Mobile: bottom sheet with the same list */}
-        <div className="md:hidden absolute bottom-4 inset-x-4 z-[400] flex items-center gap-2">
+        <div className={`${mapPoint ? "hidden" : "md:hidden"} absolute bottom-4 inset-x-4 z-[400] flex items-center gap-2`}>
           <Sheet>
             <SheetTrigger asChild>
               <button className="flex-1 h-11 rounded-xl bg-background/95 backdrop-blur-md border border-border/60 shadow-card text-[13px] font-semibold inline-flex items-center justify-center gap-2">
