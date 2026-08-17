@@ -252,7 +252,7 @@ export const SidebarBody = ({ onNavigate, collapsed = false, onToggle }: Sidebar
             onClick={onToggle}
             aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
             className={cn(
-              "flex items-center gap-2 rounded-xl text-[12px] font-medium text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/40 transition-all duration-200",
+              "flex items-center gap-2 rounded-2xl text-[12px] font-medium text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/40 transition-all duration-200",
               collapsed ? "h-10 w-10 justify-center mx-auto" : "w-full px-3 py-2",
             )}
           >
@@ -261,9 +261,9 @@ export const SidebarBody = ({ onNavigate, collapsed = false, onToggle }: Sidebar
         </div>
       )}
 
-      <div className={cn("pb-5 pt-3 border-t border-sidebar-border/60", collapsed ? "px-3" : "px-3")}>
-        <div className={cn("flex items-center rounded-xl hover:bg-sidebar-accent/30 transition-smooth", collapsed ? "flex-col gap-2 py-2" : "gap-3 px-2 py-2")}>
-          <div className="h-9 w-9 rounded-full bg-gradient-primary flex items-center justify-center text-primary-foreground shadow-sm shrink-0">
+      <div className={cn("pb-4 pt-3 border-t border-sidebar-border/60", collapsed ? "px-3" : "px-3")}>
+        <div className={cn("flex items-center rounded-2xl hover:bg-sidebar-accent/30 transition-smooth", collapsed ? "flex-col gap-2 py-2" : "gap-3 px-2 py-2")}>
+          <div className="h-10 w-10 rounded-full bg-gradient-primary flex items-center justify-center text-primary-foreground shadow-sm shrink-0">
             <User className="h-4 w-4" />
           </div>
           {!collapsed && (
@@ -276,7 +276,7 @@ export const SidebarBody = ({ onNavigate, collapsed = false, onToggle }: Sidebar
             onClick={signOut}
             aria-label="Sair"
             title="Sair"
-            className="h-8 w-8 rounded-lg flex items-center justify-center text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/60 transition-smooth shrink-0"
+            className="h-9 w-9 rounded-xl flex items-center justify-center text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/60 transition-smooth shrink-0"
           >
             <LogOut className="h-4 w-4" />
           </button>
