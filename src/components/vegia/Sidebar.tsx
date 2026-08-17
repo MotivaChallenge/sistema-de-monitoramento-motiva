@@ -208,25 +208,25 @@ export const SidebarBody = ({ onNavigate, collapsed = false, onToggle }: Sidebar
         </div>
       )}
 
-      <nav className="flex-1 px-3 overflow-y-auto space-y-4">
+      <nav className="flex-1 px-3 overflow-y-auto space-y-5">
         {groups.map(g => {
           const open = openGroups[g.id] ?? true;
           return (
-            <div key={g.id} className="space-y-1">
+            <div key={g.id} className="space-y-2">
               {collapsed ? (
                 <div className="h-px bg-sidebar-border/60 mx-2 my-2" />
               ) : (
                 <button
                   onClick={() => setOpenGroups(prev => ({ ...prev, [g.id]: !open }))}
                   aria-expanded={open}
-                  className="w-full flex items-center gap-2 px-4 py-1.5 text-[10px] uppercase tracking-[0.16em] font-semibold text-sidebar-foreground/45 hover:text-sidebar-foreground/70 transition-colors"
+                  className="w-full flex items-center gap-2 px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] font-semibold text-sidebar-foreground/45 hover:text-sidebar-foreground/70 transition-colors rounded-xl hover:bg-sidebar-accent/20"
                 >
                   <span className="flex-1 text-left">{g.label}</span>
                   <ChevronDown className={cn("h-3.5 w-3.5 transition-transform duration-200", open ? "" : "-rotate-90")} />
                 </button>
               )}
               {(open || collapsed) && (
-                <div className="space-y-1 animate-fade-in">
+                <div className="space-y-1.5 animate-fade-in">
                   {g.items.map(it => (
                     <div key={it.to} className="space-y-1">
                       {renderLink(it)}
