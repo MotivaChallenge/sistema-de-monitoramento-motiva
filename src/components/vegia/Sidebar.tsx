@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Map, TrendingUp, CalendarDays, Users, BarChart3, Settings, LogOut, User, ClipboardList, PanelLeftClose, PanelLeftOpen, FlaskConical, Database, ChevronDown, Plus } from "lucide-react";
+import { LayoutDashboard, Map, TrendingUp, CalendarDays, Users, BarChart3, Settings, LogOut, User, ClipboardList, PanelLeftClose, PanelLeftOpen, FlaskConical, Database, ChevronDown, Plus, ChevronRight } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useActiveAlertsCount } from "@/hooks/useAlertsFeed";
 import { useWorkOrders } from "@/hooks/useVegiaData";
