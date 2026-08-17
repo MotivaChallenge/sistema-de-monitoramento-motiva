@@ -47,11 +47,11 @@ const groups: Group[] = [
   },
   {
     id: "ferramentas",
-    label: "Ferramentas",
+    label: "Análise Técnica",
     defaultCollapsed: true,
     items: [
-      { to: "/prototipo", label: "Testes do Protótipo", icon: FlaskConical },
-      { to: "/dataset", label: "Gerador de Dataset", icon: Database },
+      { to: "/prototipo", label: "Validação de Modelo", icon: FlaskConical },
+      { to: "/dataset", label: "Simulação de Dados", icon: Database },
     ],
   },
 ];
