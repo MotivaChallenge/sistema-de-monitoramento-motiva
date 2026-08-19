@@ -10,6 +10,14 @@ interface CvImage {
   status: Status;
   caption: string;
   box?: { x: number; y: number; w: number; h: number };
+  /** Trecho ao qual a detecção está vinculada (null = não vinculada). */
+  segmentId?: string | null;
+  rodovia?: string | null;
+  kmValue?: number | null;
+  source?: string | null;
+  model?: string | null;
+  capturedAt?: string | null;
+  reviewStatus?: string | null;
 }
 
 const mapSegment = (r: any): Segment => ({
