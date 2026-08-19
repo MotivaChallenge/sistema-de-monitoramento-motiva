@@ -10,6 +10,14 @@ interface CvImage {
   status: Status;
   caption: string;
   box?: { x: number; y: number; w: number; h: number };
+  /** Trecho ao qual a detecção está vinculada (null = não vinculada). */
+  segmentId?: string | null;
+  rodovia?: string | null;
+  kmValue?: number | null;
+  source?: string | null;
+  model?: string | null;
+  capturedAt?: string | null;
+  reviewStatus?: string | null;
 }
 
 const mapSegment = (r: any): Segment => ({
@@ -82,6 +90,13 @@ export const useCvResults = () =>
         status: r.status as Status,
         caption: r.caption ?? "",
         box: r.box ?? undefined,
+        segmentId: r.segment_id ?? null,
+        rodovia: r.rodovia ?? null,
+        kmValue: r.km_value != null ? Number(r.km_value) : null,
+        source: r.source ?? null,
+        model: r.model ?? null,
+        capturedAt: r.captured_at ?? null,
+        reviewStatus: r.review_status ?? null,
       }));
     },
   });

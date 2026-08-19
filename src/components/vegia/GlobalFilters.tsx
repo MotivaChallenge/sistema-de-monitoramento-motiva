@@ -16,7 +16,7 @@ const STATUS_CHIPS: { key: StatusFilter; label: string; cls: string }[] = [
 export const GlobalFilters = ({ showSearch = true }: { showSearch?: boolean }) => {
   const {
     statuses, kmRange, kmMax, rodovia, search,
-    toggleStatus, setKmRange, setRodovia, setSearch, reset, activeCount,
+    toggleStatus, setKmRange, setRodovia, setSearch, reset, activeCount, searchQuery,
   } = useFilters();
   const { data: highways = [] } = useHighways();
   const range: [number, number] = kmRange ?? [0, kmMax];
@@ -55,11 +55,17 @@ export const GlobalFilters = ({ showSearch = true }: { showSearch?: boolean }) =
               <Input
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                placeholder="KM, tipo de trecho ou ID…"
+                placeholder="Ex.: 3+000, KM 12,5, SP-021 ou ID…"
                 className="pl-8 h-9 text-[13px]"
                 aria-label="Buscar trechos"
+                aria-describedby="busca-regra"
               />
             </div>
+            {search.trim() && (
+              <p id="busca-regra" className="mt-1.5 text-[11px] text-muted-foreground leading-snug">
+                {searchQuery.explanation}
+              </p>
+            )}
           </div>
         )}
 
