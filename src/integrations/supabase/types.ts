@@ -46,38 +46,163 @@ export type Database = {
           },
         ]
       }
+      audit_log: {
+        Row: {
+          action: string
+          after_value: Json | null
+          before_value: Json | null
+          created_at: string
+          entity: string
+          entity_id: string | null
+          id: string
+          origin: string | null
+          reason: string | null
+          user_email: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          after_value?: Json | null
+          before_value?: Json | null
+          created_at?: string
+          entity: string
+          entity_id?: string | null
+          id?: string
+          origin?: string | null
+          reason?: string | null
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          after_value?: Json | null
+          before_value?: Json | null
+          created_at?: string
+          entity?: string
+          entity_id?: string | null
+          id?: string
+          origin?: string | null
+          reason?: string | null
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       cv_results: {
         Row: {
+          alert_id: string | null
           box: Json | null
           caption: string | null
+          captured_at: string | null
           confidence: number
           created_at: string
           id: number
+          image_ref: string | null
           km: string
+          km_end: number | null
+          km_start: number | null
+          km_value: number | null
           label: string
+          lat: number | null
+          lng: number | null
+          model: string | null
+          model_version: string | null
+          review_status: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          rodovia: string | null
+          segment_id: string | null
+          source: string | null
           status: Database["public"]["Enums"]["segment_status"]
+          threshold: number | null
+          work_order_id: string | null
         }
         Insert: {
+          alert_id?: string | null
           box?: Json | null
           caption?: string | null
+          captured_at?: string | null
           confidence: number
           created_at?: string
           id: number
+          image_ref?: string | null
           km: string
+          km_end?: number | null
+          km_start?: number | null
+          km_value?: number | null
           label: string
+          lat?: number | null
+          lng?: number | null
+          model?: string | null
+          model_version?: string | null
+          review_status?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          rodovia?: string | null
+          segment_id?: string | null
+          source?: string | null
           status: Database["public"]["Enums"]["segment_status"]
+          threshold?: number | null
+          work_order_id?: string | null
         }
         Update: {
+          alert_id?: string | null
           box?: Json | null
           caption?: string | null
+          captured_at?: string | null
           confidence?: number
           created_at?: string
           id?: number
+          image_ref?: string | null
           km?: string
+          km_end?: number | null
+          km_start?: number | null
+          km_value?: number | null
           label?: string
+          lat?: number | null
+          lng?: number | null
+          model?: string | null
+          model_version?: string | null
+          review_status?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          rodovia?: string | null
+          segment_id?: string | null
+          source?: string | null
           status?: Database["public"]["Enums"]["segment_status"]
+          threshold?: number | null
+          work_order_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "cv_results_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "alerts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cv_results_rodovia_fkey"
+            columns: ["rodovia"]
+            isOneToOne: false
+            referencedRelation: "highways"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "cv_results_segment_id_fkey"
+            columns: ["segment_id"]
+            isOneToOne: false
+            referencedRelation: "segments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cv_results_work_order_id_fkey"
+            columns: ["work_order_id"]
+            isOneToOne: false
+            referencedRelation: "work_orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       field_teams: {
         Row: {
