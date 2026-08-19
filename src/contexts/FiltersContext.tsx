@@ -1,12 +1,15 @@
 import { createContext, useContext, useMemo, useState, ReactNode, useCallback } from "react";
 import { Status } from "@/types/domain";
 import { useSegments } from "@/hooks/useVegiaData";
+import { parseKmQuery, matchesKmQuery, type KmQuery } from "@/lib/km-search";
 
 export type StatusFilter = Status; // "critico" | "atencao" | "conforme"
 
 export interface MatchTarget {
   status: Status;
   kmStart: number;
+  /** Fim do intervalo — permite busca por ponto quilométrico contido no trecho. */
+  kmEnd?: number;
   rodovia?: string | null;
   /** Texto livre pesquisável (km, tipo, id…). */
   text?: string;
@@ -30,6 +33,8 @@ interface FiltersCtx {
   reset: () => void;
   activeCount: number;
   matches: (s: MatchTarget) => boolean;
+  /** Consulta textual interpretada (regra aplicada e explicação). */
+  searchQuery: KmQuery;
 }
 
 const Ctx = createContext<FiltersCtx | null>(null);
@@ -61,16 +66,23 @@ export const FiltersProvider = ({ children }: { children: ReactNode }) => {
   const value = useMemo<FiltersCtx>(() => {
     const kmActive = !!kmRange && (kmRange[0] > 0 || kmRange[1] < kmMax);
     const q = search.trim().toLowerCase();
+    const parsed = parseKmQuery(search);
     const activeCount =
       (statuses.length > 0 ? 1 : 0) + (kmActive ? 1 : 0) + (rodovia ? 1 : 0) + (q ? 1 : 0);
     return {
       statuses, kmRange, kmMax, rodovia, search,
       toggleStatus, setStatuses, setKmRange, setRodovia, setSearch, reset, activeCount,
+      searchQuery: parsed,
       matches: (s) =>
         (statuses.length === 0 || statuses.includes(s.status)) &&
         (!kmActive || (s.kmStart >= kmRange![0] && s.kmStart <= kmRange![1])) &&
         (!rodovia || s.rodovia === undefined || s.rodovia === rodovia) &&
-        (!q || !s.text || s.text.toLowerCase().includes(q)),
+        matchesKmQuery(parsed, {
+          kmStart: s.kmStart,
+          kmEnd: s.kmEnd,
+          rodovia: s.rodovia,
+          text: s.text,
+        }),
     };
   }, [statuses, kmRange, kmMax, rodovia, search, toggleStatus, reset]);
 
