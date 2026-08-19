@@ -48,7 +48,7 @@ const Dashboard = () => {
 
   const segments = useMemo(
     () => allSegments.filter(s => matches({
-      status: s.status, kmStart: s.kmStart, rodovia: s.rodovia ?? null,
+      status: s.status, kmStart: s.kmStart, kmEnd: s.kmEnd, rodovia: s.rodovia ?? null,
       text: `${s.km} ${s.tipo} ${s.id}`,
     })),
     [allSegments, matches]

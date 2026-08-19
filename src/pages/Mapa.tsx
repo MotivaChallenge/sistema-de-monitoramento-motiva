@@ -167,7 +167,7 @@ const Mapa = () => {
     () =>
       segmentsRaw
         .filter(s => (s.rodovia ?? "SP-021") === selectedHighway)
-        .filter(s => matches({ status: s.status, kmStart: s.kmStart, text: `${s.km} ${s.tipo} ${s.id}` })),
+        .filter(s => matches({ status: s.status, kmStart: s.kmStart, kmEnd: s.kmEnd, rodovia: s.rodovia ?? null, text: `${s.km} ${s.tipo} ${s.id}` })),
     [segmentsRaw, matches, selectedHighway]
   );
 
