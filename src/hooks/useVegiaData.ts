@@ -82,6 +82,13 @@ export const useCvResults = () =>
         status: r.status as Status,
         caption: r.caption ?? "",
         box: r.box ?? undefined,
+        segmentId: r.segment_id ?? null,
+        rodovia: r.rodovia ?? null,
+        kmValue: r.km_value != null ? Number(r.km_value) : null,
+        source: r.source ?? null,
+        model: r.model ?? null,
+        capturedAt: r.captured_at ?? null,
+        reviewStatus: r.review_status ?? null,
       }));
     },
   });
