@@ -149,7 +149,12 @@ const Relatorio = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-6">
         <MetricCard label="Conformidade" value={<span>{conformidade}<span className="text-[24px]">%</span></span>} footer={
           <div className="space-y-2">
-            <span className="text-muted-foreground text-[12px] font-semibold">{lvl1}+{lvl2}/{totalCounted} pontos</span>
+            <span className="text-muted-foreground text-[12px] font-semibold block leading-snug">
+              (Nível 1 {lvl1} + Nível 2 {lvl2} × 0,5) ÷ {counted.length} pontos avaliados
+            </span>
+            <span className="text-muted-foreground/80 text-[11px] block leading-snug">
+              Pontos marcados como N/A não entram no cálculo. Nível 3 ({lvl3}) conta como não conforme.
+            </span>
             <div className="h-1.5 rounded-full overflow-hidden flex">
               <div className="bg-primary" style={{ flex: conformidadeLvl1Pct }} />
               <div className="bg-destructive" style={{ flex: inconformidadePct }} />

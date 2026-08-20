@@ -1,4 +1,7 @@
+import { useMemo } from "react";
 import { useCvResults } from "@/hooks/useVegiaData";
+import { formatKmQuery } from "@/lib/km-search";
+import { Info } from "lucide-react";
 
 const colorOf = (s: string) =>
   s === "critico" ? "border-destructive bg-destructive text-destructive-foreground"
@@ -17,17 +20,69 @@ const gradients = [
   "linear-gradient(135deg, #5C8C6F 0%, #2D5A45 100%)",
 ];
 
-export const CVImageGrid = () => {
-  const { data: cvImages = [], isLoading } = useCvResults();
+const fmtDate = (iso?: string | null) =>
+  iso ? new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" }) : "—";
+
+export type CvScope = "segmento" | "rodovia" | "malha";
+
+interface Props {
+  /** Trecho de referência — usado no escopo "segmento". */
+  segmentId?: string;
+  /** Rodovia de referência — usada no escopo "rodovia". */
+  rodovia?: string | null;
+  /** Faixa de KM do trecho, para vincular detecções ainda sem `segment_id`. */
+  kmStart?: number;
+  kmEnd?: number;
+  scope?: CvScope;
+}
+
+export const CVImageGrid = ({ segmentId, rodovia, kmStart, kmEnd, scope = "malha" }: Props) => {
+  const { data: all = [], isLoading } = useCvResults();
+
+  const cvImages = useMemo(() => {
+    if (scope === "malha") return all;
+    if (scope === "rodovia") {
+      if (!rodovia) return all;
+      return all.filter(d => (d.rodovia ?? null) === rodovia);
+    }
+    // escopo do trecho: vínculo explícito ou ponto quilométrico dentro do intervalo
+    return all.filter(d => {
+      if (segmentId && d.segmentId === segmentId) return true;
+      if (d.segmentId) return false;
+      if (kmStart == null || kmEnd == null || d.kmValue == null) return false;
+      if (rodovia && d.rodovia && d.rodovia !== rodovia) return false;
+      return d.kmValue >= kmStart && d.kmValue <= kmEnd;
+    });
+  }, [all, scope, segmentId, rodovia, kmStart, kmEnd]);
+
   if (isLoading) return <div className="text-[13px] text-muted-foreground">Carregando análises…</div>;
+
+  if (!cvImages.length) {
+    return (
+      <div className="rounded-xl border border-dashed border-border bg-surface-lowest p-8 text-center">
+        <Info className="h-5 w-5 mx-auto text-muted-foreground mb-2" />
+        <p className="text-[13.5px] font-medium">Nenhuma detecção vinculada a este escopo</p>
+        <p className="text-[12.5px] text-muted-foreground mt-1">
+          As detecções exibidas aqui vêm de capturas com quilômetro registrado. Alterne o escopo para
+          ver detecções da rodovia ou de toda a malha.
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <div className="grid grid-cols-3 gap-5">
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
       {cvImages.map((img, i) => (
-        <div key={img.id} className="bg-surface-lowest rounded-xl overflow-hidden">
+        <div key={img.id} className="bg-surface-lowest rounded-xl overflow-hidden border border-border/40">
           <div className="relative aspect-[4/3]" style={{ background: gradients[i % gradients.length] }}>
             <span className="absolute bottom-3 left-3 bg-black/55 text-white text-[11px] tracking-wider px-2 py-1 rounded font-mono">
-              {img.km}
+              {img.kmValue != null ? formatKmQuery(img.kmValue) : img.km}
             </span>
+            {img.rodovia && (
+              <span className="absolute top-3 left-3 bg-black/55 text-white text-[10px] font-semibold tracking-wider px-2 py-1 rounded">
+                {img.rodovia}
+              </span>
+            )}
             {img.box && (
               <div
                 className={`absolute border-2 rounded-sm ${boxBorder(img.status)}`}
@@ -47,6 +102,24 @@ export const CVImageGrid = () => {
               </span>
             </div>
             <p className="text-[13px] text-foreground/80 leading-snug truncate">{img.caption}</p>
+            <dl className="mt-3 pt-3 border-t border-border/40 grid grid-cols-2 gap-x-3 gap-y-1.5 text-[11.5px]">
+              <div>
+                <dt className="text-muted-foreground">Trecho</dt>
+                <dd className="font-medium truncate">{img.segmentId ?? "Não vinculado"}</dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">Captura</dt>
+                <dd className="font-medium">{fmtDate(img.capturedAt)}</dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">Modelo</dt>
+                <dd className="font-medium truncate">{img.model ?? "—"}</dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">Revisão</dt>
+                <dd className="font-medium capitalize">{img.reviewStatus ?? "—"}</dd>
+              </div>
+            </dl>
           </div>
         </div>
       ))}
