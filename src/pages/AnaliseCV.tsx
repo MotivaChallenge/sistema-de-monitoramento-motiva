@@ -172,7 +172,7 @@ const AnaliseCV = () => {
         {segMeas.length > 0 && (
           <section className="mt-10 bg-surface-lowest rounded-xl p-6">
             <div className="flex items-center justify-between mb-5">
-              <h3 className="text-[15px] font-semibold tracking-wider uppercase">Medições ARTESP do trecho</h3>
+              <h2 className="text-[15px] font-semibold tracking-wider uppercase">Medições ARTESP do trecho</h2>
               <span className="label-md">{counted.length} pontos avaliados · {segMeas.length - counted.length} N/A</span>
             </div>
             <div className="grid grid-cols-3 gap-4 mb-5">

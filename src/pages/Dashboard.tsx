@@ -260,10 +260,10 @@ const Dashboard = () => {
 
           <aside className="bg-surface-lowest rounded-xl p-5 h-fit border border-border/40 shadow-card xl:sticky xl:top-[88px]">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-[14px] font-semibold tracking-wider uppercase flex items-center gap-2">
+              <h2 className="text-[14px] font-semibold tracking-wider uppercase flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-destructive animate-pulse" />
                 Alertas Ativos
-              </h3>
+              </h2>
               <span className="text-[11px] px-2 py-1 rounded-full bg-destructive/10 text-destructive font-semibold tabular-nums">{totalAlerts}</span>
             </div>
             <div className="space-y-3">

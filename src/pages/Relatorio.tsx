@@ -141,7 +141,7 @@ const Relatorio = () => {
       ) : reports.length === 0 ? (
         <div className="bg-surface-lowest rounded-xl p-12 text-center">
           <FileX className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
-          <h3 className="text-[16px] font-semibold mb-1">Nenhum relatório de campo disponível</h3>
+          <h2 className="text-[16px] font-semibold mb-1">Nenhum relatório de campo disponível</h2>
           <p className="text-[13px] text-muted-foreground">Os levantamentos ARTESP aparecerão aqui assim que forem registrados.</p>
         </div>
       ) : (
