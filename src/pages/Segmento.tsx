@@ -92,7 +92,7 @@ const Segmento = () => {
           <div className="space-y-6">
             <section className="bg-surface-lowest rounded-xl p-4 md:p-6 border border-border/40 shadow-card">
               <div className="flex items-center justify-between mb-5">
-                <h3 className="text-[14px] font-semibold tracking-wider uppercase">Métricas de Fiscalização</h3>
+                <h2 className="text-[14px] font-semibold tracking-wider uppercase">Métricas de Fiscalização</h2>
                 <span className="label-md font-mono">REF: UTM-23S_E521_N734</span>
               </div>
               <dl className="divide-y divide-border/40">
@@ -125,7 +125,7 @@ const Segmento = () => {
             </section>
 
             <section className="bg-surface-lowest rounded-xl p-4 md:p-6 border border-border/40 shadow-card">
-              <h3 className="text-[14px] font-semibold tracking-wider uppercase mb-4">Evolução de Crescimento (30 dias)</h3>
+              <h2 className="text-[14px] font-semibold tracking-wider uppercase mb-4">Evolução de Crescimento (30 dias)</h2>
               <Suspense fallback={<Skeleton className="h-64 w-full" />}>
                 <NDVILineChart data={evolution} threshold={30} thresholdLabel="THRESHOLD (30cm)" />
               </Suspense>
