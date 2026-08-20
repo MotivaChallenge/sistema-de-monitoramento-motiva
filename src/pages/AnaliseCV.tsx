@@ -1,18 +1,19 @@
 import { TopHeader } from "@/components/vegia/TopHeader";
-import { CVImageGrid } from "@/components/vegia/CVImageGrid";
+import { CVImageGrid, type CvScope } from "@/components/vegia/CVImageGrid";
 import { VisionAnalyzer } from "@/components/vegia/VisionAnalyzer";
 import { useParams } from "react-router-dom";
 import {
   useSegment, useInspectionReports, useInspectionMeasurements, useRocadaClassification,
 } from "@/hooks/useVegiaData";
 import { Sparkles, Wrench } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
 
 const AnaliseCV = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [scope, setScope] = useState<CvScope>("segmento");
   const { data: seg, isLoading } = useSegment(id);
   const { data: reports = [] } = useInspectionReports();
   const latestReportId = reports[0]?.id;
