@@ -121,7 +121,48 @@ const AnaliseCV = () => {
           </div>
         </div>
 
-        <CVImageGrid />
+        <section aria-labelledby="deteccoes-visuais">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <div>
+              <h2 id="deteccoes-visuais" className="text-[15px] font-semibold tracking-wider uppercase">
+                Detecções visuais
+              </h2>
+              <p className="text-[12.5px] text-muted-foreground mt-1">
+                {scope === "segmento"
+                  ? `Somente capturas vinculadas ao trecho ${seg.km} (KM ${seg.kmStart}–${seg.kmEnd}).`
+                  : scope === "rodovia"
+                  ? `Capturas de toda a ${seg.rodovia ?? "rodovia"}.`
+                  : "Capturas de toda a malha monitorada."}
+              </p>
+            </div>
+            <div role="tablist" aria-label="Escopo das detecções" className="inline-flex rounded-lg border border-border p-0.5 bg-surface-lowest">
+              {([
+                { key: "segmento", label: "Este trecho" },
+                { key: "rodovia", label: "Rodovia" },
+                { key: "malha", label: "Malha" },
+              ] as { key: CvScope; label: string }[]).map(t => (
+                <button
+                  key={t.key}
+                  role="tab"
+                  aria-selected={scope === t.key}
+                  onClick={() => setScope(t.key)}
+                  className={`px-3 py-1.5 text-[12px] font-semibold rounded-md transition-smooth ${
+                    scope === t.key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-surface-low"
+                  }`}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <CVImageGrid
+            scope={scope}
+            segmentId={seg.id}
+            rodovia={seg.rodovia ?? null}
+            kmStart={seg.kmStart}
+            kmEnd={seg.kmEnd}
+          />
+        </section>
 
         <div className="mt-10">
           <VisionAnalyzer context={`Trecho ${seg.km}, KM ${seg.kmStart}–${seg.kmEnd}, tipo ${seg.tipo}.`} />
