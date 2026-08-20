@@ -691,10 +691,10 @@ const Mapa = () => {
         >
           <div className={`bg-background/90 backdrop-blur-md border border-border/50 rounded-xl shadow-card flex flex-col overflow-hidden ${listOpen ? "h-full" : ""}`}>
             <div className="flex items-center justify-between px-4 py-3 border-b border-border/40">
-              <h3 className="text-[12px] font-semibold uppercase tracking-wider flex items-center gap-2">
+              <h2 className="text-[12px] font-semibold uppercase tracking-wider flex items-center gap-2">
                 <ListFilter className="h-3.5 w-3.5 text-primary" />
                 Segmentos no mapa
-              </h3>
+              </h2>
               <div className="flex items-center gap-1.5">
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold tabular-nums">
                   {listItems.length}
@@ -724,7 +724,7 @@ const Mapa = () => {
             </SheetTrigger>
             <SheetContent side="bottom" className="h-[70vh] p-0 flex flex-col">
               <div className="px-4 py-3 border-b border-border/40">
-                <h3 className="text-[13px] font-semibold uppercase tracking-wider">Segmentos no mapa</h3>
+                <h2 className="text-[13px] font-semibold uppercase tracking-wider">Segmentos no mapa</h2>
               </div>
               <div className="flex-1 min-h-0">{listPanel}</div>
             </SheetContent>
@@ -736,7 +736,7 @@ const Mapa = () => {
               </button>
             </SheetTrigger>
             <SheetContent side="bottom" className="h-[55vh] overflow-y-auto">
-              <h3 className="text-[13px] font-semibold uppercase tracking-wider mb-3">Camadas</h3>
+              <h2 className="text-[13px] font-semibold uppercase tracking-wider mb-3">Camadas</h2>
               <div className="space-y-2">
                 {([
                   { key: "street", label: "Mapa" },
