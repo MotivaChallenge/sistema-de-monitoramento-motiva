@@ -23,6 +23,7 @@ const Alertas = () => {
       matches({
         status: a.status,
         kmStart: a.kmStart,
+        kmEnd: a.kmEnd,
         rodovia: a.rodovia,
         text: `${a.km} ${a.message} ${a.rodovia ?? ""}`,
       })

@@ -9,6 +9,7 @@ export interface AlertFeedItem {
   segmentId: string;
   km: string;
   kmStart: number;
+  kmEnd: number;
   rodovia: string | null;
   status: Status;
   message: string;
@@ -25,7 +26,7 @@ export const useAlertsFeed = () => {
     queryFn: async (): Promise<AlertFeedItem[]> => {
       const { data, error } = await supabase
         .from("alerts")
-        .select("id, segment_id, status, message, created_at, segments(km, km_start, rodovia)")
+        .select("id, segment_id, status, message, created_at, segments(km, km_start, km_end, rodovia)")
         .order("created_at", { ascending: false })
         .limit(20);
       if (error) throw error;
@@ -34,6 +35,7 @@ export const useAlertsFeed = () => {
         segmentId: r.segment_id,
         km: r.segments?.km ?? r.segment_id,
         kmStart: Number(r.segments?.km_start ?? 0),
+        kmEnd: Number(r.segments?.km_end ?? r.segments?.km_start ?? 0),
         rodovia: r.segments?.rodovia ?? null,
         status: r.status as Status,
         message: r.message ?? "Alteração de status registrada",
