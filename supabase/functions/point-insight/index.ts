@@ -1,5 +1,5 @@
 import { corsHeaders } from "../_shared/cors.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { requireUser } from "../_shared/auth.ts";
 
 const log = (level: "info" | "warn" | "error", event: string, data: Record<string, unknown> = {}) => {
   console.log(JSON.stringify({ level, event, fn: "point-insight", ts: new Date().toISOString(), ...data }));
@@ -29,6 +29,11 @@ Deno.serve(async (req) => {
   const started = Date.now();
 
   try {
+    // Exige sessão válida antes de consultar dados operacionais ou chamar serviços externos.
+    const auth = await requireUser(req);
+    if (auth.response) return auth.response;
+    const supabase = auth.userClient!;
+
     const body = await req.json().catch(() => ({}));
     const lat = Number(body.lat);
     const lng = Number(body.lng);
@@ -76,9 +81,6 @@ Deno.serve(async (req) => {
     };
 
     // 2. Segmento mais próximo (raio ~1km)
-    const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-    const SUPABASE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!;
-    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
     const { data: markers } = await supabase.from("km_markers").select("km_value,lat,lng");
     let nearestKm: number | null = null;
