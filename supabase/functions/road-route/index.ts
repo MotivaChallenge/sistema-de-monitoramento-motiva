@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { requireUser } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -44,6 +45,10 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
+    // Exige sessão válida antes de rotear/escrever no cache (chamada externa + gravação).
+    const auth = await requireUser(req);
+    if (auth.response) return auth.response;
+
     const body = (await req.json()) as Body;
     const code = String(body?.code ?? "").trim();
     const waypoints = Array.isArray(body?.waypoints) ? body.waypoints : [];
