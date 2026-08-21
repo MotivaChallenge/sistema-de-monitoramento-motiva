@@ -10,6 +10,7 @@ import { AuthProvider } from "./hooks/useAuth";
 import { ProtectedRoute } from "./components/vegia/ProtectedRoute";
 import { SettingsProvider } from "./hooks/useSettings";
 import { lazy, Suspense, type ComponentType } from "react";
+import { RouteSeo } from "./components/RouteSeo";
 
 // Code splitting por rota — reduz bundle inicial.
 // Após um novo deploy, os chunks antigos deixam de existir e o import dinâmico falha.
@@ -80,6 +81,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <RouteSeo />
         <AuthProvider>
           <SettingsProvider>
           <Suspense fallback={<RouteFallback />}>

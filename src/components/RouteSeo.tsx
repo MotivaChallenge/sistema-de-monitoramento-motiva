@@ -103,6 +103,6 @@ export const RouteSeo = () => {
     };
   }
 
-  const isPublic = path === "/" || path === "/auth" || path === "/reset-password";
+  const isPublic = path === "/" || path === "/auth";
   return <Seo title={meta.title} description={meta.description} path={path} noindex={meta.noindex ?? !isPublic} />;
 };
