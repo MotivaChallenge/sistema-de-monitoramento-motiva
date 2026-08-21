@@ -1,4 +1,5 @@
 import { corsHeaders } from "../_shared/cors.ts";
+import { requireUser } from "../_shared/auth.ts";
 
 const log = (level: "info" | "error", event: string, data: Record<string, unknown> = {}) => {
   console.log(JSON.stringify({ level, event, fn: "vision-detect", ts: new Date().toISOString(), ...data }));
@@ -81,6 +82,10 @@ Deno.serve(async (req) => {
   const started = Date.now();
 
   try {
+    // Exige sessão válida antes de qualquer chamada paga ao gateway de IA.
+    const auth = await requireUser(req);
+    if (auth.response) return auth.response;
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 

@@ -1,5 +1,5 @@
 import { corsHeaders } from "../_shared/cors.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { requireUser } from "../_shared/auth.ts";
 
 const log = (level: "info" | "error", event: string, data: Record<string, unknown> = {}) => {
   console.log(JSON.stringify({ level, event, fn: "ai-insights", ts: new Date().toISOString(), ...data }));
@@ -17,12 +17,16 @@ Deno.serve(async (req) => {
   const started = Date.now();
 
   try {
+    // Exige sessão válida: sem login não há consulta ao banco nem chamada de IA.
+    const auth = await requireUser(req);
+    if (auth.response) return auth.response;
+    const supabase = auth.userClient!;
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-    const SUPABASE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!;
-    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+    const callerAuth = req.headers.get("Authorization")!;
 
     // Parse filtros opcionais do body
     let filters: { statuses?: string[]; kmStart?: number; kmEnd?: number } = {};
@@ -53,7 +57,7 @@ Deno.serve(async (req) => {
     try {
       const wRes = await fetch(`${SUPABASE_URL}/functions/v1/weather-rodoanel`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json" },
+        headers: { Authorization: callerAuth, "Content-Type": "application/json" },
       });
       if (wRes.ok) weather = await wRes.json();
     } catch (e) {
