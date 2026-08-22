@@ -392,7 +392,7 @@ const OrdensServico = () => {
                               </Button>
                             )}
                             <Button size="sm" variant="ghost" onClick={() => openEdit(o)} aria-label="Editar"><Pencil className="h-4 w-4" /></Button>
-                            {isAdmin && <Button size="sm" variant="ghost" onClick={() => remove(o)} aria-label="Excluir"><Trash2 className="h-4 w-4 text-destructive" /></Button>}
+                            {isAdmin && <Button size="sm" variant="ghost" onClick={() => askRemove(o)} aria-label="Excluir"><Trash2 className="h-4 w-4 text-destructive" /></Button>}
                           </div>
                         </td>
                       )}
