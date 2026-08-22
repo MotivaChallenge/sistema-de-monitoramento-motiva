@@ -70,6 +70,7 @@ const OrdensServico = () => {
   const [form, setForm] = useState<FormState>(emptyForm);
   const [saving, setSaving] = useState(false);
   const [completingId, setCompletingId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<WorkOrder | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Filtros específicos desta tela
