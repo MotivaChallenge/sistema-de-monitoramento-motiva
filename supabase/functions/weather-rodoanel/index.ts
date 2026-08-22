@@ -17,9 +17,13 @@ const log = (level: "info" | "warn" | "error", event: string, data: Record<strin
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
+  const auth = await requireUser(req);
+  if (auth.response) return auth.response;
+
   const startedAt = Date.now();
   const requestId = crypto.randomUUID();
   log("info", "request_received", { requestId, method: req.method });
+
 
   try {
     if (cache && Date.now() - cache.at < CACHE_TTL_MS) {
