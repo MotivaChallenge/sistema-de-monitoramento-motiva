@@ -1,4 +1,5 @@
 import { corsHeaders } from "../_shared/cors.ts";
+import { requireUser } from "../_shared/auth.ts";
 
 // Centro aproximado do Rodoanel Oeste (SP-021)
 const LAT = -23.5;
