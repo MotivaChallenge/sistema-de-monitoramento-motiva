@@ -40,7 +40,7 @@ export const logAudit = async (payload: AuditPayload): Promise<void> => {
       origin: payload.origin ?? getOrigin(),
     };
 
-    const { error } = await supabase.from("audit_log").insert(insert);
+    const { error } = await supabase.from("audit_log").insert([insert]);
 
     if (error) {
       console.warn("[audit] falha ao registrar:", error.message);
