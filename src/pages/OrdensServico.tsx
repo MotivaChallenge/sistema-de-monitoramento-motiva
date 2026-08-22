@@ -1,4 +1,6 @@
 import { TopHeader } from "@/components/vegia/TopHeader";
+import { ConfirmationDialog } from "@/components/vegia/ConfirmationDialog";
+import { logAudit } from "@/lib/audit";
 import { ClipboardList, Plus, Pencil, Trash2, CheckCircle2, Search, X, Loader2 } from "lucide-react";
 import { useFieldTeams, useWorkOrders, WorkOrder, WorkOrderPriority, WorkOrderStatus } from "@/hooks/useVegiaData";
 import { useSegments } from "@/hooks/useVegiaData";
