@@ -10,22 +10,25 @@ export interface AuditPayload {
   origin?: string;
 }
 
+const getOrigin = (): string => {
+  if (typeof window !== "undefined") return window.location.pathname;
+  return "server";
+};
+
 /**
  * Registra uma ação no audit_log.
  * Falhas são silenciosas (não quebram a operação principal) e logadas no console.
  */
 export const logAudit = async (payload: AuditPayload): Promise<void> => {
   try {
-    const {
-      data: { user },
-      error: sessionError,
-    } = await supabase.auth.getUser();
+    const { data, error: sessionError } = await supabase.auth.getUser();
 
     if (sessionError) {
       console.warn("[audit] não foi possível obter usuário:", sessionError.message);
     }
 
-    const { error } = await supabase.from("audit_log").insert({
+    const user = data?.user;
+    const insert = {
       user_id: user?.id ?? null,
       user_email: user?.email ?? null,
       action: payload.action,
@@ -34,8 +37,10 @@ export const logAudit = async (payload: AuditPayload): Promise<void> => {
       before_value: payload.before ?? null,
       after_value: payload.after ?? null,
       reason: payload.reason ?? null,
-      origin: payload.origin ?? typeof window !== "undefined" ? window.location.pathname : "server",
-    });
+      origin: payload.origin ?? getOrigin(),
+    };
+
+    const { error } = await supabase.from("audit_log").insert(insert);
 
     if (error) {
       console.warn("[audit] falha ao registrar:", error.message);
