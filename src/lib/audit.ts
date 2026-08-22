@@ -1,11 +1,12 @@
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 
 export interface AuditPayload {
   action: string;
   entity: string;
   entityId?: string | null;
-  before?: Record<string, unknown> | null;
-  after?: Record<string, unknown> | null;
+  before?: Json | null;
+  after?: Json | null;
   reason?: string | null;
   origin?: string;
 }
@@ -55,10 +56,10 @@ export const logAudit = async (payload: AuditPayload): Promise<void> => {
  * Útil para preencher before/after sem enviar o objeto inteiro.
  */
 export const diffForAudit = (
-  before: Record<string, unknown>,
-  after: Record<string, unknown>
-): Record<string, unknown> | null => {
-  const changed: Record<string, unknown> = {};
+  before: Record<string, Json | undefined>,
+  after: Record<string, Json | undefined>
+): Record<string, { from: Json | undefined; to: Json | undefined }> | null => {
+  const changed: Record<string, { from: Json | undefined; to: Json | undefined }> = {};
   let hasChange = false;
   const keys = new Set([...Object.keys(before), ...Object.keys(after)]);
   for (const key of keys) {
