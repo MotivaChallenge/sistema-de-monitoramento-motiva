@@ -1,4 +1,5 @@
 import { corsHeaders } from "../_shared/cors.ts";
+import { requireUser } from "../_shared/auth.ts";
 
 /**
  * Google Earth Engine — índices espectrais (NDVI, EVI, SAVI) via Sentinel-2 SR Harmonized.
@@ -288,6 +289,9 @@ const statsFor = (out: Record<string, unknown>, key: string) => {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+
+  const auth = await requireUser(req);
+  if (auth.response) return auth.response;
 
   try {
     const raw = Deno.env.get("GEE_SERVICE_ACCOUNT_JSON");
