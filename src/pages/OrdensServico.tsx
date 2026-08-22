@@ -152,6 +152,7 @@ const OrdensServico = () => {
       notes: form.notes || null,
     };
     if (!editing) payload.created_by = user?.id ?? null;
+    const before = editing ? { ...editing } : null;
     const { error } = editing
       ? await supabase.from("work_orders").update(payload).eq("id", editing.id)
       : await supabase.from("work_orders").insert(payload);
@@ -160,14 +161,32 @@ const OrdensServico = () => {
     toast.success(editing ? "OS atualizada" : "OS criada");
     setOpen(false);
     qc.invalidateQueries({ queryKey: ["work_orders"] });
+    logAudit({
+      action: editing ? "work_order.update" : "work_order.create",
+      entity: "work_orders",
+      entityId: editing?.id ?? payload.code,
+      before: before,
+      after: payload,
+      reason: editing ? "Edição via interface" : "Criação via interface",
+    });
   };
 
-  const remove = async (o: WorkOrder) => {
-    if (!confirm(`Excluir OS "${o.code}"?`)) return;
+  const askRemove = (o: WorkOrder) => setDeleting(o);
+  const remove = async () => {
+    if (!deleting) return;
+    const o = deleting;
     const { error } = await supabase.from("work_orders").delete().eq("id", o.id);
+    setDeleting(null);
     if (error) { toast.error("Erro ao excluir", { description: error.message }); return; }
     toast.success("OS excluída");
     qc.invalidateQueries({ queryKey: ["work_orders"] });
+    logAudit({
+      action: "work_order.delete",
+      entity: "work_orders",
+      entityId: o.id,
+      before: { ...o },
+      reason: "Exclusão via interface",
+    });
   };
 
   const complete = async (o: WorkOrder) => {
