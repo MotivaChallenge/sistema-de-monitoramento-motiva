@@ -81,7 +81,7 @@ const Notificacoes = () => {
 
   return (
     <>
-      <TopHeader title="Central de Notificações" subtitle="Acompanhe alertas, ordens e comunicados" />
+      <TopHeader breadcrumb={[{ label: "Início", to: "/dashboard" }]} current="Central de Notificações" />
       <div className="p-4 md:p-6 space-y-4 max-w-5xl mx-auto">
         <Card>
           <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2">
