@@ -99,6 +99,7 @@ const Equipes = () => {
     if (!form.nome.trim()) { toast.error("Nome é obrigatório"); return; }
     setSaving(true);
     const payload = { ...form };
+    const before = editing ? { ...editing } : null;
     const { error } = editing
       ? await supabase.from("field_teams").update(payload).eq("id", editing.id)
       : await supabase.from("field_teams").insert(payload);
@@ -107,14 +108,32 @@ const Equipes = () => {
     toast.success(editing ? "Equipe atualizada" : "Equipe criada");
     setOpen(false);
     qc.invalidateQueries({ queryKey: ["field_teams"] });
+    logAudit({
+      action: editing ? "field_team.update" : "field_team.create",
+      entity: "field_teams",
+      entityId: editing?.id ?? payload.nome,
+      before,
+      after: payload,
+      reason: editing ? "Edição via interface" : "Criação via interface",
+    });
   };
 
-  const remove = async (t: FieldTeam) => {
-    if (!confirm(`Excluir equipe "${t.nome}"?`)) return;
+  const askRemove = (t: FieldTeam) => setDeleting(t);
+  const remove = async () => {
+    if (!deleting) return;
+    const t = deleting;
     const { error } = await supabase.from("field_teams").delete().eq("id", t.id);
+    setDeleting(null);
     if (error) { toast.error("Erro ao excluir", { description: error.message }); return; }
     toast.success("Equipe excluída");
     qc.invalidateQueries({ queryKey: ["field_teams"] });
+    logAudit({
+      action: "field_team.delete",
+      entity: "field_teams",
+      entityId: t.id,
+      before: { ...t },
+      reason: "Exclusão via interface",
+    });
   };
 
   return (
