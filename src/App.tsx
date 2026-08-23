@@ -52,6 +52,7 @@ const Mapa = lazyWithRetry(() => import("./pages/Mapa"));
 const OrdensServico = lazyWithRetry(() => import("./pages/OrdensServico"));
 const Prototipo = lazyWithRetry(() => import("./pages/Prototipo"));
 const Dataset = lazyWithRetry(() => import("./pages/Dataset"));
+const Notificacoes = lazyWithRetry(() => import("./pages/Notificacoes"));
 
 const RouteFallback = () => (
   <div className="min-h-[60vh] flex items-center justify-center text-muted-foreground text-sm">
