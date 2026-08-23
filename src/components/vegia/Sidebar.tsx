@@ -1,8 +1,9 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Map, TrendingUp, CalendarDays, Users, BarChart3, Settings, LogOut, User, ClipboardList, PanelLeftClose, PanelLeftOpen, FlaskConical, Database, ChevronDown, Plus, ChevronRight } from "lucide-react";
+import { LayoutDashboard, Map, TrendingUp, CalendarDays, Users, BarChart3, Settings, LogOut, User, ClipboardList, PanelLeftClose, PanelLeftOpen, FlaskConical, Database, ChevronDown, Plus, ChevronRight, Bell } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useActiveAlertsCount } from "@/hooks/useAlertsFeed";
 import { useWorkOrders } from "@/hooks/useVegiaData";
+import { useUnreadNotificationsCount } from "@/hooks/useNotifications";
 import motivaLogo from "@/assets/motiva-logo.webp.asset.json";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
