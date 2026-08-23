@@ -482,6 +482,18 @@ const OrdensServico = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmationDialog
+        open={!!deleting}
+        onOpenChange={(open) => { if (!open) setDeleting(null); }}
+        title="Excluir ordem de serviço"
+        description="Esta ação não pode ser desfeita. A OS será removida permanentemente do histórico operacional."
+        recordName={deleting?.code}
+        impact="Perda de rastreabilidade da ordem e eventuais vinculações com alertas."
+        confirmLabel="Excluir"
+        variant="danger"
+        onConfirm={remove}
+      />
     </>
   );
 };
