@@ -128,8 +128,7 @@ const Notificacoes = () => {
 
               {error && (
                 <QueryErrorState
-                  title="Não foi possível carregar as notificações"
-                  message={(error as Error).message}
+                  message={`Não foi possível carregar as notificações: ${(error as Error).message}`}
                   onRetry={refetch}
                 />
               )}
@@ -137,11 +136,15 @@ const Notificacoes = () => {
               {!isLoading && !error && (
                 <TabsContent value={activeTab} className="mt-0">
                   {filtered.length === 0 ? (
-                    <EmptyState
-                      icon={Bell}
-                      title="Nenhuma notificação"
-                      description="Quando houver alertas, ordens de serviço ou comunicados, eles aparecerão aqui."
-                    />
+                    <div className="flex flex-col items-center text-center gap-3 py-12">
+                      <Bell className="h-10 w-10 text-muted-foreground/60" />
+                      <div>
+                        <p className="font-semibold text-foreground">Nenhuma notificação</p>
+                        <p className="text-sm text-muted-foreground mt-0.5">
+                          Quando houver alertas, ordens de serviço ou comunicados, eles aparecerão aqui.
+                        </p>
+                      </div>
+                    </div>
                   ) : (
                     <ScrollArea className="h-[60vh]">
                       <ul className="space-y-2 pr-3">
