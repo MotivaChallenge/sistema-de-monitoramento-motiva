@@ -1,10 +1,9 @@
-import { useEffect, useState } from "react";
-import { Bell, AlertTriangle, AlertCircle, CheckCircle2, ArrowRight } from "lucide-react";
+import { useState } from "react";
+import { Bell, AlertTriangle, AlertCircle, CheckCircle2, Info, ArrowRight, Wrench } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useAlertsFeed, getLastSeen, markAllSeen, AlertFeedItem } from "@/hooks/useAlertsFeed";
-import { useUnreadNotificationsCount } from "@/hooks/useNotifications";
-import { useNavigate, Link } from "react-router-dom";
+import { useNotifications, useMarkNotificationRead, useMarkAllNotificationsRead, Notification } from "@/hooks/useNotifications";
+import { Link } from "react-router-dom";
 
 const fmtRelative = (iso: string) => {
   const diff = Date.now() - new Date(iso).getTime();
@@ -17,34 +16,36 @@ const fmtRelative = (iso: string) => {
   return `${d}d atrás`;
 };
 
-const statusMeta: Record<AlertFeedItem["status"], { icon: typeof AlertTriangle; color: string; bg: string; label: string }> = {
-  critico: { icon: AlertTriangle, color: "text-destructive", bg: "bg-destructive/10", label: "Crítico" },
-  atencao: { icon: AlertCircle, color: "text-tertiary", bg: "bg-tertiary/15", label: "Atenção" },
-  conforme: { icon: CheckCircle2, color: "text-primary", bg: "bg-primary/10", label: "Conforme" },
+const typeMeta: Record<string, { icon: typeof Info; color: string; bg: string; label: string }> = {
+  alert: { icon: AlertTriangle, color: "text-destructive", bg: "bg-destructive/10", label: "Alerta" },
+  work_order: { icon: Wrench, color: "text-primary", bg: "bg-primary/10", label: "Ordem" },
+  system: { icon: Info, color: "text-muted-foreground", bg: "bg-surface-high", label: "Sistema" },
+};
+
+const getMeta = (n: Notification) => {
+  if (n.type === "alert") {
+    return typeMeta.alert;
+  }
+  if (n.type === "work_order") {
+    return typeMeta.work_order;
+  }
+  return typeMeta.system;
 };
 
 export const NotificationsPanel = () => {
-  const { data: alerts = [], isLoading } = useAlertsFeed();
-  const { data: unreadNotifications = 0 } = useUnreadNotificationsCount();
-  const navigate = useNavigate();
-  const [lastSeen, setLastSeen] = useState<number>(() => getLastSeen());
+  const { data: notifications = [], isLoading } = useNotifications();
+  const markRead = useMarkNotificationRead();
+  const markAllRead = useMarkAllNotificationsRead();
   const [open, setOpen] = useState(false);
 
-  useEffect(() => {
-    const handler = () => setLastSeen(getLastSeen());
-    window.addEventListener("vegia:alerts-seen", handler);
-    return () => window.removeEventListener("vegia:alerts-seen", handler);
-  }, []);
-
-  const unreadAlerts = alerts.filter(a => new Date(a.createdAt).getTime() > lastSeen).length;
-  const unread = Math.max(unreadAlerts, unreadNotifications);
+  const unread = notifications.filter(n => !n.read).length;
+  const latest = notifications.slice(0, 8);
 
   return (
     <Popover
       open={open}
       onOpenChange={(o) => {
         setOpen(o);
-        if (o && unreadAlerts > 0) markAllSeen();
       }}
     >
       <PopoverTrigger asChild>
@@ -65,30 +66,31 @@ export const NotificationsPanel = () => {
         <div className="px-4 py-3 border-b border-border flex items-center justify-between">
           <div>
             <div className="text-[14px] font-semibold">Notificações</div>
-            <div className="text-[11px] text-muted-foreground">Últimas alterações de status</div>
+            <div className="text-[11px] text-muted-foreground">
+              {unread === 0 ? "Você está em dia" : `${unread} não lida${unread > 1 ? "s" : ""}`}
+            </div>
           </div>
-          <span className="text-[11px] px-2 py-1 rounded-full bg-surface-high font-mono">{alerts.length}</span>
+          <span className="text-[11px] px-2 py-1 rounded-full bg-surface-high font-mono">{notifications.length}</span>
         </div>
         <ScrollArea className="max-h-[380px]">
           {isLoading && (
             <div className="px-4 py-6 text-[12px] text-muted-foreground">Carregando…</div>
           )}
-          {!isLoading && alerts.length === 0 && (
+          {!isLoading && latest.length === 0 && (
             <div className="px-4 py-8 text-center text-[12px] text-muted-foreground">
               Nenhuma notificação registrada.
             </div>
           )}
           <ul className="divide-y divide-border/40">
-            {alerts.map(a => {
-              const meta = statusMeta[a.status];
+            {latest.map(n => {
+              const meta = getMeta(n);
               const Icon = meta.icon;
-              const isUnread = new Date(a.createdAt).getTime() > lastSeen;
               return (
-                <li key={a.id}>
+                <li key={n.id}>
                   <button
                     onClick={() => {
+                      if (!n.read) markRead.mutate(n.id);
                       setOpen(false);
-                      navigate(`/segmento/${a.segmentId}`);
                     }}
                     className="w-full text-left px-4 py-3 hover:bg-surface-low flex gap-3 transition-colors"
                   >
@@ -97,12 +99,12 @@ export const NotificationsPanel = () => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="text-[13px] font-semibold truncate">{a.km}</span>
-                        <span className={`text-[10px] uppercase tracking-wider font-bold ${meta.color}`}>{meta.label}</span>
-                        {isUnread && <span className="h-1.5 w-1.5 rounded-full bg-primary ml-auto" />}
+                        <span className="text-[13px] font-semibold truncate">{n.title}</span>
+                        <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">{meta.label}</span>
+                        {!n.read && <span className="h-1.5 w-1.5 rounded-full bg-primary ml-auto" />}
                       </div>
-                      <p className="text-[12px] text-muted-foreground line-clamp-2 mt-0.5">{a.message}</p>
-                      <span className="text-[11px] text-muted-foreground/70 mt-1 block">{fmtRelative(a.createdAt)}</span>
+                      <p className="text-[12px] text-muted-foreground line-clamp-2 mt-0.5">{n.body}</p>
+                      <span className="text-[11px] text-muted-foreground/70 mt-1 block">{fmtRelative(n.created_at)}</span>
                     </div>
                   </button>
                 </li>
@@ -110,13 +112,21 @@ export const NotificationsPanel = () => {
             })}
           </ul>
         </ScrollArea>
-        <div className="border-t border-border p-2">
+        <div className="border-t border-border p-2 flex items-center justify-between gap-2">
+          {unread > 0 && (
+            <button
+              onClick={() => markAllRead.mutate()}
+              className="flex-1 rounded-lg py-2 text-[12px] font-medium text-muted-foreground hover:bg-surface-high transition-colors"
+            >
+              Marcar todas como lidas
+            </button>
+          )}
           <Link
             to="/notificacoes"
             onClick={() => setOpen(false)}
-            className="flex items-center justify-center gap-2 w-full rounded-lg py-2 text-[12px] font-medium text-primary hover:bg-primary/5 transition-colors"
+            className={`flex items-center justify-center gap-2 rounded-lg py-2 text-[12px] font-medium text-primary hover:bg-primary/5 transition-colors ${unread > 0 ? "flex-1" : "w-full"}`}
           >
-            Ver central de notificações
+            Ver central
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
