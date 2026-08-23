@@ -28,6 +28,7 @@ const groups: Group[] = [
       { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, badgeKey: "alerts" },
       { to: "/mapa", label: "Mapa Operacional", icon: Map, match: ["/segmento", "/analise-cv"] },
       { to: "/ordens", label: "Ordens de Serviço", icon: ClipboardList, badgeKey: "orders" },
+      { to: "/notificacoes", label: "Central de Notificações", icon: Bell, badgeKey: "notifications" },
     ],
   },
   {
