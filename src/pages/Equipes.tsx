@@ -273,7 +273,7 @@ const Equipes = () => {
                           <div className="inline-flex gap-1">
                             <Button size="sm" variant="ghost" onClick={() => openEdit(t)} aria-label="Editar"><Pencil className="h-4 w-4" /></Button>
                             {isAdmin && (
-                              <Button size="sm" variant="ghost" onClick={() => remove(t)} aria-label="Excluir"><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                              <Button size="sm" variant="ghost" onClick={() => askRemove(t)} aria-label="Excluir"><Trash2 className="h-4 w-4 text-destructive" /></Button>
                             )}
                           </div>
                         </td>
