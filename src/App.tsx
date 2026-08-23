@@ -52,6 +52,7 @@ const Mapa = lazyWithRetry(() => import("./pages/Mapa"));
 const OrdensServico = lazyWithRetry(() => import("./pages/OrdensServico"));
 const Prototipo = lazyWithRetry(() => import("./pages/Prototipo"));
 const Dataset = lazyWithRetry(() => import("./pages/Dataset"));
+const Notificacoes = lazyWithRetry(() => import("./pages/Notificacoes"));
 
 const RouteFallback = () => (
   <div className="min-h-[60vh] flex items-center justify-center text-muted-foreground text-sm">
@@ -98,6 +99,7 @@ const App = () => (
               <Route path="/ordens" element={<OrdensServico />} />
               <Route path="/prototipo" element={<Prototipo />} />
               <Route path="/dataset" element={<Dataset />} />
+              <Route path="/notificacoes" element={<Notificacoes />} />
               <Route path="/segmento/:id" element={<Segmento />} />
               <Route path="/relatorio" element={<Relatorio />} />
               <Route path="/alertas" element={<Alertas />} />

@@ -1,8 +1,9 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Map, TrendingUp, CalendarDays, Users, BarChart3, Settings, LogOut, User, ClipboardList, PanelLeftClose, PanelLeftOpen, FlaskConical, Database, ChevronDown, Plus, ChevronRight } from "lucide-react";
+import { LayoutDashboard, Map, TrendingUp, CalendarDays, Users, BarChart3, Settings, LogOut, User, ClipboardList, PanelLeftClose, PanelLeftOpen, FlaskConical, Database, ChevronDown, Plus, ChevronRight, Bell } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useActiveAlertsCount } from "@/hooks/useAlertsFeed";
 import { useWorkOrders } from "@/hooks/useVegiaData";
+import { useUnreadNotificationsCount } from "@/hooks/useNotifications";
 import motivaLogo from "@/assets/motiva-logo.webp.asset.json";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -13,7 +14,7 @@ type Item = {
   label: string;
   icon: React.ElementType;
   match?: string[];
-  badgeKey?: "alerts" | "orders";
+  badgeKey?: "alerts" | "orders" | "notifications";
   children?: Item[];
 };
 
@@ -27,6 +28,7 @@ const groups: Group[] = [
       { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, badgeKey: "alerts" },
       { to: "/mapa", label: "Mapa Operacional", icon: Map, match: ["/segmento", "/analise-cv"] },
       { to: "/ordens", label: "Ordens de Serviço", icon: ClipboardList, badgeKey: "orders" },
+      { to: "/notificacoes", label: "Central de Notificações", icon: Bell, badgeKey: "notifications" },
     ],
   },
   {
@@ -67,6 +69,7 @@ export const SidebarBody = ({ onNavigate, collapsed = false, onToggle }: Sidebar
   const { data: activeAlerts = 0 } = useActiveAlertsCount();
   const { data: workOrders = [] } = useWorkOrders();
   const pendingOrders = workOrders.filter(o => o.status === "pendente").length;
+  const { data: unreadNotifications = 0 } = useUnreadNotificationsCount();
 
   const isActive = (it: Item) => pathname === it.to || (it.match ?? []).some(m => pathname.startsWith(m));
   const groupHasActive = (g: Group) =>
@@ -92,7 +95,7 @@ export const SidebarBody = ({ onNavigate, collapsed = false, onToggle }: Sidebar
   }, [pathname]);
 
   const badgeFor = (it: Item) =>
-    it.badgeKey === "alerts" ? activeAlerts : it.badgeKey === "orders" ? pendingOrders : 0;
+    it.badgeKey === "alerts" ? activeAlerts : it.badgeKey === "orders" ? pendingOrders : it.badgeKey === "notifications" ? unreadNotifications : 0;
 
   const renderLink = (it: Item, opts: { sub?: boolean } = {}) => {
     const active = isActive(it);

@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { NotificationsPanel } from "./NotificationsPanel";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useSegments } from "@/hooks/useVegiaData";
+import { useUnreadNotificationsCount } from "@/hooks/useNotifications";
 
 interface Props {
   breadcrumb?: { label: string; to?: string }[];

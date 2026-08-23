@@ -1,4 +1,6 @@
 import { TopHeader } from "@/components/vegia/TopHeader";
+import { ConfirmationDialog } from "@/components/vegia/ConfirmationDialog";
+import { logAudit } from "@/lib/audit";
 import { Users, MapPin, Clock, Activity, Plus, Pencil, Trash2, Search, X } from "lucide-react";
 import { useFieldTeams, TeamStatus, FieldTeam } from "@/hooks/useVegiaData";
 import { useAuth } from "@/hooks/useAuth";
@@ -49,6 +51,7 @@ const Equipes = () => {
   const [editing, setEditing] = useState<FieldTeam | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState<FieldTeam | null>(null);
 
   // Filtros da tela de equipes
   const [fStatus, setFStatus] = useState<TeamStatus | "todos">("todos");
@@ -96,6 +99,7 @@ const Equipes = () => {
     if (!form.nome.trim()) { toast.error("Nome é obrigatório"); return; }
     setSaving(true);
     const payload = { ...form };
+    const before = editing ? { ...editing } : null;
     const { error } = editing
       ? await supabase.from("field_teams").update(payload).eq("id", editing.id)
       : await supabase.from("field_teams").insert(payload);
@@ -104,14 +108,32 @@ const Equipes = () => {
     toast.success(editing ? "Equipe atualizada" : "Equipe criada");
     setOpen(false);
     qc.invalidateQueries({ queryKey: ["field_teams"] });
+    logAudit({
+      action: editing ? "field_team.update" : "field_team.create",
+      entity: "field_teams",
+      entityId: editing?.id ?? payload.nome,
+      before,
+      after: payload,
+      reason: editing ? "Edição via interface" : "Criação via interface",
+    });
   };
 
-  const remove = async (t: FieldTeam) => {
-    if (!confirm(`Excluir equipe "${t.nome}"?`)) return;
+  const askRemove = (t: FieldTeam) => setDeleting(t);
+  const remove = async () => {
+    if (!deleting) return;
+    const t = deleting;
     const { error } = await supabase.from("field_teams").delete().eq("id", t.id);
+    setDeleting(null);
     if (error) { toast.error("Erro ao excluir", { description: error.message }); return; }
     toast.success("Equipe excluída");
     qc.invalidateQueries({ queryKey: ["field_teams"] });
+    logAudit({
+      action: "field_team.delete",
+      entity: "field_teams",
+      entityId: t.id,
+      before: { ...t },
+      reason: "Exclusão via interface",
+    });
   };
 
   return (
@@ -251,7 +273,7 @@ const Equipes = () => {
                           <div className="inline-flex gap-1">
                             <Button size="sm" variant="ghost" onClick={() => openEdit(t)} aria-label="Editar"><Pencil className="h-4 w-4" /></Button>
                             {isAdmin && (
-                              <Button size="sm" variant="ghost" onClick={() => remove(t)} aria-label="Excluir"><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                              <Button size="sm" variant="ghost" onClick={() => askRemove(t)} aria-label="Excluir"><Trash2 className="h-4 w-4 text-destructive" /></Button>
                             )}
                           </div>
                         </td>
@@ -335,6 +357,18 @@ const Equipes = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmationDialog
+        open={!!deleting}
+        onOpenChange={(open) => { if (!open) setDeleting(null); }}
+        title="Excluir equipe operacional"
+        description="A equipe será removida do cadastro. Ordens de serviço vinculadas perderão a atribuição, mas não serão excluídas."
+        recordName={deleting?.nome}
+        impact="Perda do histórico de localização base e eficiência da equipe."
+        confirmLabel="Excluir"
+        variant="danger"
+        onConfirm={remove}
+      />
     </>
   );
 };

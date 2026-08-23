@@ -192,13 +192,14 @@ const OrdensServico = () => {
   const complete = async (o: WorkOrder) => {
     setCompletingId(o.id);
     const now = new Date().toISOString();
+    const after: { status: WorkOrderStatus; completed_at: string; started_at: string } = {
+      status: "concluida",
+      completed_at: now,
+      started_at: o.started_at ?? now,
+    };
     const { error } = await supabase
       .from("work_orders")
-      .update({
-        status: "concluida",
-        completed_at: now,
-        started_at: o.started_at ?? now,
-      })
+      .update(after)
       .eq("id", o.id);
     setCompletingId(null);
     if (error) { toast.error("Não foi possível concluir a OS", { description: error.message }); return; }
@@ -207,6 +208,14 @@ const OrdensServico = () => {
       description: `${seg ? `${seg.km} · ` : ""}Finalizada em ${fmtDateTime(now)}.`,
     });
     qc.invalidateQueries({ queryKey: ["work_orders"] });
+    logAudit({
+      action: "work_order.complete",
+      entity: "work_orders",
+      entityId: o.id,
+      before: { status: o.status, completed_at: o.completed_at, started_at: o.started_at },
+      after,
+      reason: "Conclusão via interface",
+    });
   };
 
   return (
@@ -473,6 +482,18 @@ const OrdensServico = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmationDialog
+        open={!!deleting}
+        onOpenChange={(open) => { if (!open) setDeleting(null); }}
+        title="Excluir ordem de serviço"
+        description="Esta ação não pode ser desfeita. A OS será removida permanentemente do histórico operacional."
+        recordName={deleting?.code}
+        impact="Perda de rastreabilidade da ordem e eventuais vinculações com alertas."
+        confirmLabel="Excluir"
+        variant="danger"
+        onConfirm={remove}
+      />
     </>
   );
 };

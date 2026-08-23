@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import { TopHeader } from "@/components/vegia/TopHeader";
+import { ConfirmationDialog } from "@/components/vegia/ConfirmationDialog";
+import { logAudit, diffForAudit } from "@/lib/audit";
+import type { Json } from "@/integrations/supabase/types";
 import { useSettings, DEFAULT_SETTINGS, UserSettings, validateSettings } from "@/hooks/useSettings";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -74,6 +77,7 @@ const Configuracoes = () => {
   const [draft, setDraft] = useState<UserSettings>(settings);
   const [displayName, setDisplayName] = useState("");
   const [savingProfile, setSavingProfile] = useState(false);
+  const [restoreOpen, setRestoreOpen] = useState(false);
 
   useEffect(() => { setDraft(settings); }, [settings]);
 
@@ -94,25 +98,68 @@ const Configuracoes = () => {
       toast.error("Revise as configurações", { description: validationError });
       return;
     }
+    const before = { ...settings };
     const { error } = await save(draft);
-    if (error) toast.error("Não foi possível salvar", { description: error });
-    else toast.success("Configurações salvas");
+    if (error) {
+      toast.error("Não foi possível salvar", { description: error });
+      return;
+    }
+    toast.success("Configurações salvas");
+    const diff = diffForAudit(
+      before as unknown as Record<string, Json | undefined>,
+      draft as unknown as Record<string, Json | undefined>
+    );
+    logAudit({
+      action: "settings.update",
+      entity: "user_settings",
+      entityId: user?.id ?? null,
+      before: diff ? { from: before as unknown as Json } : null,
+      after: diff ? { to: draft as unknown as Json } : null,
+      reason: "Alteração de configurações operacionais",
+    });
   };
 
-  const onRestoreDefaults = () => {
-    if (window.confirm("Restaurar todas as configurações para o padrão? As alterações não salvas serão perdidas.")) {
-      setDraft(DEFAULT_SETTINGS);
-      toast.info("Padrões restaurados", { description: "Clique em Salvar alterações para confirmar." });
-    }
+  const onRestoreDefaults = () => setRestoreOpen(true);
+  const confirmRestoreDefaults = () => {
+    const before = { ...settings };
+    setDraft(DEFAULT_SETTINGS);
+    setRestoreOpen(false);
+    toast.info("Padrões restaurados", { description: "Clique em Salvar alterações para confirmar." });
+    logAudit({
+      action: "settings.restore_defaults",
+      entity: "user_settings",
+      entityId: user?.id ?? null,
+      before,
+      after: { ...DEFAULT_SETTINGS },
+      reason: "Restauração para valores de fábrica",
+    });
   };
 
   const onSaveProfile = async () => {
     if (!user) return;
     setSavingProfile(true);
+    const before = displayName;
+    const { data: current, error: fetchError } = await supabase.from("profiles").select("display_name").eq("user_id", user.id).maybeSingle();
+    if (fetchError) {
+      setSavingProfile(false);
+      toast.error("Erro ao buscar perfil", { description: fetchError.message });
+      return;
+    }
     const { error } = await supabase.from("profiles").upsert({ user_id: user.id, display_name: displayName }, { onConflict: "user_id" });
     setSavingProfile(false);
-    if (error) toast.error("Erro ao salvar perfil", { description: error.message });
-    else toast.success("Perfil atualizado");
+    if (error) {
+      toast.error("Erro ao salvar perfil", { description: error.message });
+      return;
+    }
+    toast.success("Perfil atualizado");
+    logAudit({
+      action: "profile.update",
+      entity: "profiles",
+      entityId: user.id,
+      before: { display_name: current?.display_name ?? null },
+      after: { display_name: displayName },
+      reason: "Atualização de nome de exibição",
+    });
   };
 
   return (
@@ -258,6 +305,18 @@ const Configuracoes = () => {
           </div>
         )}
       </div>
+
+      <ConfirmationDialog
+        open={restoreOpen}
+        onOpenChange={setRestoreOpen}
+        title="Restaurar configurações padrão"
+        description="Todas as personalizações de pesos IRC, limiares de altura e notificações serão resetadas para os valores de fábrica. Alterações não salvas serão perdidas."
+        impact="Regras de criticidade voltarão ao comportamento inicial do sistema."
+        confirmLabel="Restaurar"
+        cancelLabel="Cancelar"
+        variant="danger"
+        onConfirm={confirmRestoreDefaults}
+      />
     </>
   );
 };
