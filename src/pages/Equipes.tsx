@@ -51,6 +51,7 @@ const Equipes = () => {
   const [editing, setEditing] = useState<FieldTeam | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState<FieldTeam | null>(null);
 
   // Filtros da tela de equipes
   const [fStatus, setFStatus] = useState<TeamStatus | "todos">("todos");
