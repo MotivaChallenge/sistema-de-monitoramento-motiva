@@ -110,6 +110,16 @@ export const NotificationsPanel = () => {
             })}
           </ul>
         </ScrollArea>
+        <div className="border-t border-border p-2">
+          <Link
+            to="/notificacoes"
+            onClick={() => setOpen(false)}
+            className="flex items-center justify-center gap-2 w-full rounded-lg py-2 text-[12px] font-medium text-primary hover:bg-primary/5 transition-colors"
+          >
+            Ver central de notificações
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
       </PopoverContent>
     </Popover>
   );
