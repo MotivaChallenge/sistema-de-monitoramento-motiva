@@ -95,7 +95,7 @@ export const SidebarBody = ({ onNavigate, collapsed = false, onToggle }: Sidebar
   }, [pathname]);
 
   const badgeFor = (it: Item) =>
-    it.badgeKey === "alerts" ? activeAlerts : it.badgeKey === "orders" ? pendingOrders : 0;
+    it.badgeKey === "alerts" ? activeAlerts : it.badgeKey === "orders" ? pendingOrders : it.badgeKey === "notifications" ? unreadNotifications : 0;
 
   const renderLink = (it: Item, opts: { sub?: boolean } = {}) => {
     const active = isActive(it);
