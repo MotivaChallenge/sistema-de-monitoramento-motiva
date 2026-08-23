@@ -1,4 +1,6 @@
 import { TopHeader } from "@/components/vegia/TopHeader";
+import { ConfirmationDialog } from "@/components/vegia/ConfirmationDialog";
+import { logAudit } from "@/lib/audit";
 import { ClipboardList, Plus, Pencil, Trash2, CheckCircle2, Search, X, Loader2 } from "lucide-react";
 import { useFieldTeams, useWorkOrders, WorkOrder, WorkOrderPriority, WorkOrderStatus } from "@/hooks/useVegiaData";
 import { useSegments } from "@/hooks/useVegiaData";
@@ -68,6 +70,7 @@ const OrdensServico = () => {
   const [form, setForm] = useState<FormState>(emptyForm);
   const [saving, setSaving] = useState(false);
   const [completingId, setCompletingId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<WorkOrder | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Filtros específicos desta tela
@@ -149,6 +152,7 @@ const OrdensServico = () => {
       notes: form.notes || null,
     };
     if (!editing) payload.created_by = user?.id ?? null;
+    const before = editing ? { ...editing } : null;
     const { error } = editing
       ? await supabase.from("work_orders").update(payload).eq("id", editing.id)
       : await supabase.from("work_orders").insert(payload);
@@ -157,14 +161,32 @@ const OrdensServico = () => {
     toast.success(editing ? "OS atualizada" : "OS criada");
     setOpen(false);
     qc.invalidateQueries({ queryKey: ["work_orders"] });
+    logAudit({
+      action: editing ? "work_order.update" : "work_order.create",
+      entity: "work_orders",
+      entityId: editing?.id ?? payload.code,
+      before: before,
+      after: payload,
+      reason: editing ? "Edição via interface" : "Criação via interface",
+    });
   };
 
-  const remove = async (o: WorkOrder) => {
-    if (!confirm(`Excluir OS "${o.code}"?`)) return;
+  const askRemove = (o: WorkOrder) => setDeleting(o);
+  const remove = async () => {
+    if (!deleting) return;
+    const o = deleting;
     const { error } = await supabase.from("work_orders").delete().eq("id", o.id);
+    setDeleting(null);
     if (error) { toast.error("Erro ao excluir", { description: error.message }); return; }
     toast.success("OS excluída");
     qc.invalidateQueries({ queryKey: ["work_orders"] });
+    logAudit({
+      action: "work_order.delete",
+      entity: "work_orders",
+      entityId: o.id,
+      before: { ...o },
+      reason: "Exclusão via interface",
+    });
   };
 
   const complete = async (o: WorkOrder) => {
@@ -370,7 +392,7 @@ const OrdensServico = () => {
                               </Button>
                             )}
                             <Button size="sm" variant="ghost" onClick={() => openEdit(o)} aria-label="Editar"><Pencil className="h-4 w-4" /></Button>
-                            {isAdmin && <Button size="sm" variant="ghost" onClick={() => remove(o)} aria-label="Excluir"><Trash2 className="h-4 w-4 text-destructive" /></Button>}
+                            {isAdmin && <Button size="sm" variant="ghost" onClick={() => askRemove(o)} aria-label="Excluir"><Trash2 className="h-4 w-4 text-destructive" /></Button>}
                           </div>
                         </td>
                       )}
