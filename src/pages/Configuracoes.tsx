@@ -305,6 +305,18 @@ const Configuracoes = () => {
           </div>
         )}
       </div>
+
+      <ConfirmationDialog
+        open={restoreOpen}
+        onOpenChange={setRestoreOpen}
+        title="Restaurar configurações padrão"
+        description="Todas as personalizações de pesos IRC, limiares de altura e notificações serão resetadas para os valores de fábrica. Alterações não salvas serão perdidas."
+        impact="Regras de criticidade voltarão ao comportamento inicial do sistema."
+        confirmLabel="Restaurar"
+        cancelLabel="Cancelar"
+        variant="danger"
+        onConfirm={confirmRestoreDefaults}
+      />
     </>
   );
 };
