@@ -14,7 +14,7 @@ type Item = {
   label: string;
   icon: React.ElementType;
   match?: string[];
-  badgeKey?: "alerts" | "orders";
+  badgeKey?: "alerts" | "orders" | "notifications";
   children?: Item[];
 };
 
