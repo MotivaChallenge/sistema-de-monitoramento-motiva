@@ -97,25 +97,65 @@ const Configuracoes = () => {
       toast.error("Revise as configurações", { description: validationError });
       return;
     }
+    const before = { ...settings };
     const { error } = await save(draft);
-    if (error) toast.error("Não foi possível salvar", { description: error });
-    else toast.success("Configurações salvas");
+    if (error) {
+      toast.error("Não foi possível salvar", { description: error });
+      return;
+    }
+    toast.success("Configurações salvas");
+    const diff = diffForAudit(before as Record<string, Json | undefined>, draft as Record<string, Json | undefined>);
+    logAudit({
+      action: "settings.update",
+      entity: "user_settings",
+      entityId: user?.id ?? null,
+      before: diff ? { from: before } : null,
+      after: diff ? { to: draft } : null,
+      reason: "Alteração de configurações operacionais",
+    });
   };
 
-  const onRestoreDefaults = () => {
-    if (window.confirm("Restaurar todas as configurações para o padrão? As alterações não salvas serão perdidas.")) {
-      setDraft(DEFAULT_SETTINGS);
-      toast.info("Padrões restaurados", { description: "Clique em Salvar alterações para confirmar." });
-    }
+  const onRestoreDefaults = () => setRestoreOpen(true);
+  const confirmRestoreDefaults = () => {
+    const before = { ...settings };
+    setDraft(DEFAULT_SETTINGS);
+    setRestoreOpen(false);
+    toast.info("Padrões restaurados", { description: "Clique em Salvar alterações para confirmar." });
+    logAudit({
+      action: "settings.restore_defaults",
+      entity: "user_settings",
+      entityId: user?.id ?? null,
+      before,
+      after: { ...DEFAULT_SETTINGS },
+      reason: "Restauração para valores de fábrica",
+    });
   };
 
   const onSaveProfile = async () => {
     if (!user) return;
     setSavingProfile(true);
+    const before = displayName;
+    const { data: current, error: fetchError } = await supabase.from("profiles").select("display_name").eq("user_id", user.id).maybeSingle();
+    if (fetchError) {
+      setSavingProfile(false);
+      toast.error("Erro ao buscar perfil", { description: fetchError.message });
+      return;
+    }
     const { error } = await supabase.from("profiles").upsert({ user_id: user.id, display_name: displayName }, { onConflict: "user_id" });
     setSavingProfile(false);
-    if (error) toast.error("Erro ao salvar perfil", { description: error.message });
-    else toast.success("Perfil atualizado");
+    if (error) {
+      toast.error("Erro ao salvar perfil", { description: error.message });
+      return;
+    }
+    toast.success("Perfil atualizado");
+    logAudit({
+      action: "profile.update",
+      entity: "profiles",
+      entityId: user.id,
+      before: { display_name: current?.display_name ?? null },
+      after: { display_name: displayName },
+      reason: "Atualização de nome de exibição",
+    });
   };
 
   return (
