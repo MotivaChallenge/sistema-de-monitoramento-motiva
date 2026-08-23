@@ -1,4 +1,6 @@
 import { TopHeader } from "@/components/vegia/TopHeader";
+import { ConfirmationDialog } from "@/components/vegia/ConfirmationDialog";
+import { logAudit } from "@/lib/audit";
 import { Users, MapPin, Clock, Activity, Plus, Pencil, Trash2, Search, X } from "lucide-react";
 import { useFieldTeams, TeamStatus, FieldTeam } from "@/hooks/useVegiaData";
 import { useAuth } from "@/hooks/useAuth";
