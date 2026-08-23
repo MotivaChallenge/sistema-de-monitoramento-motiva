@@ -25,6 +25,7 @@ const statusMeta: Record<AlertFeedItem["status"], { icon: typeof AlertTriangle; 
 
 export const NotificationsPanel = () => {
   const { data: alerts = [], isLoading } = useAlertsFeed();
+  const { data: unreadNotifications = 0 } = useUnreadNotificationsCount();
   const navigate = useNavigate();
   const [lastSeen, setLastSeen] = useState<number>(() => getLastSeen());
   const [open, setOpen] = useState(false);
@@ -35,14 +36,15 @@ export const NotificationsPanel = () => {
     return () => window.removeEventListener("vegia:alerts-seen", handler);
   }, []);
 
-  const unread = alerts.filter(a => new Date(a.createdAt).getTime() > lastSeen).length;
+  const unreadAlerts = alerts.filter(a => new Date(a.createdAt).getTime() > lastSeen).length;
+  const unread = Math.max(unreadAlerts, unreadNotifications);
 
   return (
     <Popover
       open={open}
       onOpenChange={(o) => {
         setOpen(o);
-        if (o && unread > 0) markAllSeen();
+        if (o && unreadAlerts > 0) markAllSeen();
       }}
     >
       <PopoverTrigger asChild>
