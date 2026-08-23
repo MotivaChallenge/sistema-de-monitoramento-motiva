@@ -11,7 +11,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { EmptyState } from "@/components/vegia/EmptyState";
 import { QueryErrorState } from "@/components/vegia/QueryErrorState";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
