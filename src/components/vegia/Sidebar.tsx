@@ -69,6 +69,7 @@ export const SidebarBody = ({ onNavigate, collapsed = false, onToggle }: Sidebar
   const { data: activeAlerts = 0 } = useActiveAlertsCount();
   const { data: workOrders = [] } = useWorkOrders();
   const pendingOrders = workOrders.filter(o => o.status === "pendente").length;
+  const { data: unreadNotifications = 0 } = useUnreadNotificationsCount();
 
   const isActive = (it: Item) => pathname === it.to || (it.match ?? []).some(m => pathname.startsWith(m));
   const groupHasActive = (g: Group) =>
