@@ -192,7 +192,7 @@ const OrdensServico = () => {
   const complete = async (o: WorkOrder) => {
     setCompletingId(o.id);
     const now = new Date().toISOString();
-    const after = {
+    const after: { status: WorkOrderStatus; completed_at: string; started_at: string } = {
       status: "concluida",
       completed_at: now,
       started_at: o.started_at ?? now,
