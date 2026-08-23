@@ -105,13 +105,16 @@ const Configuracoes = () => {
       return;
     }
     toast.success("Configurações salvas");
-    const diff = diffForAudit(before as Record<string, Json | undefined>, draft as Record<string, Json | undefined>);
+    const diff = diffForAudit(
+      before as unknown as Record<string, Json | undefined>,
+      draft as unknown as Record<string, Json | undefined>
+    );
     logAudit({
       action: "settings.update",
       entity: "user_settings",
       entityId: user?.id ?? null,
-      before: diff ? { from: before } : null,
-      after: diff ? { to: draft } : null,
+      before: diff ? { from: before as unknown as Json } : null,
+      after: diff ? { to: draft as unknown as Json } : null,
       reason: "Alteração de configurações operacionais",
     });
   };
