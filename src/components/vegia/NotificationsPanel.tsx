@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { Bell, AlertTriangle, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Bell, AlertTriangle, AlertCircle, CheckCircle2, ArrowRight } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAlertsFeed, getLastSeen, markAllSeen, AlertFeedItem } from "@/hooks/useAlertsFeed";
-import { useNavigate } from "react-router-dom";
+import { useUnreadNotificationsCount } from "@/hooks/useNotifications";
+import { useNavigate, Link } from "react-router-dom";
 
 const fmtRelative = (iso: string) => {
   const diff = Date.now() - new Date(iso).getTime();
