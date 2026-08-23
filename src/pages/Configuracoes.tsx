@@ -76,6 +76,7 @@ const Configuracoes = () => {
   const [draft, setDraft] = useState<UserSettings>(settings);
   const [displayName, setDisplayName] = useState("");
   const [savingProfile, setSavingProfile] = useState(false);
+  const [restoreOpen, setRestoreOpen] = useState(false);
 
   useEffect(() => { setDraft(settings); }, [settings]);
 
