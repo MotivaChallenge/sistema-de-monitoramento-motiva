@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { TopHeader } from "@/components/vegia/TopHeader";
 import { ConfirmationDialog } from "@/components/vegia/ConfirmationDialog";
 import { logAudit, diffForAudit } from "@/lib/audit";
+import type { Json } from "@/integrations/supabase/types";
 import { useSettings, DEFAULT_SETTINGS, UserSettings, validateSettings } from "@/hooks/useSettings";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
