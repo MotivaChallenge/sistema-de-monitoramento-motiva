@@ -357,6 +357,18 @@ const Equipes = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmationDialog
+        open={!!deleting}
+        onOpenChange={(open) => { if (!open) setDeleting(null); }}
+        title="Excluir equipe operacional"
+        description="A equipe será removida do cadastro. Ordens de serviço vinculadas perderão a atribuição, mas não serão excluídas."
+        recordName={deleting?.nome}
+        impact="Perda do histórico de localização base e eficiência da equipe."
+        confirmLabel="Excluir"
+        variant="danger"
+        onConfirm={remove}
+      />
     </>
   );
 };
