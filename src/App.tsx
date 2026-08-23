@@ -99,6 +99,7 @@ const App = () => (
               <Route path="/ordens" element={<OrdensServico />} />
               <Route path="/prototipo" element={<Prototipo />} />
               <Route path="/dataset" element={<Dataset />} />
+              <Route path="/notificacoes" element={<Notificacoes />} />
               <Route path="/segmento/:id" element={<Segmento />} />
               <Route path="/relatorio" element={<Relatorio />} />
               <Route path="/alertas" element={<Alertas />} />
