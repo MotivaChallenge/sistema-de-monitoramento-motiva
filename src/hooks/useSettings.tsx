@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, ReactNode, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
+import { setIRCWeights } from "@/lib/irc";
 
 export interface UserSettings {
   theme: "dark" | "light";
@@ -17,7 +18,7 @@ export interface UserSettings {
 }
 
 export const DEFAULT_SETTINGS: UserSettings = {
-  theme: "dark",
+  theme: "light",
   density: "comfortable",
   irc_weight_ndvi: 35,
   irc_weight_altura: 30,
