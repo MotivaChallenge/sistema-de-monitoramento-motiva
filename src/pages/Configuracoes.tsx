@@ -301,7 +301,15 @@ const Configuracoes = () => {
                 checked={draft.notify_atencao}
                 onChange={v => setDraft({ ...draft, notify_atencao: v })}
               />
+              <SwitchField
+                id="notify-email"
+                label="Resumo por e-mail"
+                hint={`Enviar resumo diário para ${user?.email ?? "seu e-mail"}.`}
+                checked={draft.notify_email}
+                onChange={v => setDraft({ ...draft, notify_email: v })}
+              />
             </Section>
+
           </div>
         )}
       </div>

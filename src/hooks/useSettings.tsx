@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, ReactNode, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
+import { setIRCWeights } from "@/lib/irc";
 
 export interface UserSettings {
   theme: "dark" | "light";
@@ -17,7 +18,7 @@ export interface UserSettings {
 }
 
 export const DEFAULT_SETTINGS: UserSettings = {
-  theme: "dark",
+  theme: "light",
   density: "comfortable",
   irc_weight_ndvi: 35,
   irc_weight_altura: 30,
@@ -94,7 +95,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
       if (!active) return;
       if (data) {
         const next: UserSettings = {
-          theme: (data.theme as any) ?? "dark",
+          theme: (data.theme as any) ?? "light",
           density: (data.density as any) ?? "comfortable",
           irc_weight_ndvi: data.irc_weight_ndvi,
           irc_weight_altura: data.irc_weight_altura,
@@ -114,12 +115,24 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     return () => { active = false; };
   }, [user]);
 
-  // Apply theme (data-theme attribute on html)
+  // Apply theme + density to <html>
   useEffect(() => {
     const html = document.documentElement;
-    if (settings.theme === "light") html.classList.add("light"); else html.classList.remove("light");
+    html.classList.toggle("dark", settings.theme === "dark");
+    html.classList.toggle("light", settings.theme === "light");
     html.dataset.density = settings.density;
   }, [settings.theme, settings.density]);
+
+  // Propaga pesos do IRC para o cálculo global
+  useEffect(() => {
+    setIRCWeights({
+      ndvi: settings.irc_weight_ndvi,
+      altura: settings.irc_weight_altura,
+      idade: settings.irc_weight_idade,
+      chuva: settings.irc_weight_chuva,
+    });
+  }, [settings.irc_weight_ndvi, settings.irc_weight_altura, settings.irc_weight_idade, settings.irc_weight_chuva]);
+
 
   const save = useCallback(async (next: UserSettings) => {
     if (!user) return { error: "Não autenticado" };

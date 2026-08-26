@@ -19,10 +19,22 @@ export interface IRCInputs {
   limite: number;
   ultimaRocada: string; // ISO ou "YYYY-MM-DD"
   rainMm5d?: number;
+  weights?: IRCWeights;
 }
 export type IRCLevel = "baixo" | "moderado" | "alto" | "critico";
 
 const clamp = (n: number, min = 0, max = 1) => Math.min(max, Math.max(min, n));
+
+/** Pesos do IRC — configuráveis em /configuracoes (soma = 100). */
+export interface IRCWeights { ndvi: number; altura: number; idade: number; chuva: number; }
+export const DEFAULT_IRC_WEIGHTS: IRCWeights = { ndvi: 35, altura: 30, idade: 20, chuva: 15 };
+
+let activeWeights: IRCWeights = { ...DEFAULT_IRC_WEIGHTS };
+/** Aplica os pesos definidos pelo usuário (chamado pelo SettingsProvider). */
+export const setIRCWeights = (w: Partial<IRCWeights>) => {
+  activeWeights = { ...DEFAULT_IRC_WEIGHTS, ...w };
+};
+export const getIRCWeights = (): IRCWeights => activeWeights;
 
 export const daysSince = (iso: string): number => {
   const d = new Date(iso);
@@ -35,7 +47,8 @@ export const computeIRC = (i: IRCInputs): { score: number; level: IRCLevel } => 
   const alturaN = clamp(i.altura / Math.max(1, i.limite));
   const idadeN = clamp(daysSince(i.ultimaRocada) / 90);
   const chuvaN = clamp((i.rainMm5d ?? 0) / 80);
-  const score = Math.round(35 * ndviN + 30 * alturaN + 20 * idadeN + 15 * chuvaN);
+  const w = i.weights ?? activeWeights;
+  const score = Math.round(w.ndvi * ndviN + w.altura * alturaN + w.idade * idadeN + w.chuva * chuvaN);
   const level: IRCLevel =
     score >= 75 ? "critico" : score >= 55 ? "alto" : score >= 35 ? "moderado" : "baixo";
   return { score, level };
