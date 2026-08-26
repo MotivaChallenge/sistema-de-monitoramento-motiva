@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { TopHeader } from "@/components/vegia/TopHeader";
 import {
   useNotifications,
@@ -11,6 +11,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { QueryErrorState } from "@/components/vegia/QueryErrorState";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -48,12 +56,40 @@ const Notificacoes = () => {
   const markAll = useMarkAllNotificationsRead();
   const remove = useDeleteNotification();
   const [activeTab, setActiveTab] = useState("all");
+  const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState("todos");
+  const [periodFilter, setPeriodFilter] = useState("todos");
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 15;
 
-  const filtered = (notifications ?? []).filter((n) => {
-    if (activeTab === "unread") return !n.read;
-    if (activeTab === "alerts") return n.type === "alert";
-    return true;
-  });
+  const filtered = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    const periodDays = periodFilter === "todos" ? null : Number(periodFilter);
+    const cutoff = periodDays ? Date.now() - periodDays * 86400000 : null;
+
+    return (notifications ?? []).filter((n) => {
+      if (activeTab === "unread" && n.read) return false;
+      if (activeTab === "alerts" && n.type !== "alert") return false;
+      if (typeFilter !== "todos" && n.type !== typeFilter) return false;
+      if (cutoff && new Date(n.created_at).getTime() < cutoff) return false;
+      if (term) {
+        const haystack = `${n.title} ${n.body ?? ""}`.toLowerCase();
+        if (!haystack.includes(term)) return false;
+      }
+      return true;
+    });
+  }, [notifications, activeTab, typeFilter, periodFilter, search]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const pageItems = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  useEffect(() => {
+    setPage(1);
+  }, [activeTab, typeFilter, periodFilter, search]);
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, totalPages]);
 
   const unreadCount = (notifications ?? []).filter((n) => !n.read).length;
 
@@ -112,11 +148,46 @@ const Notificacoes = () => {
           </CardHeader>
           <CardContent>
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="mb-4">
-                <TabsTrigger value="all">Todas</TabsTrigger>
-                <TabsTrigger value="unread">Não lidas</TabsTrigger>
-                <TabsTrigger value="alerts">Alertas</TabsTrigger>
-              </TabsList>
+              <div className="flex flex-col lg:flex-row lg:items-center gap-3 mb-4">
+                <TabsList>
+                  <TabsTrigger value="all">Todas</TabsTrigger>
+                  <TabsTrigger value="unread">Não lidas</TabsTrigger>
+                  <TabsTrigger value="alerts">Alertas</TabsTrigger>
+                </TabsList>
+                <div className="flex flex-1 flex-col sm:flex-row gap-2">
+                  <Input
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Buscar por título ou conteúdo…"
+                    className="sm:max-w-xs"
+                    aria-label="Buscar notificações"
+                  />
+                  <Select value={typeFilter} onValueChange={setTypeFilter}>
+                    <SelectTrigger className="sm:w-[180px]" aria-label="Filtrar por tipo">
+                      <SelectValue placeholder="Tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todos">Todos os tipos</SelectItem>
+                      <SelectItem value="alert">Alerta</SelectItem>
+                      <SelectItem value="work_order">Ordem de serviço</SelectItem>
+                      <SelectItem value="system">Sistema</SelectItem>
+                      <SelectItem value="broadcast">Comunicado</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select value={periodFilter} onValueChange={setPeriodFilter}>
+                    <SelectTrigger className="sm:w-[160px]" aria-label="Filtrar por período">
+                      <SelectValue placeholder="Período" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todos">Todo o período</SelectItem>
+                      <SelectItem value="1">Últimas 24h</SelectItem>
+                      <SelectItem value="7">Últimos 7 dias</SelectItem>
+                      <SelectItem value="30">Últimos 30 dias</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
 
               {isLoading && (
                 <div className="space-y-3">
@@ -148,7 +219,7 @@ const Notificacoes = () => {
                   ) : (
                     <ScrollArea className="h-[60vh]">
                       <ul className="space-y-2 pr-3">
-                        {filtered.map((n) => (
+                        {pageItems.map((n) => (
                           <li
                             key={n.id}
                             className={cn(
@@ -242,6 +313,35 @@ const Notificacoes = () => {
                         ))}
                       </ul>
                     </ScrollArea>
+                  )}
+                  {filtered.length > 0 && (
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-4">
+                      <span className="text-xs text-muted-foreground">
+                        Mostrando {(page - 1) * PAGE_SIZE + 1}–
+                        {Math.min(page * PAGE_SIZE, filtered.length)} de {filtered.length}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setPage((p) => Math.max(1, p - 1))}
+                          disabled={page === 1}
+                        >
+                          Anterior
+                        </Button>
+                        <span className="text-xs text-muted-foreground tabular-nums">
+                          {page} / {totalPages}
+                        </span>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                          disabled={page >= totalPages}
+                        >
+                          Próxima
+                        </Button>
+                      </div>
+                    </div>
                   )}
                 </TabsContent>
               )}
