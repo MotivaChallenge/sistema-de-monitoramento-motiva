@@ -95,7 +95,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
       if (!active) return;
       if (data) {
         const next: UserSettings = {
-          theme: (data.theme as any) ?? "dark",
+          theme: (data.theme as any) ?? "light",
           density: (data.density as any) ?? "comfortable",
           irc_weight_ndvi: data.irc_weight_ndvi,
           irc_weight_altura: data.irc_weight_altura,
