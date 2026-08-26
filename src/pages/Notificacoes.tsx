@@ -219,7 +219,7 @@ const Notificacoes = () => {
                   ) : (
                     <ScrollArea className="h-[60vh]">
                       <ul className="space-y-2 pr-3">
-                        {filtered.map((n) => (
+                        {pageItems.map((n) => (
                           <li
                             key={n.id}
                             className={cn(
