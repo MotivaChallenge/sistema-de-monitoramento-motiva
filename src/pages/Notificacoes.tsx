@@ -148,11 +148,46 @@ const Notificacoes = () => {
           </CardHeader>
           <CardContent>
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="mb-4">
-                <TabsTrigger value="all">Todas</TabsTrigger>
-                <TabsTrigger value="unread">Não lidas</TabsTrigger>
-                <TabsTrigger value="alerts">Alertas</TabsTrigger>
-              </TabsList>
+              <div className="flex flex-col lg:flex-row lg:items-center gap-3 mb-4">
+                <TabsList>
+                  <TabsTrigger value="all">Todas</TabsTrigger>
+                  <TabsTrigger value="unread">Não lidas</TabsTrigger>
+                  <TabsTrigger value="alerts">Alertas</TabsTrigger>
+                </TabsList>
+                <div className="flex flex-1 flex-col sm:flex-row gap-2">
+                  <Input
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Buscar por título ou conteúdo…"
+                    className="sm:max-w-xs"
+                    aria-label="Buscar notificações"
+                  />
+                  <Select value={typeFilter} onValueChange={setTypeFilter}>
+                    <SelectTrigger className="sm:w-[180px]" aria-label="Filtrar por tipo">
+                      <SelectValue placeholder="Tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todos">Todos os tipos</SelectItem>
+                      <SelectItem value="alert">Alerta</SelectItem>
+                      <SelectItem value="work_order">Ordem de serviço</SelectItem>
+                      <SelectItem value="system">Sistema</SelectItem>
+                      <SelectItem value="broadcast">Comunicado</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select value={periodFilter} onValueChange={setPeriodFilter}>
+                    <SelectTrigger className="sm:w-[160px]" aria-label="Filtrar por período">
+                      <SelectValue placeholder="Período" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todos">Todo o período</SelectItem>
+                      <SelectItem value="1">Últimas 24h</SelectItem>
+                      <SelectItem value="7">Últimos 7 dias</SelectItem>
+                      <SelectItem value="30">Últimos 30 dias</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
 
               {isLoading && (
                 <div className="space-y-3">
