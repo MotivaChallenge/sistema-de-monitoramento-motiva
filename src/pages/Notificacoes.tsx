@@ -314,6 +314,35 @@ const Notificacoes = () => {
                       </ul>
                     </ScrollArea>
                   )}
+                  {filtered.length > 0 && (
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-4">
+                      <span className="text-xs text-muted-foreground">
+                        Mostrando {(page - 1) * PAGE_SIZE + 1}–
+                        {Math.min(page * PAGE_SIZE, filtered.length)} de {filtered.length}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setPage((p) => Math.max(1, p - 1))}
+                          disabled={page === 1}
+                        >
+                          Anterior
+                        </Button>
+                        <span className="text-xs text-muted-foreground tabular-nums">
+                          {page} / {totalPages}
+                        </span>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                          disabled={page >= totalPages}
+                        >
+                          Próxima
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </TabsContent>
               )}
             </Tabs>
