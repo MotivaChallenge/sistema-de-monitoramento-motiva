@@ -56,12 +56,40 @@ const Notificacoes = () => {
   const markAll = useMarkAllNotificationsRead();
   const remove = useDeleteNotification();
   const [activeTab, setActiveTab] = useState("all");
+  const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState("todos");
+  const [periodFilter, setPeriodFilter] = useState("todos");
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 15;
 
-  const filtered = (notifications ?? []).filter((n) => {
-    if (activeTab === "unread") return !n.read;
-    if (activeTab === "alerts") return n.type === "alert";
-    return true;
-  });
+  const filtered = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    const periodDays = periodFilter === "todos" ? null : Number(periodFilter);
+    const cutoff = periodDays ? Date.now() - periodDays * 86400000 : null;
+
+    return (notifications ?? []).filter((n) => {
+      if (activeTab === "unread" && n.read) return false;
+      if (activeTab === "alerts" && n.type !== "alert") return false;
+      if (typeFilter !== "todos" && n.type !== typeFilter) return false;
+      if (cutoff && new Date(n.created_at).getTime() < cutoff) return false;
+      if (term) {
+        const haystack = `${n.title} ${n.body ?? ""}`.toLowerCase();
+        if (!haystack.includes(term)) return false;
+      }
+      return true;
+    });
+  }, [notifications, activeTab, typeFilter, periodFilter, search]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const pageItems = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  useEffect(() => {
+    setPage(1);
+  }, [activeTab, typeFilter, periodFilter, search]);
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, totalPages]);
 
   const unreadCount = (notifications ?? []).filter((n) => !n.read).length;
 
