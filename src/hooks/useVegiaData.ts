@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Segment, Status } from "@/types/domain";
+import { statusFromAltura } from "@/lib/status";
 
 interface CvImage {
   id: number;
