@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { lazy, Suspense, useMemo } from "react";
 import { TopHeader } from "@/components/vegia/TopHeader";
 import { useSegment, useKmMarkers, useRocadaClassification, useSegmentNdviHistory, useSegmentTeam } from "@/hooks/useVegiaData";
@@ -87,6 +87,15 @@ const Segmento = () => {
             </div>
           )}
         </div>
+
+        {seg.statusBanco && seg.statusBanco !== seg.status && (
+          <div className="mb-6 rounded-xl border border-border/60 bg-surface-low px-4 py-3 text-[13px] text-muted-foreground">
+            Status reclassificado pelos limiares de altura definidos em{" "}
+            <Link to="/configuracoes" className="text-primary font-medium hover:underline">Configurações</Link>:
+            registrado no banco como <span className="font-semibold uppercase">{seg.statusBanco}</span>, exibido como{" "}
+            <span className="font-semibold uppercase">{seg.status}</span> ({seg.altura} cm).
+          </div>
+        )}
 
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6">
           <div className="space-y-6">

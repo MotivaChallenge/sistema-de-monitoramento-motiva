@@ -9,7 +9,9 @@ export interface Segment {
   ndvi: number;
   altura: number; // cm
   limite: number; // cm
-  status: Status;
+  status: Status; // derivado dos limiares de altura configurados
+  /** Status originalmente gravado no banco (antes dos limiares do usuário). */
+  statusBanco?: Status;
   clausula: string;
   clauseFull: string;
   ultimaRocada: string;

@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Segment, Status } from "@/types/domain";
+import { statusFromAltura } from "@/lib/status";
 
 interface CvImage {
   id: number;
@@ -29,7 +30,8 @@ const mapSegment = (r: any): Segment => ({
   ndvi: Number(r.ndvi),
   altura: r.altura,
   limite: r.limite,
-  status: r.status as Status,
+  status: statusFromAltura(Number(r.altura)),
+  statusBanco: r.status as Status,
   clausula: r.clausula,
   clauseFull: r.clause_full,
   ultimaRocada: r.ultima_rocada,
@@ -282,13 +284,13 @@ export const useNdviHeatmap = () =>
     queryFn: async (): Promise<HeatmapBand[]> => {
       const { data, error } = await supabase
         .from("segments")
-        .select("km_start,km_end,status")
+        .select("km_start,km_end,status,altura")
         .order("km_start", { ascending: true });
       if (error) throw error;
       return (data ?? []).map((s: any) => ({
         from: Number(s.km_start),
         to: Number(s.km_end),
-        status: s.status as Status,
+        status: statusFromAltura(Number(s.altura)),
       }));
     },
   });
