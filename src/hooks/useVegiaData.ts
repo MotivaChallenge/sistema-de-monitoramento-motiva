@@ -284,13 +284,13 @@ export const useNdviHeatmap = () =>
     queryFn: async (): Promise<HeatmapBand[]> => {
       const { data, error } = await supabase
         .from("segments")
-        .select("km_start,km_end,status")
+        .select("km_start,km_end,status,altura")
         .order("km_start", { ascending: true });
       if (error) throw error;
       return (data ?? []).map((s: any) => ({
         from: Number(s.km_start),
         to: Number(s.km_end),
-        status: s.status as Status,
+        status: statusFromAltura(Number(s.altura)),
       }));
     },
   });
