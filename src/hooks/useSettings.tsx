@@ -2,6 +2,8 @@ import { createContext, useContext, useEffect, useMemo, useState, ReactNode, use
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 import { setIRCWeights } from "@/lib/irc";
+import { setHeightThresholds } from "@/lib/status";
+import { useQueryClient } from "@tanstack/react-query";
 
 export interface UserSettings {
   theme: "dark" | "light";
@@ -83,6 +85,7 @@ export const validateSettings = (s: UserSettings): string | null => {
 
 export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
+  const qc = useQueryClient();
   const [settings, setSettings] = useState<UserSettings>(() => readLocal() ?? DEFAULT_SETTINGS);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -132,6 +135,17 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
       chuva: settings.irc_weight_chuva,
     });
   }, [settings.irc_weight_ndvi, settings.irc_weight_altura, settings.irc_weight_idade, settings.irc_weight_chuva]);
+
+  // Limiares de altura -> reclassificação dos trechos
+  useEffect(() => {
+    setHeightThresholds({
+      atencao: settings.altura_atencao_cm,
+      critico: settings.altura_critica_cm,
+    });
+    qc.invalidateQueries({ queryKey: ["segments"] });
+    qc.invalidateQueries({ queryKey: ["segment"] });
+    qc.invalidateQueries({ queryKey: ["ndvi_heatmap"] });
+  }, [settings.altura_atencao_cm, settings.altura_critica_cm, qc]);
 
 
   const save = useCallback(async (next: UserSettings) => {
