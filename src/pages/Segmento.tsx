@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { lazy, Suspense, useMemo } from "react";
 import { TopHeader } from "@/components/vegia/TopHeader";
 import { useSegment, useKmMarkers, useRocadaClassification, useSegmentNdviHistory, useSegmentTeam } from "@/hooks/useVegiaData";
