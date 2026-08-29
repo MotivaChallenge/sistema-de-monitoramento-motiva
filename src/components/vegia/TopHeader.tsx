@@ -61,7 +61,7 @@ export const TopHeader = ({ breadcrumb = [{ label: "Rodoanel SP-021" }], current
         </nav>
       )}
 
-      <div className="flex items-center gap-2 min-w-0 shrink">
+      <div className="flex items-center gap-1.5 md:gap-2 shrink-0">
         {showStatusBadges && (
           <div className="hidden 2xl:flex items-center gap-1.5 shrink-0">
             <span className="px-2.5 py-1 rounded-full bg-destructive/10 text-destructive text-[11px] font-semibold flex items-center gap-1.5 whitespace-nowrap tabular-nums">
