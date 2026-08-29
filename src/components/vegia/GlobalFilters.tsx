@@ -47,7 +47,7 @@ export const GlobalFilters = ({ showSearch = true }: { showSearch?: boolean }) =
 
         </button>
       </PopoverTrigger>
-      <PopoverContent align="end" sideOffset={8} className="w-[22rem] p-4 space-y-4">
+      <PopoverContent align="end" sideOffset={8} className="w-[22rem] max-w-[calc(100vw-1.5rem)] p-4 space-y-4">
         {showSearch && (
           <div>
             <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">Busca</div>
