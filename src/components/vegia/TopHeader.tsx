@@ -1,4 +1,5 @@
-import { RefreshCw, LogOut, MoreVertical } from "lucide-react";
+import { RefreshCw, LogOut, MoreVertical, Menu } from "lucide-react";
+import { useMobileMenu } from "@/contexts/MobileMenuContext";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useQueryClient } from "@tanstack/react-query";
