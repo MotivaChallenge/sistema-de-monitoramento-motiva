@@ -1,4 +1,5 @@
-import { RefreshCw, LogOut, MoreVertical } from "lucide-react";
+import { RefreshCw, LogOut, MoreVertical, Menu } from "lucide-react";
+import { useMobileMenu } from "@/contexts/MobileMenuContext";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useQueryClient } from "@tanstack/react-query";
@@ -21,6 +22,7 @@ export const TopHeader = ({ breadcrumb = [{ label: "Rodoanel SP-021" }], current
   const { pathname } = useLocation();
   const { signOut, user } = useAuth();
   const qc = useQueryClient();
+  const { setOpen } = useMobileMenu();
   const { data: segments = [], dataUpdatedAt } = useSegments();
   const criticos = segments.filter(s => s.status === "critico").length;
   const atencao = segments.filter(s => s.status === "atencao").length;
@@ -32,16 +34,24 @@ export const TopHeader = ({ breadcrumb = [{ label: "Rodoanel SP-021" }], current
     : "—";
   const refresh = () => { qc.invalidateQueries(); toast.success("Atualizando dados…"); };
   return (
-    <header className="h-[72px] px-4 md:px-6 flex items-center justify-between gap-3 bg-background/85 backdrop-blur-md sticky top-0 z-30 border-b border-border/40 overflow-hidden">
-      <div className="flex items-center gap-2 text-[12px] tracking-wider min-w-0 shrink overflow-hidden">
+    <header className="h-14 md:h-[72px] px-3 md:px-6 flex items-center justify-between gap-2 md:gap-3 bg-background/85 backdrop-blur-md sticky top-0 z-30 border-b border-border/40 overflow-hidden">
+      <div className="flex items-center gap-2 text-[12px] tracking-wider min-w-0 flex-1 overflow-hidden">
+        <button
+          onClick={() => setOpen(true)}
+          aria-label="Abrir menu"
+          className="md:hidden h-9 w-9 -ml-1 shrink-0 rounded-lg border border-border flex items-center justify-center text-foreground hover:bg-surface-low transition-smooth"
+        >
+          <Menu className="h-4 w-4" />
+        </button>
         {breadcrumb.map((b, i) => (
-          <span key={i} className="text-muted-foreground uppercase font-medium whitespace-nowrap truncate">
+          <span key={i} className="hidden md:inline text-muted-foreground uppercase font-medium whitespace-nowrap truncate">
             {b.to ? <Link to={b.to} className="hover:text-foreground transition-smooth">{b.label}</Link> : b.label}
             <span className="mx-2 text-border">/</span>
           </span>
         ))}
-        <span className="text-primary font-semibold whitespace-nowrap">{current}</span>
+        <span className="text-primary font-semibold truncate">{current}</span>
       </div>
+
 
       {showTabs && (
         <nav className="hidden lg:flex items-center gap-6 text-[12px] tracking-wider font-medium uppercase">
@@ -51,7 +61,7 @@ export const TopHeader = ({ breadcrumb = [{ label: "Rodoanel SP-021" }], current
         </nav>
       )}
 
-      <div className="flex items-center gap-2 min-w-0 shrink">
+      <div className="flex items-center gap-1.5 md:gap-2 shrink-0">
         {showStatusBadges && (
           <div className="hidden 2xl:flex items-center gap-1.5 shrink-0">
             <span className="px-2.5 py-1 rounded-full bg-destructive/10 text-destructive text-[11px] font-semibold flex items-center gap-1.5 whitespace-nowrap tabular-nums">

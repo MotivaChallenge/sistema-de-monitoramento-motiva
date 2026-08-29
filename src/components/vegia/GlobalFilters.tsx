@@ -36,17 +36,18 @@ export const GlobalFilters = ({ showSearch = true }: { showSearch?: boolean }) =
       <PopoverTrigger asChild>
         <button
           aria-label="Abrir filtros"
-          className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-border text-[12px] font-semibold uppercase tracking-wider text-foreground hover:bg-surface-low whitespace-nowrap transition-smooth"
+          className="inline-flex items-center gap-1.5 h-9 px-2.5 md:px-3 rounded-lg border border-border text-[12px] font-semibold uppercase tracking-wider text-foreground hover:bg-surface-low whitespace-nowrap transition-smooth shrink-0"
         >
-          <Filter className="h-3.5 w-3.5" /> Filtros
+          <Filter className="h-3.5 w-3.5" /> <span className="hidden md:inline">Filtros</span>
           {activeCount > 0 && (
-            <span className="ml-1 inline-flex items-center justify-center min-w-[18px] h-[18px] text-[10px] rounded-full bg-primary text-primary-foreground px-1">
+            <span className="ml-0.5 inline-flex items-center justify-center min-w-[18px] h-[18px] text-[10px] rounded-full bg-primary text-primary-foreground px-1">
               {activeCount}
             </span>
           )}
+
         </button>
       </PopoverTrigger>
-      <PopoverContent align="end" sideOffset={8} className="w-[22rem] p-4 space-y-4">
+      <PopoverContent align="end" sideOffset={8} className="w-[22rem] max-w-[calc(100vw-1.5rem)] p-4 space-y-4">
         {showSearch && (
           <div>
             <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">Busca</div>
