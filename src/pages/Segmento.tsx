@@ -97,6 +97,16 @@ const Segmento = () => {
           </div>
         )}
 
+        <div className="mb-6 space-y-4">
+          <DecisionZoneCard
+            altura={seg.altura}
+            limite={seg.limite}
+            origin={segmentOrigin(seg)}
+            clausula={seg.clausula}
+          />
+          <GeeDataSourcePanel lat={lat} lng={lng} />
+        </div>
+
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6">
           <div className="space-y-6">
             <section className="bg-surface-lowest rounded-xl p-4 md:p-6 border border-border/40 shadow-card">
