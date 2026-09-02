@@ -5,6 +5,7 @@ import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Filter, X, Search } from "lucide-react";
+import { ORIGIN_FILTER_LABEL, type OriginFilter } from "@/lib/data-provenance";
 
 const STATUS_CHIPS: { key: StatusFilter; label: string; cls: string }[] = [
   { key: "critico", label: "Crítico", cls: "bg-destructive/15 text-destructive border-destructive/40" },
@@ -15,7 +16,7 @@ const STATUS_CHIPS: { key: StatusFilter; label: string; cls: string }[] = [
 /** Filtros compartilhados: rodovia, status, faixa de KM e busca textual. */
 export const GlobalFilters = ({ showSearch = true }: { showSearch?: boolean }) => {
   const {
-    statuses, kmRange, kmMax, rodovia, search,
+    statuses, kmRange, kmMax, rodovia, search, origin, setOrigin,
     toggleStatus, setKmRange, setRodovia, setSearch, reset, activeCount, searchQuery,
   } = useFilters();
   const { data: highways = [] } = useHighways();
@@ -69,6 +70,20 @@ export const GlobalFilters = ({ showSearch = true }: { showSearch?: boolean }) =
             )}
           </div>
         )}
+
+        <div>
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">Origem do dado</div>
+          <select
+            value={origin}
+            onChange={e => setOrigin(e.target.value as OriginFilter)}
+            aria-label="Filtrar por origem do dado"
+            className="w-full h-9 rounded-md border border-border bg-background px-2 text-[13px]"
+          >
+            {(["todas", "campo", "satelite", "cv", "validado", "pendente"] as OriginFilter[]).map(o => (
+              <option key={o} value={o}>{ORIGIN_FILTER_LABEL[o]}</option>
+            ))}
+          </select>
+        </div>
 
         <div>
           <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">Rodovia</div>

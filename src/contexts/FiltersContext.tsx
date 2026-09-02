@@ -2,6 +2,7 @@ import { createContext, useContext, useMemo, useState, ReactNode, useCallback } 
 import { Status } from "@/types/domain";
 import { useSegments } from "@/hooks/useVegiaData";
 import { parseKmQuery, matchesKmQuery, type KmQuery } from "@/lib/km-search";
+import { originMatchesFilter, type DataOrigin, type OriginFilter } from "@/lib/data-provenance";
 
 export type StatusFilter = Status; // "critico" | "atencao" | "conforme"
 
@@ -13,6 +14,10 @@ export interface MatchTarget {
   rodovia?: string | null;
   /** Texto livre pesquisável (km, tipo, id…). */
   text?: string;
+  /** Origem do dado (campo, satélite, visão computacional…). */
+  origin?: DataOrigin;
+  /** Se o registro está pendente de validação em campo. */
+  needsFieldValidation?: boolean;
 }
 
 interface FiltersCtx {
@@ -30,6 +35,9 @@ interface FiltersCtx {
   setKmRange: (r: [number, number] | null) => void;
   setRodovia: (code: string | null) => void;
   setSearch: (q: string) => void;
+  /** Filtro por origem do dado. */
+  origin: OriginFilter;
+  setOrigin: (o: OriginFilter) => void;
   reset: () => void;
   activeCount: number;
   matches: (s: MatchTarget) => boolean;
@@ -45,6 +53,7 @@ export const FiltersProvider = ({ children }: { children: ReactNode }) => {
   const [kmRange, setKmRange] = useState<[number, number] | null>(null);
   const [rodovia, setRodovia] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [origin, setOrigin] = useState<OriginFilter>("todas");
 
   /** Limite superior do slider — derivado da malha real, nunca fixo. */
   const kmMax = useMemo(() => {
@@ -61,6 +70,7 @@ export const FiltersProvider = ({ children }: { children: ReactNode }) => {
     setKmRange(null);
     setRodovia(null);
     setSearch("");
+    setOrigin("todas");
   }, []);
 
   const value = useMemo<FiltersCtx>(() => {
@@ -68,15 +78,17 @@ export const FiltersProvider = ({ children }: { children: ReactNode }) => {
     const q = search.trim().toLowerCase();
     const parsed = parseKmQuery(search);
     const activeCount =
-      (statuses.length > 0 ? 1 : 0) + (kmActive ? 1 : 0) + (rodovia ? 1 : 0) + (q ? 1 : 0);
+      (statuses.length > 0 ? 1 : 0) + (kmActive ? 1 : 0) + (rodovia ? 1 : 0) + (q ? 1 : 0) + (origin !== "todas" ? 1 : 0);
     return {
-      statuses, kmRange, kmMax, rodovia, search,
+      statuses, kmRange, kmMax, rodovia, search, origin, setOrigin,
       toggleStatus, setStatuses, setKmRange, setRodovia, setSearch, reset, activeCount,
       searchQuery: parsed,
       matches: (s) =>
         (statuses.length === 0 || statuses.includes(s.status)) &&
         (!kmActive || (s.kmStart >= kmRange![0] && s.kmStart <= kmRange![1])) &&
         (!rodovia || s.rodovia === undefined || s.rodovia === rodovia) &&
+        (origin === "todas" || s.origin === undefined ||
+          originMatchesFilter(s.origin, origin, s.needsFieldValidation ?? false)) &&
         matchesKmQuery(parsed, {
           kmStart: s.kmStart,
           kmEnd: s.kmEnd,
@@ -84,7 +96,7 @@ export const FiltersProvider = ({ children }: { children: ReactNode }) => {
           text: s.text,
         }),
     };
-  }, [statuses, kmRange, kmMax, rodovia, search, toggleStatus, reset]);
+  }, [statuses, kmRange, kmMax, rodovia, search, origin, toggleStatus, reset]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 };
