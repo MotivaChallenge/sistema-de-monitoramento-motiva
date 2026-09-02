@@ -6,6 +6,9 @@ import { Search, ArrowUpDown, Download, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { formatKmRange } from "@/lib/km";
+import { DataOriginBadge } from "./DataOriginBadge";
+import { ORIGIN_META, segmentOrigin } from "@/lib/data-provenance";
+import { evaluateDecision, MODEL_UNCERTAINTY_CM } from "@/lib/uncertainty";
 
 const NDVIBar = ({ value }: { value: number }) => {
   const color = value >= 0.6 ? "bg-primary" : value >= 0.4 ? "bg-tertiary" : "bg-destructive";
@@ -84,12 +87,14 @@ export const SegmentTable = ({ rows }: { rows: Segment[] }) => {
   );
 
   const exportCsv = () => {
-    const headers = ["Segmento (KM)", "KM Inicial", "KM Final", "Tipo", "NDVI", "Altura (cm)", "Limite (cm)", "Status", "Cláusula", "Última Roçada", "Deadline"];
+    const headers = ["Segmento (KM)", "KM Inicial", "KM Final", "Tipo", "NDVI", "Altura estimada (cm)", "Incerteza (± cm)", "Limite (cm)", "Status", "Zona de decisão", "Origem do dado", "Cláusula", "Última Roçada", "Deadline"];
     const lines = [
       headers.join(";"),
       ...data.map(r => [
-        r.km, r.kmStart, r.kmEnd, r.tipo, r.ndvi.toFixed(2), r.altura, r.limite,
+        r.km, r.kmStart, r.kmEnd, r.tipo, r.ndvi.toFixed(2), r.altura, MODEL_UNCERTAINTY_CM, r.limite,
         r.status === "critico" ? "Inconformidade" : r.status === "atencao" ? "Atenção" : "Conforme",
+        evaluateDecision({ altura: r.altura, limite: r.limite }).title,
+        ORIGIN_META[segmentOrigin(r)].label,
         r.clausula, r.ultimaRocada, r.deadline ?? "",
       ].map(csvEscape).join(";")),
     ];
@@ -213,13 +218,13 @@ export const SegmentTable = ({ rows }: { rows: Segment[] }) => {
       </div>
 
       <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
-      <div className="min-w-[720px]">
-      <div className="grid grid-cols-[1.4fr_1.2fr_1.1fr_0.8fr_1.1fr_0.9fr_0.9fr] label-md pb-3">
+      <div className="min-w-[860px]">
+      <div className="grid grid-cols-[1.4fr_1.1fr_1fr_0.9fr_1.1fr_1fr_0.9fr_0.8fr] label-md pb-3">
         <span>Segmento (KM)</span><span>Tipo</span><span>NDVI</span>
         <button onClick={() => setSortDesc(s => !s)} className="flex items-center gap-1 hover:text-foreground text-left">
-          Altura <ArrowUpDown className="h-3 w-3" />
+          Altura est. <ArrowUpDown className="h-3 w-3" />
         </button>
-        <span>Status</span><span>Cláusula</span><span>Deadline</span>
+        <span>Status</span><span>Origem</span><span>Cláusula / limite</span><span>Deadline</span>
       </div>
 
       <div className="space-y-1">
@@ -232,7 +237,7 @@ export const SegmentTable = ({ rows }: { rows: Segment[] }) => {
           <button
             key={r.id}
             onClick={() => navigate(`/segmento/${r.id}`)}
-            className={`w-full text-left grid grid-cols-[1.4fr_1.2fr_1.1fr_0.8fr_1.1fr_0.9fr_0.9fr] items-center px-3 py-3.5 rounded-md hover:bg-surface-low transition ${i % 2 === 1 ? "bg-surface-low/60" : ""}`}
+            className={`w-full text-left grid grid-cols-[1.4fr_1.1fr_1fr_0.9fr_1.1fr_1fr_0.9fr_0.8fr] items-center px-3 py-3.5 rounded-md hover:bg-surface-low transition ${i % 2 === 1 ? "bg-surface-low/60" : ""}`}
           >
             <span className="text-[14px] font-medium leading-tight">
               {r.km}
@@ -242,9 +247,18 @@ export const SegmentTable = ({ rows }: { rows: Segment[] }) => {
             </span>
             <span className="text-[13px] text-muted-foreground">{r.tipo}</span>
             <NDVIBar value={r.ndvi} />
-            <span className="text-[13px] tabular-nums">{r.altura}cm</span>
+            <span className="text-[13px] tabular-nums leading-tight">
+              {r.altura}<span className="text-muted-foreground text-[11px]"> ±{MODEL_UNCERTAINTY_CM}</span>cm
+              {evaluateDecision({ altura: r.altura, limite: r.limite }).needsFieldValidation && (
+                <span className="block text-[10px] text-tertiary font-semibold uppercase tracking-wider">validar em campo</span>
+              )}
+            </span>
             <StatusDot status={r.status} label={r.status === "critico" ? "Inconformidade" : r.status === "atencao" ? "Atenção" : "Conforme"} />
-            <ClausePill>{r.clausula}</ClausePill>
+            <DataOriginBadge origin={segmentOrigin(r)} />
+            <span className="leading-tight">
+              <ClausePill>{r.clausula}</ClausePill>
+              <span className="block text-[10px] text-muted-foreground mt-0.5">limite {r.limite} cm</span>
+            </span>
             <span className={`text-[13px] tabular-nums ${r.deadlineUrgent ? "text-destructive font-semibold" : "text-muted-foreground"}`}>
               {r.deadline ? r.deadline.split(" ")[0] : "—"}
             </span>
@@ -254,7 +268,7 @@ export const SegmentTable = ({ rows }: { rows: Segment[] }) => {
       </div>
       </div>
       <div className="flex flex-wrap items-center justify-between gap-2 mt-5 pt-4">
-        <span className="label-md">Documento gerado via satélite — {generatedAt}</span>
+        <span className="label-md">Alturas estimadas por satélite + modelo (± {MODEL_UNCERTAINTY_CM} cm) — {generatedAt}</span>
         <button onClick={resetFilters} className="text-primary text-[13px] font-semibold hover:underline">
           Ver todos os segmentos ›
         </button>
