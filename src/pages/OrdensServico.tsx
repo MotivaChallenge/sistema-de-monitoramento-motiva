@@ -18,6 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatKmPrecise } from "@/lib/km";
+import { daysOverdue, dueState, DUE_META, isOverdue, looksLikeDemoBase, SLA_DAYS } from "@/lib/deadlines";
 
 const STATUS_META: Record<WorkOrderStatus, { label: string; bg: string; fg: string }> = {
   pendente: { label: "Pendente", bg: "hsl(var(--muted) / 0.6)", fg: "hsl(var(--muted-foreground))" },
@@ -75,6 +76,7 @@ const OrdensServico = () => {
 
   // Filtros específicos desta tela
   const [fStatus, setFStatus] = useState<WorkOrderStatus | "todos">("todos");
+  const [fOverdue, setFOverdue] = useState<boolean>(searchParams.get("filtro") === "atrasadas");
   const [fPriority, setFPriority] = useState<WorkOrderPriority | "todas">("todas");
   const [fTeam, setFTeam] = useState<string>("todas");
   const [fSearch, setFSearch] = useState("");
@@ -86,6 +88,7 @@ const OrdensServico = () => {
     const q = fSearch.trim().toLowerCase();
     return allOrders.filter(o => {
       if (fStatus !== "todos" && o.status !== fStatus) return false;
+      if (fOverdue && !isOverdue(o)) return false;
       if (fPriority !== "todas" && o.priority !== fPriority) return false;
       if (fTeam !== "todas" && (o.team_id ?? "sem") !== fTeam) return false;
       if (q) {
@@ -95,11 +98,13 @@ const OrdensServico = () => {
       }
       return true;
     });
-  }, [allOrders, fStatus, fPriority, fTeam, fSearch, segments]);
+  }, [allOrders, fStatus, fOverdue, fPriority, fTeam, fSearch, segments]);
 
   const filtersActive =
-    fStatus !== "todos" || fPriority !== "todas" || fTeam !== "todas" || fSearch.trim() !== "";
-  const clearFilters = () => { setFStatus("todos"); setFPriority("todas"); setFTeam("todas"); setFSearch(""); };
+    fStatus !== "todos" || fOverdue || fPriority !== "todas" || fTeam !== "todas" || fSearch.trim() !== "";
+  const clearFilters = () => { setFStatus("todos"); setFOverdue(false); setFPriority("todas"); setFTeam("todas"); setFSearch(""); };
+  const overdueCount = allOrders.filter(o => isOverdue(o)).length;
+  const demoBase = looksLikeDemoBase(allOrders);
 
   const kpis = {
     total: allOrders.length,
@@ -234,19 +239,26 @@ const OrdensServico = () => {
           )}
         </header>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-5">
           {[
             { label: "Total", value: kpis.total },
             { label: "Pendentes", value: kpis.pendentes },
             { label: "Em andamento", value: kpis.andamento },
             { label: "Concluídas", value: kpis.concluidas },
+            { label: "Atrasadas", value: overdueCount, danger: overdueCount > 0 },
           ].map(k => (
-            <div key={k.label} className="bg-surface-lowest rounded-xl p-5 border border-border/40 shadow-card hover-lift">
+            <div key={k.label} className={`bg-surface-lowest rounded-xl p-5 border shadow-card hover-lift ${k.danger ? "border-destructive/40" : "border-border/40"}`}>
               <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold mb-2">{k.label}</div>
-              <div className="text-[28px] font-bold tabular-nums">{k.value}</div>
+              <div className={`text-[28px] font-bold tabular-nums ${k.danger ? "text-destructive" : ""}`}>{k.value}</div>
             </div>
           ))}
         </div>
+
+        {demoBase && (
+          <div className="rounded-lg border border-border/60 bg-surface-low px-4 py-2.5 text-[12px] text-muted-foreground">
+            <span className="font-semibold uppercase tracking-wider text-foreground/80">Base demonstrativa</span> — as ordens abaixo possuem prazos históricos; o cálculo de atraso usa a data atual do sistema ({new Date().toLocaleDateString("pt-BR")}).
+          </div>
+        )}
 
         <section className="bg-surface-lowest rounded-xl border border-border/40 shadow-card overflow-hidden">
           <div className="px-5 py-4 border-b border-border/40 space-y-3">
@@ -278,6 +290,13 @@ const OrdensServico = () => {
                   </button>
                 ))}
               </div>
+              <button
+                onClick={() => setFOverdue(v => !v)}
+                aria-pressed={fOverdue}
+                className={`h-9 px-3 rounded-lg border text-[12px] font-semibold transition-smooth ${fOverdue ? "bg-destructive/12 text-destructive border-destructive/40" : "border-border text-muted-foreground hover:text-foreground"}`}
+              >
+                Atrasadas ({overdueCount})
+              </button>
               <div className="relative min-w-[200px] flex-1 max-w-[280px]">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                 <Input
@@ -329,7 +348,7 @@ const OrdensServico = () => {
                   <th className="text-left px-3 py-3 font-semibold">Trecho / localização</th>
                   <th className="text-left px-3 py-3 font-semibold">Serviço</th>
                   <th className="text-left px-3 py-3 font-semibold">Equipe</th>
-                  <th className="text-left px-3 py-3 font-semibold">Prioridade</th>
+                  <th className="text-left px-3 py-3 font-semibold">Prioridade / SLA</th>
                   <th className="text-left px-3 py-3 font-semibold">Prazo</th>
                   <th className="text-left px-5 py-3 font-semibold">Status</th>
                   {canEdit && <th className="text-right px-5 py-3 font-semibold">Ações</th>}
@@ -369,13 +388,37 @@ const OrdensServico = () => {
                       </td>
                       <td className="px-3 py-3 capitalize">{o.tipo_servico}</td>
                       <td className="px-3 py-3">{team?.nome ?? <span className="text-muted-foreground">—</span>}</td>
-                      <td className="px-3 py-3"><span className="font-semibold" style={{ color: pm.fg }}>{pm.label}</span></td>
-                      <td className="px-3 py-3 tabular-nums text-muted-foreground">{o.scheduled_for ? formatDateBR(o.scheduled_for) : "—"}</td>
+                      <td className="px-3 py-3 leading-tight">
+                        <span className="font-semibold" style={{ color: pm.fg }}>{pm.label}</span>
+                        <div className="text-[10px] text-muted-foreground">SLA {SLA_DAYS[o.priority]} dia(s)</div>
+                      </td>
+                      <td className="px-3 py-3 tabular-nums leading-tight">
+                        {(() => {
+                          const st = dueState(o);
+                          const d = daysOverdue(o.scheduled_for);
+                          const meta = DUE_META[st];
+                          return (
+                            <>
+                              <div className={st === "atrasada" ? "text-destructive font-semibold" : "text-muted-foreground"}>
+                                {o.scheduled_for ? formatDateBR(o.scheduled_for) : "—"}
+                              </div>
+                              {st !== "encerrada" && st !== "sem_prazo" && (
+                                <span className={`mt-1 inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold tracking-wider ${meta.className}`}>
+                                  {meta.label}{st === "atrasada" && d ? ` · ${d} dia(s)` : st === "futura" && d != null ? ` · em ${-d} dia(s)` : ""}
+                                </span>
+                              )}
+                            </>
+                          );
+                        })()}
+                      </td>
                       <td className="px-5 py-3">
                         <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-[11px] font-semibold" style={{ background: sm.bg, color: sm.fg }}>
                           {o.status === "concluida" && <CheckCircle2 className="h-3 w-3" />}
                           {sm.label}
                         </span>
+                        {isOverdue(o) && (
+                          <div className="text-[10px] text-destructive font-semibold mt-1">Prazo ultrapassado — requer reprogramação</div>
+                        )}
                         {o.completed_at && (
                           <div className="text-[10px] text-muted-foreground mt-1 tabular-nums">
                             Finalizada em {fmtDateTime(o.completed_at)}
