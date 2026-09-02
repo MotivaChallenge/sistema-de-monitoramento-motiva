@@ -1,4 +1,5 @@
 import { lazy, Suspense, useMemo, useState } from "react";
+import { segmentProvenance } from "@/lib/data-provenance";
 import { useNavigate } from "react-router-dom";
 import {
   Activity, AlertTriangle, BellRing, CalendarCheck, CloudRain, Gauge, Inbox, Leaf,
@@ -49,7 +50,7 @@ const Dashboard = () => {
   const segments = useMemo(
     () => allSegments.filter(s => matches({
       status: s.status, kmStart: s.kmStart, kmEnd: s.kmEnd, rodovia: s.rodovia ?? null,
-      text: `${s.km} ${s.tipo} ${s.id}`,
+      text: `${s.km} ${s.tipo} ${s.id}`, ...segmentProvenance(s),
     })),
     [allSegments, matches]
   );
