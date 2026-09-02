@@ -7,6 +7,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { formatKmPrecise } from "@/lib/km";
 import { VegetationIndicesPanel } from "@/components/vegia/VegetationIndicesPanel";
+import { GeeDataSourcePanel } from "@/components/vegia/DataSourcePanel";
+import { DecisionZoneCard } from "@/components/vegia/DecisionZone";
+import { useSegment } from "@/hooks/useVegiaData";
+import { segmentOrigin } from "@/lib/data-provenance";
 
 export interface PointInsightResult {
   point: { lat: number; lng: number };
@@ -36,6 +40,7 @@ export const MapPointSheet = ({ open, point, kmInfo, onClose }: Props) => {
   const navigate = useNavigate();
   const [data, setData] = useState<PointInsightResult | null>(null);
   const [loading, setLoading] = useState(false);
+  const { data: nearestSeg } = useSegment(data?.nearest?.segmentId);
 
   useEffect(() => {
     if (!open || !point) { setData(null); return; }
@@ -92,7 +97,8 @@ export const MapPointSheet = ({ open, point, kmInfo, onClose }: Props) => {
         )}
 
         {open && point && (
-          <div className="mb-5">
+          <div className="mb-5 space-y-4">
+            <GeeDataSourcePanel lat={point.lat} lng={point.lng} enabled={open} />
             <VegetationIndicesPanel
               lat={point.lat}
               lng={point.lng}
@@ -160,6 +166,16 @@ export const MapPointSheet = ({ open, point, kmInfo, onClose }: Props) => {
                 <p className="text-sm text-muted-foreground">IA indisponível para este ponto.</p>
               )}
             </section>
+
+            {/* Zona de decisão do segmento mais próximo */}
+            {nearestSeg && (
+              <DecisionZoneCard
+                altura={nearestSeg.altura}
+                limite={nearestSeg.limite}
+                origin={segmentOrigin(nearestSeg)}
+                clausula={nearestSeg.clausula}
+              />
+            )}
 
             {/* Segmento próximo */}
             {data.nearest && (
