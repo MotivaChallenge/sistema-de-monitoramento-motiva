@@ -2,7 +2,7 @@ import { Satellite, Info } from "lucide-react";
 import { MethodologyDialog } from "./MethodologyDialog";
 import { DataOriginBadge } from "./DataOriginBadge";
 import { SATELLITE_DISCLAIMER } from "@/lib/uncertainty";
-import type { GeeNdviResult } from "@/hooks/useGeeNdvi";
+import { useGeeNdvi, type GeeNdviResult } from "@/hooks/useGeeNdvi";
 
 export interface DataSourceInfo {
   periodo?: { de: string; ate: string } | null;
@@ -108,4 +108,13 @@ export const DataSourcePanel = ({ info = {}, className = "", title = "Fonte e qu
       )}
     </section>
   );
+};
+
+/** Painel alimentado pela leitura orbital real do ponto (mesmo cache do painel de índices). */
+export const GeeDataSourcePanel = ({
+  lat, lng, enabled = true, className = "",
+}: { lat?: number; lng?: number; enabled?: boolean; className?: string }) => {
+  const { data, dataUpdatedAt } = useGeeNdvi(lat, lng, enabled);
+  const info = fromGee(data, dataUpdatedAt ? new Date(dataUpdatedAt) : null);
+  return <DataSourcePanel info={info} className={className} />;
 };
