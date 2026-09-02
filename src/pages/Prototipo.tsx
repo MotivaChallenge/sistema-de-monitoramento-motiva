@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { segmentProvenance } from "@/lib/data-provenance";
 import {
   Ruler, Satellite, Camera, TrendingUp, AlertTriangle, CheckCircle2, Target, FlaskConical,
 } from "lucide-react";
@@ -28,7 +29,7 @@ const Prototipo = () => {
   const segments = useMemo(
     () =>
       allSegments.filter(s =>
-        matches({ status: s.status, kmStart: s.kmStart, kmEnd: s.kmEnd, rodovia: s.rodovia ?? null, text: `${s.km} ${s.tipo} ${s.id}` })
+        matches({ status: s.status, kmStart: s.kmStart, kmEnd: s.kmEnd, rodovia: s.rodovia ?? null, text: `${s.km} ${s.tipo} ${s.id}`, ...segmentProvenance(s) })
       ),
     [allSegments, matches]
   );

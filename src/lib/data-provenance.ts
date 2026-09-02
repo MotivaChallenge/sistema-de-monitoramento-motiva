@@ -1,3 +1,4 @@
+import { evaluateDecision } from "@/lib/uncertainty";
 /**
  * Origem (procedência) de cada dado exibido na plataforma.
  * A banca exige que estimativas orbitais nunca sejam confundidas
@@ -82,3 +83,11 @@ export const originMatchesFilter = (
 /** Mensagem institucional exibida nos painéis de fonte e no rodapé do relatório. */
 export const POSITIONING_MESSAGE =
   "Usamos sensoriamento remoto e inteligência analítica para reduzir a área de busca, antecipar riscos e direcionar equipes. A decisão contratual permanece rastreável e, quando a estimativa está próxima do limite, o sistema encaminha o ponto para validação de campo.";
+
+/** Campos de origem para o filtro global, derivados de um segmento. */
+export const segmentProvenance = (seg: {
+  altura: number; limite: number; detection?: unknown; statusBanco?: string;
+}): { origin: DataOrigin; needsFieldValidation: boolean } => ({
+  origin: segmentOrigin(seg),
+  needsFieldValidation: evaluateDecision({ altura: seg.altura, limite: seg.limite }).needsFieldValidation,
+});

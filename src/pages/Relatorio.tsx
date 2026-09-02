@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { segmentProvenance } from "@/lib/data-provenance";
 import { TopHeader } from "@/components/vegia/TopHeader";
 import { MetricCard } from "@/components/vegia/MetricCard";
 import { SegmentTable } from "@/components/vegia/SegmentTable";
@@ -21,7 +22,7 @@ const Relatorio = () => {
   const segments = useMemo(
     () => segmentsRaw.filter(s => matches({
       status: s.status, kmStart: s.kmStart, kmEnd: s.kmEnd, rodovia: s.rodovia ?? null,
-      text: `${s.km} ${s.tipo} ${s.id}`,
+      text: `${s.km} ${s.tipo} ${s.id}`, ...segmentProvenance(s),
     })),
     [segmentsRaw, matches]
   );

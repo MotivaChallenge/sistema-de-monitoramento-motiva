@@ -1,4 +1,5 @@
 import { TopHeader } from "@/components/vegia/TopHeader";
+import { segmentProvenance } from "@/lib/data-provenance";
 import { useSegments, useFieldTeams, FieldTeam } from "@/hooks/useVegiaData";
 import { useWeather } from "@/hooks/useWeather";
 import { ircForSegment } from "@/lib/irc";
@@ -44,7 +45,7 @@ const Planejamento = () => {
   const segmentsRaw = useMemo(
     () => allSegments.filter(s => matches({
       status: s.status, kmStart: s.kmStart, kmEnd: s.kmEnd, rodovia: s.rodovia ?? null,
-      text: `${s.km} ${s.tipo} ${s.id}`,
+      text: `${s.km} ${s.tipo} ${s.id}`, ...segmentProvenance(s),
     })),
     [allSegments, matches]
   );

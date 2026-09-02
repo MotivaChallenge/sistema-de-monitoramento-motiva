@@ -1,4 +1,5 @@
 import { lazy, Suspense, useMemo, useState } from "react";
+import { segmentProvenance } from "@/lib/data-provenance";
 import { useNavigate } from "react-router-dom";
 import {
   Activity, AlertTriangle, BellRing, CalendarCheck, CloudRain, Gauge, Inbox, Leaf,
@@ -28,6 +29,12 @@ import { useTotalCoverage, useWorkOrders } from "@/hooks/useVegiaData";
 import { ircForSegment } from "@/lib/irc";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { buildRecommendations } from "@/lib/recommendations";
+import { GeeDataSourcePanel } from "@/components/vegia/DataSourcePanel";
+import { DecisionZoneCard } from "@/components/vegia/DecisionZone";
+import { segmentOrigin } from "@/lib/data-provenance";
+import { isOverdue } from "@/lib/deadlines";
+import { useKmMarkers } from "@/hooks/useVegiaData";
+import { Clock } from "lucide-react";
 
 const NDVIBarChart = lazy(() => import("@/components/vegia/NDVIBarChart").then(m => ({ default: m.NDVIBarChart })));
 
@@ -49,7 +56,7 @@ const Dashboard = () => {
   const segments = useMemo(
     () => allSegments.filter(s => matches({
       status: s.status, kmStart: s.kmStart, kmEnd: s.kmEnd, rodovia: s.rodovia ?? null,
-      text: `${s.km} ${s.tipo} ${s.id}`,
+      text: `${s.km} ${s.tipo} ${s.id}`, ...segmentProvenance(s),
     })),
     [allSegments, matches]
   );
@@ -73,6 +80,18 @@ const Dashboard = () => {
   const pendingOrders = workOrders.filter(
     o => (o.status === "pendente" || o.status === "em_andamento") && segmentIds.has(o.segment_id)
   ).length;
+  const overdueOrders = workOrders.filter(o => isOverdue(o) && segmentIds.has(o.segment_id)).length;
+
+  // Ponto de referência para a leitura orbital exibida no painel de fonte:
+  // o trecho de maior IRC dentro dos filtros, projetado no marco de KM mais próximo.
+  const { data: refMarkers = [] } = useKmMarkers(rodovia ?? "SP-021");
+  const spotlight = useMemo(() => {
+    if (!segments.length) return null;
+    return [...segments].sort((a, b) => (ircById.get(b.id) ?? 0) - (ircById.get(a.id) ?? 0))[0];
+  }, [segments, ircById]);
+  const spotlightMarker = spotlight
+    ? refMarkers.find(m => Math.round(m.km) === Math.round(spotlight.kmStart)) ?? refMarkers[0]
+    : undefined;
 
   const recommendations = useMemo(
     () => buildRecommendations({ segments, ircById, rain5d, teamsAvailable, teamsTotal, pendingOrders }),
@@ -165,6 +184,33 @@ const Dashboard = () => {
           activeAlerts={totalAlerts}
         />
 
+        {/* 2b — Fonte e qualidade do dado + zona de decisão do trecho em destaque */}
+        {!isLoading && (
+          <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-4 items-start">
+            <GeeDataSourcePanel
+              lat={spotlightMarker?.lat}
+              lng={spotlightMarker?.lng}
+              enabled={!!spotlightMarker}
+            />
+            {spotlight && (
+              <div className="space-y-2">
+                <DecisionZoneCard
+                  altura={spotlight.altura}
+                  limite={spotlight.limite}
+                  origin={segmentOrigin(spotlight)}
+                  clausula={spotlight.clausula}
+                />
+                <button
+                  onClick={() => navigate(`/segmento/${spotlight.id}`)}
+                  className="text-[11px] font-semibold uppercase tracking-wider text-primary hover:underline"
+                >
+                  Trecho em destaque: {spotlight.km} · maior IRC ›
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* 3 — Clima em destaque */}
         <WeatherForecast />
 
@@ -204,6 +250,9 @@ const Dashboard = () => {
               } />,
               <MetricCard key="os" icon={CalendarCheck} label="Ordens em Aberto" value={String(pendingOrders)} unit="pendentes / em andamento" footer={
                 <button onClick={() => navigate("/ordens")} className="text-[11px] font-semibold uppercase tracking-wider text-primary hover:underline">Ver ordens</button>
+              } />,
+              <MetricCard key="atr" icon={Clock} label="Ordens Vencidas" value={String(overdueOrders)} unit="prazo ultrapassado" variant={overdueOrders > 0 ? "danger" : undefined} footer={
+                <button onClick={() => navigate("/ordens?filtro=atrasadas")} className="text-[11px] font-semibold uppercase tracking-wider text-primary hover:underline">Ver atrasadas</button>
               } />,
               <MetricCard key="eq" icon={Users} label="Equipes Disponíveis" value={`${teamsAvailable}`} unit={`de ${teamsTotal} equipes`} variant={teamsAvailable === 0 ? "danger" : undefined} footer={
                 <button onClick={() => navigate("/equipes")} className="text-[11px] font-semibold uppercase tracking-wider text-primary hover:underline">Gerenciar equipes</button>

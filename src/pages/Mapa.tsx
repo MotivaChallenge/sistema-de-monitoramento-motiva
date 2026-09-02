@@ -1,4 +1,5 @@
 import { TopHeader } from "@/components/vegia/TopHeader";
+import { segmentProvenance } from "@/lib/data-provenance";
 import { useSegments, useKmMarkers, useTotalCoverage, useHighways } from "@/hooks/useVegiaData";
 import { useRoadRoute } from "@/hooks/useRoadRoute";
 import { useFilters } from "@/contexts/FiltersContext";
@@ -167,7 +168,7 @@ const Mapa = () => {
     () =>
       segmentsRaw
         .filter(s => (s.rodovia ?? "SP-021") === selectedHighway)
-        .filter(s => matches({ status: s.status, kmStart: s.kmStart, kmEnd: s.kmEnd, rodovia: s.rodovia ?? null, text: `${s.km} ${s.tipo} ${s.id}` })),
+        .filter(s => matches({ status: s.status, kmStart: s.kmStart, kmEnd: s.kmEnd, rodovia: s.rodovia ?? null, text: `${s.km} ${s.tipo} ${s.id}`, ...segmentProvenance(s) })),
     [segmentsRaw, matches, selectedHighway]
   );
 

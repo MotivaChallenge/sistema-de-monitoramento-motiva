@@ -11,6 +11,11 @@ import { RocadaTimeline } from "@/components/vegia/RocadaTimeline";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDateBR } from "@/lib/utils";
 import { VegetationIndicesPanel } from "@/components/vegia/VegetationIndicesPanel";
+import { DecisionZoneCard } from "@/components/vegia/DecisionZone";
+import { GeeDataSourcePanel } from "@/components/vegia/DataSourcePanel";
+import { DataOriginBadge } from "@/components/vegia/DataOriginBadge";
+import { segmentOrigin } from "@/lib/data-provenance";
+import { MODEL_UNCERTAINTY_CM } from "@/lib/uncertainty";
 
 const OSMMap = lazy(() => import("@/components/vegia/OSMMap").then(m => ({ default: m.OSMMap })));
 const NDVILineChart = lazy(() => import("@/components/vegia/NDVILineChart").then(m => ({ default: m.NDVILineChart })));
@@ -97,6 +102,16 @@ const Segmento = () => {
           </div>
         )}
 
+        <div className="mb-6 space-y-4">
+          <DecisionZoneCard
+            altura={seg.altura}
+            limite={seg.limite}
+            origin={segmentOrigin(seg)}
+            clausula={seg.clausula}
+          />
+          <GeeDataSourcePanel lat={lat} lng={lng} />
+        </div>
+
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6">
           <div className="space-y-6">
             <section className="bg-surface-lowest rounded-xl p-4 md:p-6 border border-border/40 shadow-card">
@@ -107,11 +122,12 @@ const Segmento = () => {
               <dl className="divide-y divide-border/40">
                 <Row label="Índice NDVI (Vegetação)" value={<span className="text-primary">{seg.ndvi.toFixed(2)} <span className="text-muted-foreground text-[12px] font-normal">vigente</span></span>} />
                 <Row label="Altura Estimada (Média)" value={
-                  <span className={seg.altura > seg.limite ? "text-destructive flex items-center gap-1.5 justify-end" : ""}>
-                    {seg.altura} cm {seg.altura > seg.limite && <ArrowUpRight className="h-4 w-4" />}
+                  <span className={`flex items-center gap-2 justify-end ${seg.altura > seg.limite ? "text-destructive" : ""}`}>
+                    <DataOriginBadge origin={segmentOrigin(seg)} />
+                    {seg.altura} <span className="text-muted-foreground font-normal text-[12px]">± {MODEL_UNCERTAINTY_CM}</span> cm {seg.altura > seg.limite && <ArrowUpRight className="h-4 w-4" />}
                   </span>
                 } />
-                <Row label="Limite Contratual" value={`${seg.limite} cm`} />
+                <Row label={`Limite Contratual (cláusula ${seg.clausula})`} value={`${seg.limite} cm`} />
                 <Row label="Última Roçada Executada" value={formatDateBR(seg.ultimaRocada)} />
                 {recommended && (
                   <Row label="Equipamento Recomendado" value={
