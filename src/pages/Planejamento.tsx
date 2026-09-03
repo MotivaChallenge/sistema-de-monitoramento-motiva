@@ -15,6 +15,7 @@ import { useFilters } from "@/contexts/FiltersContext";
 import { HighwaySelect } from "@/components/vegia/HighwaySelect";
 import { GlobalFilters } from "@/components/vegia/GlobalFilters";
 import { formatKmPrecise } from "@/lib/km";
+import { AllocationRationale } from "@/components/vegia/AllocationRationale";
 
 const DAYS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 
@@ -102,6 +103,17 @@ const Planejamento = () => {
   }, [segmentsRaw, rain5d, horizonte, teams]);
 
   const totalProgramado = Object.values(plan).reduce((a, b) => a + b.length, 0);
+
+  // Trecho → equipes que o receberam (detecção de duplicidade antes de gerar OS)
+  const ownersBySegment = useMemo(() => {
+    const m = new Map<string, string[]>();
+    for (const [teamId, items] of Object.entries(plan)) {
+      for (const it of items) m.set(it.s.id, [...(m.get(it.s.id) ?? []), teamId]);
+    }
+    return m;
+  }, [plan]);
+  const conflicts = Array.from(ownersBySegment.values()).filter(v => v.length > 1).length;
+  const teamNames = useMemo(() => new Map(teamsRaw.map(t => [t.id, t.nome])), [teamsRaw]);
   const slotsLabel = horizonte === "semana" ? 5 : 22;
 
   const generateOS = useMutation({
@@ -191,7 +203,8 @@ const Planejamento = () => {
             <Button
               size="sm"
               onClick={() => generateOS.mutate()}
-              disabled={generateOS.isPending || totalProgramado === 0}
+              disabled={generateOS.isPending || totalProgramado === 0 || conflicts > 0}
+              title={conflicts > 0 ? "Resolva as duplicidades antes de gerar OS" : undefined}
               className="h-8"
             >
               {generateOS.isPending
@@ -250,6 +263,7 @@ const Planejamento = () => {
                       <div className="text-right">
                         <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Carga</div>
                         <div className="text-[14px] font-bold tabular-nums">{carga}%</div>
+                        <div className="text-[10px] text-muted-foreground tabular-nums">{assigned.length}/{slotsLabel * team.capacidade_dia} trechos</div>
                       </div>
                       <div className="w-24 h-2 rounded-full bg-surface-high overflow-hidden">
                         <div
@@ -262,7 +276,15 @@ const Planejamento = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="grid grid-cols-5 md:grid-cols-7 lg:grid-cols-11 gap-1 p-3 text-[10px]">
+                  <AllocationRationale
+                    team={team}
+                    assigned={assigned as any}
+                    otherTeams={teams.filter(t => t.id !== team.id)}
+                    slots={slotsLabel}
+                    ownersBySegment={ownersBySegment}
+                    teamNames={teamNames}
+                  />
+                  <div className="grid grid-cols-5 md:grid-cols-7 lg:grid-cols-11 gap-1 p-3 text-[10px] border-t border-border/40">
                     {Array.from({ length: slotsLabel }, (_, d) => {
                       const items = assigned.filter(a => a.dia === d);
                       const label = horizonte === "semana" ? DAYS[d % 7] : `D${d + 1}`;

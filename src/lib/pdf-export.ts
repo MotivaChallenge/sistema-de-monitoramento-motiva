@@ -1,6 +1,8 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { formatDateBR } from "@/lib/utils";
+import { methodologyPlainLines } from "@/lib/methodology";
+import { evaluateDecision, MODEL_UNCERTAINTY_CM, HEIGHT_MODEL_ID, HEIGHT_MODEL_VERSION } from "@/lib/uncertainty";
 
 export interface PdfReportInput {
   reportCode: string;
@@ -30,8 +32,15 @@ export interface PdfReportInput {
     limite: number;
     status: string;
     ultimaRocada: string;
+    clausula?: string;
+    /** Origem do dado (rótulo já formatado). */
+    origem?: string;
   }>;
   assinanteNome?: string;
+  /** Metadados de captura orbital para o cabeçalho técnico. */
+  fonte?: { periodo?: string; imagens?: number | null; validPixels?: number | null; atualizacao?: string };
+  /** Versão dos parâmetros de cálculo (pesos IRC/limiares) usada no relatório. */
+  parametrosVersao?: string;
 }
 
 const fmtBR = (iso: string) => {
@@ -143,27 +152,79 @@ export const generateConformityPdf = (input: PdfReportInput) => {
   doc.setFont("helvetica", "bold");
   doc.setFontSize(12);
   doc.text("Segmentos Monitorados", margin, afterY);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.setTextColor(90, 90, 90);
+  doc.text(
+    `Alturas estimadas por satélite (Sentinel-2/GEE) + modelo ${HEIGHT_MODEL_ID} ${HEIGHT_MODEL_VERSION}, incerteza ± ${MODEL_UNCERTAINTY_CM} cm. Pontos conformes estimados não equivalem a pontos medidos em campo.`,
+    margin, afterY + 12, { maxWidth: pageW - margin * 2 }
+  );
+  doc.setTextColor(20, 30, 48);
+  afterY += 14;
 
   autoTable(doc, {
     startY: afterY + 8,
     margin: { left: margin, right: margin },
-    head: [["KM", "Tipo", "Altura (cm)", "Limite", "Status", "Última roçada"]],
+    head: [["KM", "Tipo", "Altura est. (cm)", "Limite / cláusula", "Status", "Zona de decisão", "Origem", "Última roçada"]],
     body: input.segments.map(s => [
       s.km,
       s.tipo,
-      String(s.altura),
-      String(s.limite),
+      `${s.altura} ± ${MODEL_UNCERTAINTY_CM}`,
+      `${s.limite} cm${s.clausula ? ` · cl. ${s.clausula}` : ""}`,
       statusLabel(s.status),
+      evaluateDecision({ altura: s.altura, limite: s.limite }).title.split(" — ")[0],
+      s.origem ?? "Estimado (satélite + modelo)",
       formatDateBR(s.ultimaRocada),
     ]),
-    styles: { fontSize: 9, cellPadding: 5 },
+    styles: { fontSize: 8, cellPadding: 4 },
     headStyles: { fillColor: [20, 30, 48], textColor: 255 },
     alternateRowStyles: { fillColor: [248, 249, 251] },
   });
 
+  // Anexo técnico — Metodologia e limitações (sempre em página própria)
+  doc.addPage();
+  let my = 60;
+  doc.setTextColor(20, 30, 48);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(14);
+  doc.text("Anexo técnico — Metodologia e limitações", margin, my);
+  my += 16;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8.5);
+  doc.setTextColor(80, 80, 80);
+  const fonteLine = [
+    input.fonte?.periodo ? `Período das imagens: ${input.fonte.periodo}` : "Período das imagens: últimos 60 dias",
+    input.fonte?.imagens != null ? `Cenas: ${input.fonte.imagens}` : null,
+    input.fonte?.validPixels != null ? `Pixels válidos: ${input.fonte.validPixels}` : null,
+    input.fonte?.atualizacao ? `Atualização dos índices: ${input.fonte.atualizacao}` : null,
+    input.parametrosVersao ? `Parâmetros de cálculo: ${input.parametrosVersao}` : null,
+  ].filter(Boolean).join("   ·   ");
+  const fonteWrapped = doc.splitTextToSize(fonteLine, pageW - margin * 2) as string[];
+  doc.text(fonteWrapped, margin, my);
+  my += fonteWrapped.length * 11 + 8;
+
+  const pageH = doc.internal.pageSize.getHeight();
+  for (const sec of methodologyPlainLines()) {
+    if (my > pageH - 90) { doc.addPage(); my = 60; }
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(20, 30, 48);
+    doc.text(sec.title, margin, my);
+    my += 14;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.5);
+    doc.setTextColor(60, 60, 60);
+    for (const line of sec.lines) {
+      const wrapped = doc.splitTextToSize(`• ${line}`, pageW - margin * 2 - 8) as string[];
+      if (my + wrapped.length * 11 > pageH - 60) { doc.addPage(); my = 60; }
+      doc.text(wrapped, margin + 6, my);
+      my += wrapped.length * 11 + 3;
+    }
+    my += 6;
+  }
+
   // Signature on last page
-  // @ts-expect-error autotable injects lastAutoTable
-  let sigY = (doc.lastAutoTable?.finalY ?? afterY) + 60;
+  let sigY = my + 40;
   if (sigY > 740) { doc.addPage(); sigY = 120; }
   doc.setDrawColor(120, 120, 120);
   doc.line(margin, sigY, margin + 240, sigY);
@@ -180,7 +241,7 @@ export const generateConformityPdf = (input: PdfReportInput) => {
     doc.setFontSize(8);
     doc.setTextColor(140, 140, 140);
     doc.text(
-      `Motiva Monitoramento · Gerado em ${new Date().toLocaleString("pt-BR")}`,
+      `Motiva Monitoramento · Fonte: Sentinel-2 SR Harmonized / Google Earth Engine + levantamento de campo · Gerado em ${new Date().toLocaleString("pt-BR")}`,
       margin, doc.internal.pageSize.getHeight() - 20
     );
     doc.text(
