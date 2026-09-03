@@ -3,7 +3,6 @@ import autoTable from "jspdf-autotable";
 import { formatDateBR } from "@/lib/utils";
 import { methodologyPlainLines } from "@/lib/methodology";
 import { evaluateDecision, MODEL_UNCERTAINTY_CM, HEIGHT_MODEL_ID, HEIGHT_MODEL_VERSION } from "@/lib/uncertainty";
-import { POSITIONING_MESSAGE } from "@/lib/data-provenance";
 
 export interface PdfReportInput {
   reportCode: string;

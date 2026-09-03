@@ -13,12 +13,22 @@ import { GlobalFilters } from "@/components/vegia/GlobalFilters";
 import { HighwaySelect } from "@/components/vegia/HighwaySelect";
 import { generateConformityPdf } from "@/lib/pdf-export";
 import { useAuth } from "@/hooks/useAuth";
+import { DataSourcePanel } from "@/components/vegia/DataSourcePanel";
+import { DataOriginBadge } from "@/components/vegia/DataOriginBadge";
+import { DecisionZoneCard } from "@/components/vegia/DecisionZone";
+import { METHODOLOGY_SECTIONS } from "@/lib/methodology";
+import { ORIGIN_META, POSITIONING_MESSAGE, segmentOrigin } from "@/lib/data-provenance";
+import { evaluateDecision } from "@/lib/uncertainty";
+import { useSettings } from "@/hooks/useSettings";
+import { settingsVersionLabel } from "@/lib/settings-version";
 
 const Relatorio = () => {
   const { data: segmentsRaw = [], isLoading: loadingSegs, isError: errorSegs, refetch: refetchSegs } = useSegments();
   const { data: reports = [], isLoading: loadingReports, isError: errorReports, refetch: refetchReports } = useInspectionReports();
   const { matches } = useFilters();
   const { user } = useAuth();
+  const { settings } = useSettings();
+  const parametrosVersao = settingsVersionLabel(settings);
   const segments = useMemo(
     () => segmentsRaw.filter(s => matches({
       status: s.status, kmStart: s.kmStart, kmEnd: s.kmEnd, rodovia: s.rodovia ?? null,
@@ -68,9 +78,12 @@ const Relatorio = () => {
         })),
         segments: segments.map(s => ({
           km: s.km, tipo: s.tipo, altura: s.altura, limite: s.limite,
-          status: s.status, ultimaRocada: s.ultimaRocada,
+          status: s.status, ultimaRocada: s.ultimaRocada, clausula: s.clausula,
+          origem: ORIGIN_META[segmentOrigin(s)].label,
         })),
         assinanteNome: user?.user_metadata?.display_name || user?.email || undefined,
+        fonte: { periodo: "últimos 60 dias (composição mediana)", atualizacao: new Date().toLocaleString("pt-BR") },
+        parametrosVersao,
       });
       toast.success("PDF gerado", { description: selectedReport.report_code });
     } catch (e) {
@@ -162,16 +175,83 @@ const Relatorio = () => {
             </div>
           </div>
         } />
-        <MetricCard label="Pontos Críticos (h>30cm)" value={String(intervencoes)} unit="" footer={<span className="text-[13px] text-muted-foreground">Nível 3 detectados em campo</span>} variant="primary" />
+        <MetricCard label="Pontos Críticos (h>30cm)" value={String(intervencoes)} unit="" footer={<span className="flex items-center gap-2 text-[13px] text-muted-foreground"><DataOriginBadge origin="campo" /> Nível 3 detectados em campo</span>} variant="primary" />
         <MetricCard label="Pontos em Atenção" value={String(lvl2)} unit="(10–30cm)" footer={<span className="text-[13px] text-muted-foreground">Nível 2 monitoramento</span>} />
         <div className="bg-surface-high rounded-xl p-5">
           <div className="label-md">Pontos Conformes</div>
           <div className="mt-3 text-[34px] leading-none font-bold text-foreground tracking-tight">{lvl1}</div>
-          <span className="mt-4 inline-flex px-3 py-1 rounded-full bg-secondary-container text-[11px] font-semibold tracking-wider text-secondary-on-container">ESTIMADO</span>
+          <div className="mt-4"><DataOriginBadge origin="campo" variant="full" /></div>
         </div>
       </div>
 
+      <DataSourcePanel className="mb-6" info={{ updatedAt: new Date(), demo: false }} />
+
+      <div className="mb-6 rounded-xl border border-border/60 bg-surface-low px-4 py-3 text-[12.5px] leading-relaxed">
+        <div className="flex flex-wrap items-center gap-2 mb-1.5">
+          <DataOriginBadge origin="campo" variant="full" />
+          <span className="text-muted-foreground">medições ARTESP acima ·</span>
+          <DataOriginBadge origin="satelite" variant="full" />
+          <span className="text-muted-foreground">segmentos abaixo</span>
+        </div>
+        <p className="text-muted-foreground">
+          Pontos <strong className="text-foreground">conformes estimados</strong> por satélite + modelo não equivalem a pontos
+          <strong className="text-foreground"> medidos em campo</strong>. Quando a estimativa cruza o limite considerando a incerteza,
+          o trecho é encaminhado à validação presencial antes de concluir conformidade. Parâmetros de cálculo: <span className="font-mono">{parametrosVersao}</span>.
+        </p>
+      </div>
+
       <SegmentTable rows={segments} />
+
+      {/* Cláusula, limite e regra por segmento */}
+      <section className="mt-6 bg-surface-lowest rounded-xl p-5 border border-border/40 shadow-card">
+        <h2 className="text-[14px] font-semibold tracking-wider uppercase mb-1">Cláusula, limite e regra de classificação</h2>
+        <p className="text-[12px] text-muted-foreground mb-4">
+          Cada ativo tem um limite específico (30, 45 ou 60 cm). O status considera o limite da cláusula do ativo, não apenas a regra geral de 30 cm.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {segments.slice(0, 6).map(s => {
+            const d = evaluateDecision({ altura: s.altura, limite: s.limite });
+            const dentro = s.altura <= s.limite;
+            return (
+              <div key={s.id} className="rounded-lg border border-border/50 bg-surface-low p-3 text-[12.5px] leading-relaxed">
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <span className="font-semibold">{s.km} · {s.tipo}</span>
+                  <DataOriginBadge origin={segmentOrigin(s)} />
+                </div>
+                <p>
+                  Altura estimada: <strong>{s.altura} cm</strong>. Limite da cláusula {s.clausula} para este ativo: <strong>{s.limite} cm</strong>.
+                  Resultado: <strong>{dentro ? "dentro" : "acima"} do limite específico da cláusula</strong>
+                  {s.limite !== 30 && " — a regra geral de 30 cm não se aplica a este item"}.
+                </p>
+                <p className="text-muted-foreground mt-1">{d.summary}</p>
+              </div>
+            );
+          })}
+        </div>
+        {segments[0] && (
+          <div className="mt-4">
+            <DecisionZoneCard altura={segments[0].altura} limite={segments[0].limite} origin={segmentOrigin(segments[0])} clausula={segments[0].clausula} />
+          </div>
+        )}
+      </section>
+
+      {/* Metodologia e limitações */}
+      <section className="mt-6 bg-surface-lowest rounded-xl p-5 border border-border/40 shadow-card" id="metodologia">
+        <h2 className="text-[14px] font-semibold tracking-wider uppercase mb-4">Metodologia e limitações</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          {METHODOLOGY_SECTIONS.map(sec => (
+            <div key={sec.title}>
+              <h3 className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">{sec.title}</h3>
+              <ul className="space-y-1">
+                {sec.items.map((it, i) => (
+                  <li key={i} className="text-[12.5px] leading-relaxed pl-3 border-l-2 border-border">{it}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+        <p className="mt-5 text-[12px] italic text-muted-foreground border-t border-border/50 pt-3">{POSITIONING_MESSAGE}</p>
+      </section>
 
       <div className="mt-6 bg-surface-lowest rounded-xl p-5 flex flex-wrap gap-4 items-center justify-between">
         <div className="flex items-center gap-4">
