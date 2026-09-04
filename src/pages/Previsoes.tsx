@@ -1,4 +1,5 @@
 import { TopHeader } from "@/components/vegia/TopHeader";
+import { MODEL_UNCERTAINTY_CM } from "@/lib/uncertainty";
 import { useSegments } from "@/hooks/useVegiaData";
 import { useWeather } from "@/hooks/useWeather";
 import { ircForSegment } from "@/lib/irc";
@@ -69,6 +70,9 @@ const Previsoes = () => {
             <p className="text-[13px] text-muted-foreground mt-1 max-w-[640px]">
               Modelo de Machine Learning calibrado em NDVI Sentinel-2, clima e histórico
               de roçada — projeta crescimento vegetativo e probabilidade de criticidade.
+            </p>
+            <p className="mt-2 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-tertiary bg-tertiary/10 border border-tertiary/30 rounded-md px-2 py-1">
+              Previsões — valores projetados, não medições. Alturas base estimadas por satélite ± {MODEL_UNCERTAINTY_CM} cm.
             </p>
           </div>
           <div className="text-[11px] uppercase tracking-wider text-muted-foreground bg-surface-low border border-border/40 rounded-full px-3 py-1.5">
