@@ -230,6 +230,7 @@ export const CVImageGrid = ({ segmentId, rodovia, kmStart, kmEnd, scope = "malha
         title="Enviar para validação de campo?"
         description="A detecção será marcada como pendente de validação presencial. Nenhuma ordem de serviço é criada automaticamente."
         confirmLabel="Enviar"
+        variant="primary"
         onConfirm={() => confirmId !== null && sendToField(confirmId)}
       />
     </>
