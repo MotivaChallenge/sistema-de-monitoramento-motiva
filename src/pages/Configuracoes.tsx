@@ -9,7 +9,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Save, RotateCcw, User as UserIcon, Sliders, Bell, Palette } from "lucide-react";
+import { Save, RotateCcw, User as UserIcon, Sliders, Bell, Palette, History } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { settingsVersionLabel } from "@/lib/settings-version";
 
 const Section = ({ icon: Icon, title, desc, children }: { icon: any; title: string; desc?: string; children: React.ReactNode }) => (
   <section className="bg-surface-lowest rounded-xl p-6">
@@ -78,6 +82,8 @@ const Configuracoes = () => {
   const [displayName, setDisplayName] = useState("");
   const [savingProfile, setSavingProfile] = useState(false);
   const [restoreOpen, setRestoreOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [reason, setReason] = useState("");
 
   useEffect(() => { setDraft(settings); }, [settings]);
 
@@ -93,11 +99,24 @@ const Configuracoes = () => {
   const validationError = validateSettings(draft);
   const invalidNum = (v: number) => !Number.isFinite(v) || v < 0;
 
-  const onSave = async () => {
+  /** Campos numéricos de cálculo que alteram classificação/priorização retroativamente. */
+  const CALC_KEYS: (keyof UserSettings)[] = [
+    "irc_weight_ndvi", "irc_weight_altura", "irc_weight_idade", "irc_weight_chuva",
+    "altura_atencao_cm", "altura_critica_cm",
+  ];
+  const changedKeys = (Object.keys(draft) as (keyof UserSettings)[]).filter(k => draft[k] !== settings[k]);
+  const calcChanged = changedKeys.filter(k => CALC_KEYS.includes(k));
+
+  const onSave = () => {
     if (validationError) {
       toast.error("Revise as configurações", { description: validationError });
       return;
     }
+    setConfirmOpen(true);
+  };
+
+  const confirmSave = async () => {
+    setConfirmOpen(false);
     const before = { ...settings };
     const { error } = await save(draft);
     if (error) {
@@ -115,8 +134,9 @@ const Configuracoes = () => {
       entityId: user?.id ?? null,
       before: diff ? { from: before as unknown as Json } : null,
       after: diff ? { to: draft as unknown as Json } : null,
-      reason: "Alteração de configurações operacionais",
+      reason: reason.trim() || "Alteração de configurações operacionais",
     });
+    setReason("");
   };
 
   const onRestoreDefaults = () => setRestoreOpen(true);
@@ -170,6 +190,9 @@ const Configuracoes = () => {
           <div>
             <h1 className="text-[34px] font-bold tracking-tight">Configurações</h1>
             <p className="text-muted-foreground mt-1">Personalize sua experiência e ajuste os parâmetros operacionais do sistema.</p>
+            <p className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-mono text-muted-foreground bg-surface-low border border-border/50 rounded-md px-2 py-1">
+              <History className="h-3 w-3" /> Versão do cálculo em uso: {settingsVersionLabel(settings)}
+            </p>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -313,6 +336,49 @@ const Configuracoes = () => {
           </div>
         )}
       </div>
+
+      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Confirmar alteração de parâmetros</DialogTitle>
+            <DialogDescription>
+              Revise o impacto antes de salvar. A alteração fica registrada com data, hora, usuário, valor anterior e novo valor.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 text-[13px]">
+            {calcChanged.length > 0 ? (
+              <div className="rounded-lg border border-tertiary/40 bg-tertiary/10 px-3 py-2 text-tertiary">
+                <b>Impacto:</b> {calcChanged.length} parâmetro(s) de cálculo mudam. Trechos serão reclassificados e prioridades recalculadas
+                imediatamente em dashboard, mapa, planejamento e previsões. Relatórios históricos permanecem identificados pela versão anterior dos parâmetros.
+              </div>
+            ) : (
+              <div className="rounded-lg border border-border bg-surface-low px-3 py-2 text-muted-foreground">
+                Apenas preferências de interface/notificação — sem impacto na classificação dos trechos.
+              </div>
+            )}
+            <div className="grid grid-cols-1 gap-1 font-mono text-[11.5px]">
+              <div><span className="text-muted-foreground">Versão atual:&nbsp;</span>{settingsVersionLabel(settings)}</div>
+              <div><span className="text-muted-foreground">Nova versão:&nbsp;&nbsp;</span>{settingsVersionLabel(draft)}</div>
+            </div>
+            <ul className="max-h-40 overflow-y-auto space-y-1 text-[12px]">
+              {changedKeys.map(k => (
+                <li key={k} className="flex justify-between gap-3 border-b border-border/40 pb-1">
+                  <span className="text-muted-foreground">{k}</span>
+                  <span className="tabular-nums"><s className="opacity-60">{String(settings[k])}</s> → <b>{String(draft[k])}</b></span>
+                </li>
+              ))}
+            </ul>
+            <div>
+              <label htmlFor="settings-reason" className="text-[11px] uppercase tracking-wider text-muted-foreground">Motivo da alteração (opcional)</label>
+              <Textarea id="settings-reason" value={reason} onChange={e => setReason(e.target.value)} placeholder="Ex.: ajuste após calibração de campo do trecho KM 12" className="mt-1 min-h-[70px] text-[13px]" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmOpen(false)}>Cancelar</Button>
+            <Button onClick={confirmSave} disabled={saving}>{saving ? "Salvando…" : "Confirmar e salvar"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <ConfirmationDialog
         open={restoreOpen}
