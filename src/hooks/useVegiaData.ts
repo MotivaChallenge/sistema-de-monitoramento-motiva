@@ -19,6 +19,12 @@ interface CvImage {
   model?: string | null;
   capturedAt?: string | null;
   reviewStatus?: string | null;
+  modelVersion?: string | null;
+  imageRef?: string | null;
+  lat?: number | null;
+  lng?: number | null;
+  alertId?: string | null;
+  workOrderId?: string | null;
 }
 
 const mapSegment = (r: any): Segment => ({
@@ -99,6 +105,12 @@ export const useCvResults = () =>
         model: r.model ?? null,
         capturedAt: r.captured_at ?? null,
         reviewStatus: r.review_status ?? null,
+        modelVersion: r.model_version ?? null,
+        imageRef: r.image_ref ?? null,
+        lat: r.lat != null ? Number(r.lat) : null,
+        lng: r.lng != null ? Number(r.lng) : null,
+        alertId: r.alert_id ?? null,
+        workOrderId: r.work_order_id ?? null,
       }));
     },
   });

@@ -1,5 +1,7 @@
 import { TopHeader } from "@/components/vegia/TopHeader";
 import { CVImageGrid, type CvScope } from "@/components/vegia/CVImageGrid";
+import { DecisionZoneCard } from "@/components/vegia/DecisionZone";
+import { segmentOrigin } from "@/lib/data-provenance";
 import { VisionAnalyzer } from "@/components/vegia/VisionAnalyzer";
 import { useParams } from "react-router-dom";
 import {
@@ -154,6 +156,9 @@ const AnaliseCV = () => {
                 </button>
               ))}
             </div>
+          </div>
+          <div className="mb-5">
+            <DecisionZoneCard altura={seg.altura} limite={seg.limite} origin={segmentOrigin(seg)} clausula={seg.clausula} />
           </div>
           <CVImageGrid
             scope={scope}

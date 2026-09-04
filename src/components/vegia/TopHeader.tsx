@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { NotificationsPanel } from "./NotificationsPanel";
+import { DemoModeMenu } from "./DemoModeMenu";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useSegments } from "@/hooks/useVegiaData";
 import { useUnreadNotificationsCount } from "@/hooks/useNotifications";
@@ -78,6 +79,7 @@ export const TopHeader = ({ breadcrumb = [{ label: "Rodoanel SP-021" }], current
             <div className="text-[12px] font-medium">Hoje, {lastReading}</div>
           </div>
         )}
+        <DemoModeMenu />
         <NotificationsPanel />
         {/* Desktop ≥ md */}
         <button
