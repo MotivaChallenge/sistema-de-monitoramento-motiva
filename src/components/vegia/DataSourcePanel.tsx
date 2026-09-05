@@ -55,7 +55,7 @@ interface Props {
  * "Fonte e qualidade do dado" — resumo sempre visível de como o dado foi capturado.
  * Nunca inventa medições: sem leitura orbital carregada, marca como demonstrativo.
  */
-export const DataSourcePanel = ({ info = {}, className = "", title = "Fonte e qualidade do dado" }: Props) => {
+export const DataSourcePanel = ({ info = {}, className = "", title = "Fonte e qualidade do dado", note }: Props) => {
   const demo = info.demo ?? false;
   const rows: { label: string; value: string }[] = [
     { label: "Fonte principal", value: "Sentinel-2 SR Harmonized" },
