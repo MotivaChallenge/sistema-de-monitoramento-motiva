@@ -66,4 +66,8 @@ export const METHODOLOGY_SECTIONS: MethodologySection[] = [
 
 /** Versão em linhas planas (usada no PDF). */
 export const methodologyPlainLines = (): { title: string; lines: string[] }[] =>
-  METHODOLOGY_SECTIONS.map(s => ({ title: s.title, lines: s.items }));
+  METHODOLOGY_SECTIONS.map(s => ({ title: s.title, lines: s.items.map(pdfSafe) }));
+
+/** Fontes padrão do PDF não possuem alguns glifos Unicode; substitui por equivalentes ASCII. */
+export const pdfSafe = (t: string) =>
+  t.replace(/\u2212/g, "-").replace(/\u2192/g, "->").replace(/\u2264/g, "<=").replace(/\u2265/g, ">=");

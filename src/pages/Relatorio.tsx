@@ -184,7 +184,7 @@ const Relatorio = () => {
         </div>
       </div>
 
-      <DataSourcePanel className="mb-6" info={{ updatedAt: new Date(), demo: false }} />
+      <DataSourcePanel className="mb-6" info={{ updatedAt: new Date(), demo: false }} note="Nº de cenas e pixels válidos variam por trecho — consulte o detalhe de cada segmento para os valores calculados no Earth Engine daquele ponto." />
 
       <div className="mb-6 rounded-xl border border-border/60 bg-surface-low px-4 py-3 text-[12.5px] leading-relaxed">
         <div className="flex flex-wrap items-center gap-2 mb-1.5">

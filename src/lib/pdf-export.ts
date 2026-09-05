@@ -241,7 +241,11 @@ export const generateConformityPdf = (input: PdfReportInput) => {
     doc.setFontSize(8);
     doc.setTextColor(140, 140, 140);
     doc.text(
-      `Motiva Monitoramento · Fonte: Sentinel-2 SR Harmonized / Google Earth Engine + levantamento de campo · Gerado em ${new Date().toLocaleString("pt-BR")}`,
+      `Motiva Monitoramento · Fonte: Sentinel-2 SR Harmonized / Google Earth Engine + levantamento de campo`,
+      margin, doc.internal.pageSize.getHeight() - 30
+    );
+    doc.text(
+      `Gerado em ${new Date().toLocaleString("pt-BR")} · Apoio à decisão — não substitui medição contratual de campo`,
       margin, doc.internal.pageSize.getHeight() - 20
     );
     doc.text(

@@ -47,13 +47,15 @@ interface Props {
   className?: string;
   /** Título alternativo. */
   title?: string;
+  /** Nota adicional exibida no rodapé do painel. */
+  note?: string;
 }
 
 /**
  * "Fonte e qualidade do dado" — resumo sempre visível de como o dado foi capturado.
  * Nunca inventa medições: sem leitura orbital carregada, marca como demonstrativo.
  */
-export const DataSourcePanel = ({ info = {}, className = "", title = "Fonte e qualidade do dado" }: Props) => {
+export const DataSourcePanel = ({ info = {}, className = "", title = "Fonte e qualidade do dado", note }: Props) => {
   const demo = info.demo ?? false;
   const rows: { label: string; value: string }[] = [
     { label: "Fonte principal", value: "Sentinel-2 SR Harmonized" },
@@ -106,6 +108,7 @@ export const DataSourcePanel = ({ info = {}, className = "", title = "Fonte e qu
           Metadados de referência — sem leitura orbital carregada para este contexto (dados demonstrativos).
         </p>
       )}
+      {note && <p className="mt-2 text-[12px] text-muted-foreground">{note}</p>}
     </section>
   );
 };
