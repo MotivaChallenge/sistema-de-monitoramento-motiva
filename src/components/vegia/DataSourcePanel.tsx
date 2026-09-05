@@ -47,6 +47,8 @@ interface Props {
   className?: string;
   /** Título alternativo. */
   title?: string;
+  /** Nota adicional exibida no rodapé do painel. */
+  note?: string;
 }
 
 /**
@@ -106,6 +108,7 @@ export const DataSourcePanel = ({ info = {}, className = "", title = "Fonte e qu
           Metadados de referência — sem leitura orbital carregada para este contexto (dados demonstrativos).
         </p>
       )}
+      {note && <p className="mt-2 text-[12px] text-muted-foreground">{note}</p>}
     </section>
   );
 };
