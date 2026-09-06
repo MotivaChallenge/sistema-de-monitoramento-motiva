@@ -204,6 +204,47 @@ export type Database = {
           },
         ]
       }
+      field_height_measurements: {
+        Row: {
+          altura_cm: number
+          autor: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          measured_at: string
+          observacao: string | null
+          segment_id: string
+        }
+        Insert: {
+          altura_cm: number
+          autor?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          measured_at?: string
+          observacao?: string | null
+          segment_id: string
+        }
+        Update: {
+          altura_cm?: number
+          autor?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          measured_at?: string
+          observacao?: string | null
+          segment_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "field_height_measurements_segment_id_fkey"
+            columns: ["segment_id"]
+            isOneToOne: false
+            referencedRelation: "segments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       field_teams: {
         Row: {
           base_km: number
@@ -562,6 +603,51 @@ export type Database = {
         }
         Relationships: []
       }
+      satellite_refresh_runs: {
+        Row: {
+          details: Json | null
+          failed: number
+          finished_at: string | null
+          id: string
+          rodovia: string
+          skipped: number
+          started_at: string
+          started_by: string | null
+          status: string
+          total: number
+          trigger: string
+          updated: number
+        }
+        Insert: {
+          details?: Json | null
+          failed?: number
+          finished_at?: string | null
+          id?: string
+          rodovia: string
+          skipped?: number
+          started_at?: string
+          started_by?: string | null
+          status?: string
+          total?: number
+          trigger?: string
+          updated?: number
+        }
+        Update: {
+          details?: Json | null
+          failed?: number
+          finished_at?: string | null
+          id?: string
+          rodovia?: string
+          skipped?: number
+          started_at?: string
+          started_by?: string | null
+          status?: string
+          total?: number
+          trigger?: string
+          updated?: number
+        }
+        Relationships: []
+      }
       segment_ndvi_history: {
         Row: {
           altura_cm: number
@@ -616,6 +702,92 @@ export type Database = {
         }
         Relationships: []
       }
+      segment_satellite_readings: {
+        Row: {
+          altura_cm: number | null
+          buffer_m: number
+          created_at: string
+          evi_median: number | null
+          id: number
+          images: number
+          model_id: string
+          model_version: string
+          ndvi_max: number | null
+          ndvi_mean: number | null
+          ndvi_median: number | null
+          ndvi_min: number | null
+          ndvi_std: number | null
+          origin: string
+          period_end: string | null
+          period_start: string | null
+          read_at: string
+          saturated: boolean
+          savi_median: number | null
+          segment_id: string
+          source: string
+          uncertainty_cm: number | null
+          valid_pixels: number
+        }
+        Insert: {
+          altura_cm?: number | null
+          buffer_m?: number
+          created_at?: string
+          evi_median?: number | null
+          id?: never
+          images?: number
+          model_id?: string
+          model_version?: string
+          ndvi_max?: number | null
+          ndvi_mean?: number | null
+          ndvi_median?: number | null
+          ndvi_min?: number | null
+          ndvi_std?: number | null
+          origin?: string
+          period_end?: string | null
+          period_start?: string | null
+          read_at?: string
+          saturated?: boolean
+          savi_median?: number | null
+          segment_id: string
+          source?: string
+          uncertainty_cm?: number | null
+          valid_pixels?: number
+        }
+        Update: {
+          altura_cm?: number | null
+          buffer_m?: number
+          created_at?: string
+          evi_median?: number | null
+          id?: never
+          images?: number
+          model_id?: string
+          model_version?: string
+          ndvi_max?: number | null
+          ndvi_mean?: number | null
+          ndvi_median?: number | null
+          ndvi_min?: number | null
+          ndvi_std?: number | null
+          origin?: string
+          period_end?: string | null
+          period_start?: string | null
+          read_at?: string
+          saturated?: boolean
+          savi_median?: number | null
+          segment_id?: string
+          source?: string
+          uncertainty_cm?: number | null
+          valid_pixels?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "segment_satellite_readings_segment_id_fkey"
+            columns: ["segment_id"]
+            isOneToOne: false
+            referencedRelation: "segments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       segment_team_assignment: {
         Row: {
           created_at: string
@@ -656,14 +828,19 @@ export type Database = {
           km: string
           km_end: number
           km_start: number
+          last_satellite_read_at: string | null
           limite: number
           ndvi: number
+          ndvi_source: string
           notification_id: string | null
           rodovia: string | null
+          satellite_images: number | null
+          satellite_valid_pixels: number | null
           status: Database["public"]["Enums"]["segment_status"]
           street: Json | null
           tipo: string
           ultima_rocada: string
+          uncertainty_cm: number | null
           updated_at: string
         }
         Insert: {
@@ -679,14 +856,19 @@ export type Database = {
           km: string
           km_end: number
           km_start: number
+          last_satellite_read_at?: string | null
           limite?: number
           ndvi: number
+          ndvi_source?: string
           notification_id?: string | null
           rodovia?: string | null
+          satellite_images?: number | null
+          satellite_valid_pixels?: number | null
           status: Database["public"]["Enums"]["segment_status"]
           street?: Json | null
           tipo: string
           ultima_rocada: string
+          uncertainty_cm?: number | null
           updated_at?: string
         }
         Update: {
@@ -702,14 +884,19 @@ export type Database = {
           km?: string
           km_end?: number
           km_start?: number
+          last_satellite_read_at?: string | null
           limite?: number
           ndvi?: number
+          ndvi_source?: string
           notification_id?: string | null
           rodovia?: string | null
+          satellite_images?: number | null
+          satellite_valid_pixels?: number | null
           status?: Database["public"]["Enums"]["segment_status"]
           street?: Json | null
           tipo?: string
           ultima_rocada?: string
+          uncertainty_cm?: number | null
           updated_at?: string
         }
         Relationships: [
@@ -868,7 +1055,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      verify_cron_token: { Args: { _token: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "operator" | "viewer"
