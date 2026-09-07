@@ -210,7 +210,7 @@ const Relatorio = () => {
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {segments.slice(0, 6).map(s => {
-            const d = evaluateDecision({ altura: s.altura, limite: s.limite });
+            const d = evaluateDecision({ altura: s.altura, limite: s.limite, uncertaintyCm: segmentUncertainty(s) });
             const dentro = s.altura <= s.limite;
             return (
               <div key={s.id} className="rounded-lg border border-border/50 bg-surface-low p-3 text-[12.5px] leading-relaxed">
@@ -230,7 +230,7 @@ const Relatorio = () => {
         </div>
         {segments[0] && (
           <div className="mt-4">
-            <DecisionZoneCard altura={segments[0].altura} limite={segments[0].limite} origin={segmentOrigin(segments[0])} clausula={segments[0].clausula} />
+            <DecisionZoneCard altura={segments[0].altura} limite={segments[0].limite} uncertaintyCm={segmentUncertainty(segments[0])} origin={segmentOrigin(segments[0])} clausula={segments[0].clausula} />
           </div>
         )}
       </section>

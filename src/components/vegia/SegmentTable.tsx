@@ -93,7 +93,7 @@ export const SegmentTable = ({ rows }: { rows: Segment[] }) => {
       ...data.map(r => [
         r.km, r.kmStart, r.kmEnd, r.tipo, r.ndvi.toFixed(2), r.altura, MODEL_UNCERTAINTY_CM, r.limite,
         r.status === "critico" ? "Inconformidade" : r.status === "atencao" ? "Atenção" : "Conforme",
-        evaluateDecision({ altura: r.altura, limite: r.limite }).title,
+        evaluateDecision({ altura: r.altura, limite: r.limite, uncertaintyCm: segmentUncertainty(r) }).title,
         ORIGIN_META[segmentOrigin(r)].label,
         r.clausula, r.ultimaRocada, r.deadline ?? "",
       ].map(csvEscape).join(";")),
@@ -249,7 +249,7 @@ export const SegmentTable = ({ rows }: { rows: Segment[] }) => {
             <NDVIBar value={r.ndvi} />
             <span className="text-[13px] tabular-nums leading-tight">
               {r.altura}<span className="text-muted-foreground text-[11px]"> ±{MODEL_UNCERTAINTY_CM}</span>cm
-              {evaluateDecision({ altura: r.altura, limite: r.limite }).needsFieldValidation && (
+              {evaluateDecision({ altura: r.altura, limite: r.limite, uncertaintyCm: segmentUncertainty(r) }).needsFieldValidation && (
                 <span className="block text-[10px] text-tertiary font-semibold uppercase tracking-wider">validar em campo</span>
               )}
             </span>

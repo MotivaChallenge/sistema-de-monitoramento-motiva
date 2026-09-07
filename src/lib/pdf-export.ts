@@ -172,7 +172,7 @@ export const generateConformityPdf = (input: PdfReportInput) => {
       `${s.altura} ± ${MODEL_UNCERTAINTY_CM}`,
       `${s.limite} cm${s.clausula ? ` · cl. ${s.clausula}` : ""}`,
       statusLabel(s.status),
-      evaluateDecision({ altura: s.altura, limite: s.limite }).title.split(" — ")[0],
+      evaluateDecision({ altura: s.altura, limite: s.limite, uncertaintyCm: s.uncertaintyCm ?? undefined }).title.split(" — ")[0],
       s.origem ?? "Estimado (satélite + modelo)",
       formatDateBR(s.ultimaRocada),
     ]),
