@@ -36,25 +36,42 @@ export const setIRCWeights = (w: Partial<IRCWeights>) => {
 };
 export const getIRCWeights = (): IRCWeights => activeWeights;
 
-export const daysSince = (iso: string): number => {
+/**
+ * Dias corridos desde a data informada, calculados em dias civis (UTC, meia-noite),
+ * para que o mesmo dado produza o mesmo IRC ao longo do dia.
+ */
+export const daysSince = (iso: string, today: Date = new Date()): number => {
   const d = new Date(iso);
   if (isNaN(d.getTime())) return 0;
-  return Math.max(0, Math.round((Date.now() - d.getTime()) / 86_400_000));
+  const day = (x: Date) => Date.UTC(x.getFullYear(), x.getMonth(), x.getDate());
+  return Math.max(0, Math.round((day(today) - day(d)) / 86_400_000));
 };
 
 export const computeIRC = (i: IRCInputs): { score: number; level: IRCLevel } => {
-  const ndviN = clamp((i.ndvi - 0.2) / 0.6);
+  // NDVI é limitado entre o piso de solo exposto (0,15) e a saturação (0,80):
+  // acima disso o índice não distingue mais porte de vegetação.
+  const ndviClamped = clamp(i.ndvi, 0.15, 0.80);
+  const ndviN = clamp((ndviClamped - 0.2) / 0.6);
   const alturaN = clamp(i.altura / Math.max(1, i.limite));
   const idadeN = clamp(daysSince(i.ultimaRocada) / 90);
+  const base = i.weights ?? activeWeights;
+  // Sem previsão de chuva o peso da chuva é redistribuído entre os demais fatores,
+  // em vez de entrar como zero e derrubar artificialmente o índice.
+  const hasRain = i.rainMm5d != null && Number.isFinite(i.rainMm5d);
   const chuvaN = clamp((i.rainMm5d ?? 0) / 80);
-  const w = i.weights ?? activeWeights;
+  let w = base;
+  if (!hasRain && base.chuva > 0) {
+    const rest = base.ndvi + base.altura + base.idade;
+    const k = rest > 0 ? (rest + base.chuva) / rest : 1;
+    w = { ndvi: base.ndvi * k, altura: base.altura * k, idade: base.idade * k, chuva: 0 };
+  }
   const score = Math.round(w.ndvi * ndviN + w.altura * alturaN + w.idade * idadeN + w.chuva * chuvaN);
   const level: IRCLevel =
     score >= 75 ? "critico" : score >= 55 ? "alto" : score >= 35 ? "moderado" : "baixo";
   return { score, level };
 };
 
-export const ircForSegment = (s: Segment, rainMm5d = 0) =>
+export const ircForSegment = (s: Segment, rainMm5d?: number) =>
   computeIRC({ ndvi: s.ndvi, altura: s.altura, limite: s.limite, ultimaRocada: s.ultimaRocada, rainMm5d });
 
 export const ircLevelLabel: Record<IRCLevel, string> = {
