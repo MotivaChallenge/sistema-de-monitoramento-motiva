@@ -35,6 +35,8 @@ export interface PdfReportInput {
     clausula?: string;
     /** Origem do dado (rótulo já formatado). */
     origem?: string;
+    /** Incerteza (± cm) calculada para o trecho. */
+    uncertaintyCm?: number | null;
   }>;
   assinanteNome?: string;
   /** Metadados de captura orbital para o cabeçalho técnico. */

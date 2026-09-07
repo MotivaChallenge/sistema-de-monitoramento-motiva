@@ -80,6 +80,7 @@ const Relatorio = () => {
           km: s.km, tipo: s.tipo, altura: s.altura, limite: s.limite,
           status: s.status, ultimaRocada: s.ultimaRocada, clausula: s.clausula,
           origem: ORIGIN_META[segmentOrigin(s)].label,
+          uncertaintyCm: segmentUncertainty(s),
         })),
         assinanteNome: user?.user_metadata?.display_name || user?.email || undefined,
         fonte: { periodo: "últimos 60 dias (composição mediana)", atualizacao: new Date().toLocaleString("pt-BR") },
