@@ -9,7 +9,9 @@
  * isso explicitamente em vez de inventar uma acurácia.
  */
 
-/** Incerteza (± cm) do modelo de altura por NDVI, documentada na auditoria GEE. */
+/** Resíduo base (± cm) do modelo de altura por NDVI, documentado na auditoria GEE.
+ *  A incerteza efetiva de cada trecho é maior quando a leitura é heterogênea,
+ *  antiga ou saturada — ver `segmentUncertainty`. */
 export const MODEL_UNCERTAINTY_CM = 13;
 export const HEIGHT_MODEL_ID = "ndvi-linear";
 export const HEIGHT_MODEL_VERSION = "v1.0 (não recalibrado)";
@@ -83,7 +85,8 @@ export const evaluateDecision = ({
 
   const lower = altura - uncertaintyCm;
   const upper = altura + uncertaintyCm;
-  const base = `Estimativa: ${fmt(altura)} ± ${uncertaintyCm} cm · Limite: ${fmt(limite)}`;
+  const u = Math.round(uncertaintyCm * 10) / 10;
+  const base = `Estimativa: ${fmt(altura)} ± ${u} cm · Limite: ${fmt(limite)}`;
 
   if (upper < limite) {
     return {
@@ -119,6 +122,15 @@ export const evaluateDecision = ({
     uncertaintyCm, lower, upper,
   };
 };
+
+/**
+ * Incerteza efetiva de um trecho: usa o valor calculado na leitura do satélite
+ * quando existir; senão cai no resíduo base do modelo.
+ */
+export const segmentUncertainty = (seg: { uncertaintyCm?: number | null }): number =>
+  seg.uncertaintyCm != null && Number.isFinite(seg.uncertaintyCm) && seg.uncertaintyCm > 0
+    ? Math.round(seg.uncertaintyCm * 10) / 10
+    : MODEL_UNCERTAINTY_CM;
 
 export const ZONE_CLASS: Record<DecisionZone, string> = {
   baixo: "bg-primary/10 text-primary border-primary/25",

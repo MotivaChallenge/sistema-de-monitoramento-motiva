@@ -48,6 +48,11 @@ const mapSegment = (r: any): Segment => ({
   insight: r.insight ?? undefined,
   street: r.street ?? undefined,
   detection: r.detection ?? undefined,
+  uncertaintyCm: r.uncertainty_cm != null ? Number(r.uncertainty_cm) : null,
+  ndviSource: (r.ndvi_source as "seed" | "sentinel2") ?? "seed",
+  lastSatelliteReadAt: r.last_satellite_read_at ?? null,
+  satelliteImages: r.satellite_images ?? null,
+  satelliteValidPixels: r.satellite_valid_pixels ?? null,
 });
 
 export const useSegments = () =>
