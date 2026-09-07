@@ -9,7 +9,7 @@ import {
 import { TopHeader } from "@/components/vegia/TopHeader";
 import { Skeleton } from "@/components/ui/skeleton";
 import { HighwaySelect } from "@/components/vegia/HighwaySelect";
-import { useCvResults, useSegments } from "@/hooks/useVegiaData";
+import { useCvResults, useFieldHeightMeasurements, useSegments } from "@/hooks/useVegiaData";
 import { useFilters } from "@/contexts/FiltersContext";
 import { estimateHeightCm, heightModelSummary } from "@/lib/height-model";
 import { GeeFieldTest } from "@/components/vegia/GeeFieldTest";
@@ -25,6 +25,7 @@ const Prototipo = () => {
   const { rodovia, matches } = useFilters();
   const { data: allSegments = [], isLoading } = useSegments();
   const { data: cv = [] } = useCvResults();
+  const { data: fieldMeasurements = [] } = useFieldHeightMeasurements();
 
   const segments = useMemo(
     () =>
@@ -34,15 +35,27 @@ const Prototipo = () => {
     [allSegments, matches]
   );
 
-  const rows = useMemo(
-    () =>
-      segments.map(s => {
-        const previsto = estimateHeightCm(s.ndvi);
-        const erro = previsto - s.altura;
-        return { id: s.id, km: s.km, rodovia: s.rodovia ?? "—", ndvi: s.ndvi, medido: s.altura, previsto, erro, limite: s.limite, status: s.status };
-      }),
-    [segments]
-  );
+  /**
+   * Verdade de campo: apenas medições registradas por equipe em campo
+   * (`field_height_measurements`). A altura estimada é a do próprio pipeline
+   * orbital gravada no trecho — não recalculamos a partir do NDVI para não
+   * comparar o modelo com ele mesmo.
+   */
+  const rows = useMemo(() => {
+    const bySegment = new Map(segments.map(s => [s.id, s]));
+    return fieldMeasurements
+      .map(m => {
+        const s = bySegment.get(m.segmentId);
+        if (!s) return null;
+        const previsto = s.ndviSource === "sentinel2" ? s.altura : estimateHeightCm(s.ndvi);
+        return {
+          id: `${m.id}`, km: s.km, rodovia: s.rodovia ?? "—", ndvi: s.ndvi,
+          medido: m.alturaCm, previsto, erro: previsto - m.alturaCm,
+          limite: s.limite, status: s.status, measuredAt: m.measuredAt,
+        };
+      })
+      .filter((r): r is NonNullable<typeof r> => r !== null);
+  }, [segments, fieldMeasurements]);
 
   const stats = useMemo(() => {
     const n = rows.length;
@@ -120,12 +133,23 @@ const Prototipo = () => {
           </p>
         </section>
 
-        {isLoading || !stats ? (
+        {isLoading ? (
           <Skeleton className="h-[130px] w-full rounded-xl" />
+        ) : !stats ? (
+          <section className="bg-surface-lowest rounded-xl border border-tertiary/30 shadow-card p-5">
+            <h2 className="flex items-center gap-2 text-[13px] font-semibold uppercase tracking-wider mb-2">
+              <AlertTriangle className="h-4 w-4 text-tertiary" /> Calibração pendente
+            </h2>
+            <p className="text-[12px] text-muted-foreground leading-relaxed max-w-3xl">
+              Ainda não há medições de altura feitas em campo para os trechos deste filtro. Sem verdade de campo,
+              o sistema não declara acurácia: MAE, RMSE e R² só são calculados comparando a estimativa orbital
+              com medições registradas por régua em campo. Registre medições nos trechos para liberar as métricas.
+            </p>
+          </section>
         ) : (
           <section className="grid grid-cols-2 lg:grid-cols-5 gap-3">
             {[
-              { label: "Amostras validadas", value: String(stats.n), unit: `trechos${rodovia ? ` · ${rodovia}` : " na malha"}`, icon: Target },
+              { label: "Medições de campo", value: String(stats.n), unit: `pareadas${rodovia ? ` · ${rodovia}` : " na malha"}`, icon: Target },
               { label: "Erro médio absoluto", value: `${fmt(stats.abs)} cm`, unit: `viés ${stats.bias >= 0 ? "+" : ""}${fmt(stats.bias)} cm`, icon: Ruler },
               { label: "RMSE", value: `${fmt(stats.rmse)} cm`, unit: "dispersão do erro", icon: TrendingUp },
               { label: "R²", value: fmt(stats.r2, 2), unit: "modelo x medição", icon: FlaskConical },
