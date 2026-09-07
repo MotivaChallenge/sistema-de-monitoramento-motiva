@@ -156,7 +156,7 @@ export const generateConformityPdf = (input: PdfReportInput) => {
   doc.setFontSize(8);
   doc.setTextColor(90, 90, 90);
   doc.text(
-    `Alturas estimadas por satélite (Sentinel-2/GEE) + modelo ${HEIGHT_MODEL_ID} ${HEIGHT_MODEL_VERSION}, incerteza ± ${MODEL_UNCERTAINTY_CM} cm. Pontos conformes estimados não equivalem a pontos medidos em campo.`,
+    `Alturas estimadas por satélite (Sentinel-2/GEE) + modelo ${HEIGHT_MODEL_ID} ${HEIGHT_MODEL_VERSION}, incerteza por trecho (mínimo ± ${MODEL_UNCERTAINTY_CM} cm). Pontos conformes estimados não equivalem a pontos medidos em campo.`,
     margin, afterY + 12, { maxWidth: pageW - margin * 2 }
   );
   doc.setTextColor(20, 30, 48);
@@ -169,7 +169,7 @@ export const generateConformityPdf = (input: PdfReportInput) => {
     body: input.segments.map(s => [
       s.km,
       s.tipo,
-      `${s.altura} ± ${MODEL_UNCERTAINTY_CM}`,
+      `${s.altura} ± ${s.uncertaintyCm ?? MODEL_UNCERTAINTY_CM}`,
       `${s.limite} cm${s.clausula ? ` · cl. ${s.clausula}` : ""}`,
       statusLabel(s.status),
       evaluateDecision({ altura: s.altura, limite: s.limite, uncertaintyCm: s.uncertaintyCm ?? undefined }).title.split(" — ")[0],
