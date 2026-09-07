@@ -18,7 +18,7 @@ import { DataOriginBadge } from "@/components/vegia/DataOriginBadge";
 import { DecisionZoneCard } from "@/components/vegia/DecisionZone";
 import { METHODOLOGY_SECTIONS } from "@/lib/methodology";
 import { ORIGIN_META, POSITIONING_MESSAGE, segmentOrigin } from "@/lib/data-provenance";
-import { evaluateDecision } from "@/lib/uncertainty";
+import { evaluateDecision, segmentUncertainty } from "@/lib/uncertainty";
 import { useSettings } from "@/hooks/useSettings";
 import { settingsVersionLabel } from "@/lib/settings-version";
 

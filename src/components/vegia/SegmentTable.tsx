@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { formatKmRange } from "@/lib/km";
 import { DataOriginBadge } from "./DataOriginBadge";
 import { ORIGIN_META, segmentOrigin } from "@/lib/data-provenance";
-import { evaluateDecision, MODEL_UNCERTAINTY_CM } from "@/lib/uncertainty";
+import { evaluateDecision, MODEL_UNCERTAINTY_CM, segmentUncertainty } from "@/lib/uncertainty";
 
 const NDVIBar = ({ value }: { value: number }) => {
   const color = value >= 0.6 ? "bg-primary" : value >= 0.4 ? "bg-tertiary" : "bg-destructive";
@@ -248,7 +248,7 @@ export const SegmentTable = ({ rows }: { rows: Segment[] }) => {
             <span className="text-[13px] text-muted-foreground">{r.tipo}</span>
             <NDVIBar value={r.ndvi} />
             <span className="text-[13px] tabular-nums leading-tight">
-              {r.altura}<span className="text-muted-foreground text-[11px]"> ±{MODEL_UNCERTAINTY_CM}</span>cm
+              {r.altura}<span className="text-muted-foreground text-[11px]"> ±{segmentUncertainty(r)}</span>cm
               {evaluateDecision({ altura: r.altura, limite: r.limite, uncertaintyCm: segmentUncertainty(r) }).needsFieldValidation && (
                 <span className="block text-[10px] text-tertiary font-semibold uppercase tracking-wider">validar em campo</span>
               )}

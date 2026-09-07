@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Presentation, Satellite, LineChart, ListOrdered, CalendarDays, ClipboardList, FileText, ArrowRight } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useSegments } from "@/hooks/useVegiaData";
-import { evaluateDecision } from "@/lib/uncertainty";
+import { evaluateDecision, segmentUncertainty } from "@/lib/uncertainty";
 import { StatusDot } from "./ComplianceBadge";
 import type { Status } from "@/types/domain";
 
