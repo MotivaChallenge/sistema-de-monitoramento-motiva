@@ -12,6 +12,13 @@ export interface Segment {
   status: Status; // derivado dos limiares de altura configurados
   /** Status originalmente gravado no banco (antes dos limiares do usuário). */
   statusBanco?: Status;
+  /** Incerteza (± cm) calculada na última leitura orbital deste trecho. */
+  uncertaintyCm?: number | null;
+  /** Origem do NDVI/altura: carga inicial (demonstrativo) ou Sentinel-2 real. */
+  ndviSource?: "seed" | "sentinel2";
+  lastSatelliteReadAt?: string | null;
+  satelliteImages?: number | null;
+  satelliteValidPixels?: number | null;
   clausula: string;
   clauseFull: string;
   ultimaRocada: string;

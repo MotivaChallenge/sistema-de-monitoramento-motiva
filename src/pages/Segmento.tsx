@@ -15,7 +15,7 @@ import { DecisionZoneCard } from "@/components/vegia/DecisionZone";
 import { GeeDataSourcePanel } from "@/components/vegia/DataSourcePanel";
 import { DataOriginBadge } from "@/components/vegia/DataOriginBadge";
 import { segmentOrigin } from "@/lib/data-provenance";
-import { MODEL_UNCERTAINTY_CM } from "@/lib/uncertainty";
+import { segmentUncertainty } from "@/lib/uncertainty";
 
 const OSMMap = lazy(() => import("@/components/vegia/OSMMap").then(m => ({ default: m.OSMMap })));
 const NDVILineChart = lazy(() => import("@/components/vegia/NDVILineChart").then(m => ({ default: m.NDVILineChart })));
@@ -124,7 +124,7 @@ const Segmento = () => {
                 <Row label="Altura Estimada (Média)" value={
                   <span className={`flex items-center gap-2 justify-end ${seg.altura > seg.limite ? "text-destructive" : ""}`}>
                     <DataOriginBadge origin={segmentOrigin(seg)} />
-                    {seg.altura} <span className="text-muted-foreground font-normal text-[12px]">± {MODEL_UNCERTAINTY_CM}</span> cm {seg.altura > seg.limite && <ArrowUpRight className="h-4 w-4" />}
+                    {seg.altura} <span className="text-muted-foreground font-normal text-[12px]">± {segmentUncertainty(seg)}</span> cm {seg.altura > seg.limite && <ArrowUpRight className="h-4 w-4" />}
                   </span>
                 } />
                 <Row label={`Limite Contratual (cláusula ${seg.clausula})`} value={`${seg.limite} cm`} />

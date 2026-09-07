@@ -19,6 +19,8 @@ import { estimateHeight, MODEL_ID, MODEL_VERSION } from "../_shared/height-model
  * Disparo: usuário autenticado (botão) ou cron com x-cron-token (verify_cron_token).
  */
 
+/** Extensão máxima (km) da linha amostrada por trecho. */
+const MAX_LINE_KM = 5;
 const BUFFER_M = 30;
 const DAYS = 60;
 const MIN_PIXELS = 20;
@@ -100,12 +102,24 @@ Deno.serve(async (req) => {
         try {
           const street = (s.street ?? {}) as { lat?: number; lng?: number };
           const ks = Number(s.km_start), ke = Number(s.km_end);
-          const inside = (markers ?? []).filter(m => Number(m.km_value) >= ks && Number(m.km_value) <= ke)
-            .map(m => [Number(m.lng), Number(m.lat)] as [number, number]);
+          // Marcos dentro do trecho, na ordem quilométrica (nunca por longitude:
+          // a rodovia muda de sentido e a ordenação geográfica cria linhas cruzadas).
+          let insideMarkers = (markers ?? [])
+            .filter(m => Number(m.km_value) >= ks && Number(m.km_value) <= ke)
+            .sort((a, b) => Number(a.km_value) - Number(b.km_value));
+          // Trechos muito longos geram amostras enormes e pouco representativas:
+          // limitamos a leitura a MAX_LINE_KM centrados no meio do trecho.
+          if (ke - ks > MAX_LINE_KM) {
+            const mid = (ks + ke) / 2;
+            const lo = mid - MAX_LINE_KM / 2, hi = mid + MAX_LINE_KM / 2;
+            const clipped = insideMarkers.filter(m => Number(m.km_value) >= lo && Number(m.km_value) <= hi);
+            if (clipped.length >= 2) insideMarkers = clipped;
+          }
+          const inside = insideMarkers.map(m => [Number(m.lng), Number(m.lat)] as [number, number]);
           const pt: [number, number] | null =
             Number.isFinite(Number(street.lng)) && Number.isFinite(Number(street.lat)) ? [Number(street.lng), Number(street.lat)] : null;
           let line = inside;
-          if (line.length < 2 && pt) line = [...inside, pt].sort((a, b) => a[0] - b[0]);
+          if (line.length < 2 && pt) line = [...inside, pt];
           if (line.length < 2 && !pt) { skipped++; details.push({ id: s.id, result: "sem_geometria" }); return; }
 
           const out = await computeIndices(sa, {

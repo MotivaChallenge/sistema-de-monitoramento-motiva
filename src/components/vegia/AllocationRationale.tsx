@@ -3,7 +3,7 @@ import { ChevronDown, HelpCircle, AlertTriangle, CheckCircle2 } from "lucide-rea
 import type { FieldTeam } from "@/hooks/useVegiaData";
 import { formatKmPrecise } from "@/lib/km";
 import { SLA_DAYS } from "@/lib/deadlines";
-import { MODEL_UNCERTAINTY_CM } from "@/lib/uncertainty";
+import { segmentUncertainty } from "@/lib/uncertainty";
 
 export interface PlannedItem {
   s: {
@@ -124,7 +124,7 @@ export const AllocationRationale = ({ team, assigned, otherTeams, slots, ownersB
                       <td className="py-2 pr-3 tabular-nums font-semibold">{it.s._score}</td>
                       <td className="py-2 pr-3 whitespace-nowrap">
                         <span className="uppercase text-[10px] font-bold tracking-wider">{it.s.status}</span>{" "}
-                        <span className="tabular-nums">{it.s.altura} ± {MODEL_UNCERTAINTY_CM} cm</span>
+                        <span className="tabular-nums">{it.s.altura} ± {segmentUncertainty(it.s)} cm</span>
                         <span className="text-muted-foreground"> (limite {it.s.limite})</span>
                       </td>
                       <td className="py-2 pr-3 tabular-nums whitespace-nowrap">{dist.toFixed(0)} km · ~{travelMin} min</td>

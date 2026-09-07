@@ -18,7 +18,7 @@ import { DataOriginBadge } from "@/components/vegia/DataOriginBadge";
 import { DecisionZoneCard } from "@/components/vegia/DecisionZone";
 import { METHODOLOGY_SECTIONS } from "@/lib/methodology";
 import { ORIGIN_META, POSITIONING_MESSAGE, segmentOrigin } from "@/lib/data-provenance";
-import { evaluateDecision } from "@/lib/uncertainty";
+import { evaluateDecision, segmentUncertainty } from "@/lib/uncertainty";
 import { useSettings } from "@/hooks/useSettings";
 import { settingsVersionLabel } from "@/lib/settings-version";
 
@@ -80,6 +80,7 @@ const Relatorio = () => {
           km: s.km, tipo: s.tipo, altura: s.altura, limite: s.limite,
           status: s.status, ultimaRocada: s.ultimaRocada, clausula: s.clausula,
           origem: ORIGIN_META[segmentOrigin(s)].label,
+          uncertaintyCm: segmentUncertainty(s),
         })),
         assinanteNome: user?.user_metadata?.display_name || user?.email || undefined,
         fonte: { periodo: "últimos 60 dias (composição mediana)", atualizacao: new Date().toLocaleString("pt-BR") },
@@ -210,7 +211,7 @@ const Relatorio = () => {
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {segments.slice(0, 6).map(s => {
-            const d = evaluateDecision({ altura: s.altura, limite: s.limite });
+            const d = evaluateDecision({ altura: s.altura, limite: s.limite, uncertaintyCm: segmentUncertainty(s) });
             const dentro = s.altura <= s.limite;
             return (
               <div key={s.id} className="rounded-lg border border-border/50 bg-surface-low p-3 text-[12.5px] leading-relaxed">
@@ -230,7 +231,7 @@ const Relatorio = () => {
         </div>
         {segments[0] && (
           <div className="mt-4">
-            <DecisionZoneCard altura={segments[0].altura} limite={segments[0].limite} origin={segmentOrigin(segments[0])} clausula={segments[0].clausula} />
+            <DecisionZoneCard altura={segments[0].altura} limite={segments[0].limite} uncertaintyCm={segmentUncertainty(segments[0])} origin={segmentOrigin(segments[0])} clausula={segments[0].clausula} />
           </div>
         )}
       </section>

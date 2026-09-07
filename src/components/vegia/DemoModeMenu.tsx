@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Presentation, Satellite, LineChart, ListOrdered, CalendarDays, ClipboardList, FileText, ArrowRight } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useSegments } from "@/hooks/useVegiaData";
-import { evaluateDecision } from "@/lib/uncertainty";
+import { evaluateDecision, segmentUncertainty } from "@/lib/uncertainty";
 import { StatusDot } from "./ComplianceBadge";
 import type { Status } from "@/types/domain";
 
@@ -31,7 +31,7 @@ export const DemoModeMenu = () => {
       const list = segments.filter(s => s.status === st);
       // prioriza casos na zona de validação (mais didáticos) para atenção; maior altura para crítico
       if (st === "atencao") {
-        return list.find(s => evaluateDecision({ altura: s.altura, limite: s.limite }).zone === "validar") ?? list[0];
+        return list.find(s => evaluateDecision({ altura: s.altura, limite: s.limite, uncertaintyCm: segmentUncertainty(s) }).zone === "validar") ?? list[0];
       }
       if (st === "critico") return [...list].sort((a, b) => b.altura - a.altura)[0];
       return [...list].sort((a, b) => a.altura - b.altura)[0];
@@ -65,7 +65,7 @@ export const DemoModeMenu = () => {
           <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">Casos pré-selecionados</div>
           <div className="space-y-1">
             {picks.map(({ st, seg }) => {
-              const d = evaluateDecision({ altura: seg!.altura, limite: seg!.limite });
+              const d = evaluateDecision({ altura: seg!.altura, limite: seg!.limite, uncertaintyCm: segmentUncertainty(seg!) });
               return (
                 <button
                   key={st}

@@ -1,4 +1,4 @@
-import { evaluateDecision } from "@/lib/uncertainty";
+import { evaluateDecision, segmentUncertainty } from "@/lib/uncertainty";
 /**
  * Origem (procedência) de cada dado exibido na plataforma.
  * A banca exige que estimativas orbitais nunca sejam confundidas
@@ -66,9 +66,19 @@ export const ORIGIN_FILTER_LABEL: Record<OriginFilter, string> = {
   pendente: "Pendentes de validação",
 };
 
-/** Segmentos vêm do pipeline orbital; quando houver roçada validada, marcamos como validado. */
-export const segmentOrigin = (seg: { detection?: unknown; statusBanco?: string }): DataOrigin =>
-  seg.detection ? "cv" : "satelite";
+/**
+ * Origem do dado do trecho:
+ *  - `satelite` quando há leitura real do Sentinel-2 gravada;
+ *  - `cv` quando o valor exibido vem de detecção por visão computacional;
+ *  - `demo` enquanto o trecho ainda estiver com o valor de carga inicial.
+ */
+export const segmentOrigin = (seg: {
+  detection?: unknown; statusBanco?: string; ndviSource?: "seed" | "sentinel2";
+}): DataOrigin => {
+  if (seg.ndviSource === "sentinel2") return "satelite";
+  if (seg.detection) return "cv";
+  return seg.ndviSource === "seed" ? "demo" : "satelite";
+};
 
 export const originMatchesFilter = (
   origin: DataOrigin,
@@ -87,7 +97,10 @@ export const POSITIONING_MESSAGE =
 /** Campos de origem para o filtro global, derivados de um segmento. */
 export const segmentProvenance = (seg: {
   altura: number; limite: number; detection?: unknown; statusBanco?: string;
+  ndviSource?: "seed" | "sentinel2"; uncertaintyCm?: number | null;
 }): { origin: DataOrigin; needsFieldValidation: boolean } => ({
   origin: segmentOrigin(seg),
-  needsFieldValidation: evaluateDecision({ altura: seg.altura, limite: seg.limite }).needsFieldValidation,
+  needsFieldValidation: evaluateDecision({
+    altura: seg.altura, limite: seg.limite, uncertaintyCm: segmentUncertainty(seg),
+  }).needsFieldValidation,
 });

@@ -2,6 +2,7 @@ import { TopHeader } from "@/components/vegia/TopHeader";
 import { CVImageGrid, type CvScope } from "@/components/vegia/CVImageGrid";
 import { DecisionZoneCard } from "@/components/vegia/DecisionZone";
 import { segmentOrigin } from "@/lib/data-provenance";
+import { segmentUncertainty } from "@/lib/uncertainty";
 import { VisionAnalyzer } from "@/components/vegia/VisionAnalyzer";
 import { useParams } from "react-router-dom";
 import {
@@ -158,7 +159,7 @@ const AnaliseCV = () => {
             </div>
           </div>
           <div className="mb-5">
-            <DecisionZoneCard altura={seg.altura} limite={seg.limite} origin={segmentOrigin(seg)} clausula={seg.clausula} />
+            <DecisionZoneCard altura={seg.altura} limite={seg.limite} uncertaintyCm={segmentUncertainty(seg)} origin={segmentOrigin(seg)} clausula={seg.clausula} />
           </div>
           <CVImageGrid
             scope={scope}

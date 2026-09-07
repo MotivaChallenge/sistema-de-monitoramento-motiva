@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { formatKmRange } from "@/lib/km";
 import { DataOriginBadge } from "./DataOriginBadge";
 import { ORIGIN_META, segmentOrigin } from "@/lib/data-provenance";
-import { evaluateDecision, MODEL_UNCERTAINTY_CM } from "@/lib/uncertainty";
+import { evaluateDecision, MODEL_UNCERTAINTY_CM, segmentUncertainty } from "@/lib/uncertainty";
 
 const NDVIBar = ({ value }: { value: number }) => {
   const color = value >= 0.6 ? "bg-primary" : value >= 0.4 ? "bg-tertiary" : "bg-destructive";
@@ -91,9 +91,9 @@ export const SegmentTable = ({ rows }: { rows: Segment[] }) => {
     const lines = [
       headers.join(";"),
       ...data.map(r => [
-        r.km, r.kmStart, r.kmEnd, r.tipo, r.ndvi.toFixed(2), r.altura, MODEL_UNCERTAINTY_CM, r.limite,
+        r.km, r.kmStart, r.kmEnd, r.tipo, r.ndvi.toFixed(2), r.altura, segmentUncertainty(r), r.limite,
         r.status === "critico" ? "Inconformidade" : r.status === "atencao" ? "Atenção" : "Conforme",
-        evaluateDecision({ altura: r.altura, limite: r.limite }).title,
+        evaluateDecision({ altura: r.altura, limite: r.limite, uncertaintyCm: segmentUncertainty(r) }).title,
         ORIGIN_META[segmentOrigin(r)].label,
         r.clausula, r.ultimaRocada, r.deadline ?? "",
       ].map(csvEscape).join(";")),
@@ -248,8 +248,8 @@ export const SegmentTable = ({ rows }: { rows: Segment[] }) => {
             <span className="text-[13px] text-muted-foreground">{r.tipo}</span>
             <NDVIBar value={r.ndvi} />
             <span className="text-[13px] tabular-nums leading-tight">
-              {r.altura}<span className="text-muted-foreground text-[11px]"> ±{MODEL_UNCERTAINTY_CM}</span>cm
-              {evaluateDecision({ altura: r.altura, limite: r.limite }).needsFieldValidation && (
+              {r.altura}<span className="text-muted-foreground text-[11px]"> ±{segmentUncertainty(r)}</span>cm
+              {evaluateDecision({ altura: r.altura, limite: r.limite, uncertaintyCm: segmentUncertainty(r) }).needsFieldValidation && (
                 <span className="block text-[10px] text-tertiary font-semibold uppercase tracking-wider">validar em campo</span>
               )}
             </span>
@@ -268,7 +268,7 @@ export const SegmentTable = ({ rows }: { rows: Segment[] }) => {
       </div>
       </div>
       <div className="flex flex-wrap items-center justify-between gap-2 mt-5 pt-4">
-        <span className="label-md">Alturas estimadas por satélite + modelo (± {MODEL_UNCERTAINTY_CM} cm) — {generatedAt}</span>
+        <span className="label-md">Alturas estimadas por satélite + modelo (incerteza por trecho, mínimo ± {MODEL_UNCERTAINTY_CM} cm) — {generatedAt}</span>
         <button onClick={resetFilters} className="text-primary text-[13px] font-semibold hover:underline">
           Ver todos os segmentos ›
         </button>

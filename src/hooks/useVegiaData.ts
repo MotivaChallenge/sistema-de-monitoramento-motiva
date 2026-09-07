@@ -1,4 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Segment, Status } from "@/types/domain";
 import { statusFromAltura } from "@/lib/status";
@@ -48,6 +49,11 @@ const mapSegment = (r: any): Segment => ({
   insight: r.insight ?? undefined,
   street: r.street ?? undefined,
   detection: r.detection ?? undefined,
+  uncertaintyCm: r.uncertainty_cm != null ? Number(r.uncertainty_cm) : null,
+  ndviSource: (r.ndvi_source as "seed" | "sentinel2") ?? "seed",
+  lastSatelliteReadAt: r.last_satellite_read_at ?? null,
+  satelliteImages: r.satellite_images ?? null,
+  satelliteValidPixels: r.satellite_valid_pixels ?? null,
 });
 
 export const useSegments = () =>
@@ -417,3 +423,73 @@ export const useWorkOrders = () =>
       return (data ?? []) as WorkOrder[];
     },
   });
+
+/** Medições de altura feitas em campo — verdade de campo para calibração do modelo. */
+export interface FieldHeightMeasurement {
+  id: string;
+  segmentId: string;
+  measuredAt: string;
+  alturaCm: number;
+  autor: string | null;
+  observacao: string | null;
+}
+
+export const useFieldHeightMeasurements = (segmentId?: string) =>
+  useQuery({
+    queryKey: ["field_height_measurements", segmentId ?? "all"],
+    queryFn: async (): Promise<FieldHeightMeasurement[]> => {
+      let q = supabase
+        .from("field_height_measurements")
+        .select("id,segment_id,measured_at,altura_cm,autor,observacao")
+        .order("measured_at", { ascending: false });
+      if (segmentId) q = q.eq("segment_id", segmentId);
+      const { data, error } = await q;
+      if (error) throw error;
+      return (data ?? []).map(r => ({
+        id: r.id as string,
+        segmentId: r.segment_id as string,
+        measuredAt: r.measured_at as string,
+        alturaCm: Number(r.altura_cm),
+        autor: (r.autor as string | null) ?? null,
+        observacao: (r.observacao as string | null) ?? null,
+      }));
+    },
+  });
+
+/** Última execução do refresh orbital (para exibir data/estado na interface). */
+export const useLastSatelliteRefresh = () =>
+  useQuery({
+    queryKey: ["satellite_refresh_runs", "last"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("satellite_refresh_runs")
+        .select("id,rodovia,status,started_at,finished_at,total,updated,skipped,failed")
+        .order("started_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+/** Dispara a atualização manual das leituras Sentinel-2 do Rodoanel (SP-021). */
+export const useRefreshSatellite = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (rodovia = "SP-021") => {
+      const { data, error } = await supabase.functions.invoke("gee-refresh-segments", {
+        body: { rodovia, trigger: "manual" },
+      });
+      if (error) throw error;
+      return data as { total: number; updated: number; skipped: number; failed: number };
+    },
+    onSuccess: (r) => {
+      qc.invalidateQueries({ queryKey: ["segments"] });
+      qc.invalidateQueries({ queryKey: ["satellite_refresh_runs"] });
+      toast.success(
+        `Leitura de satélite atualizada: ${r?.updated ?? 0} de ${r?.total ?? 0} trechos${r?.failed ? ` · ${r.failed} falhas` : ""}`
+      );
+    },
+    onError: (e: Error) => toast.error(`Não foi possível atualizar as leituras: ${e.message}`),
+  });
+};
