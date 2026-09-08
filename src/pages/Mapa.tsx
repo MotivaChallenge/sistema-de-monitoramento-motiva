@@ -3,6 +3,7 @@ import { segmentProvenance } from "@/lib/data-provenance";
 import { useSegments, useKmMarkers, useTotalCoverage, useHighways } from "@/hooks/useVegiaData";
 import { useRoadRoute } from "@/hooks/useRoadRoute";
 import { useFilters } from "@/contexts/FiltersContext";
+import { SatelliteRefreshButton } from "@/components/vegia/SatelliteRefreshButton";
 import { GlobalFilters } from "@/components/vegia/GlobalFilters";
 import { MapPointSheet } from "@/components/vegia/MapPointSheet";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -374,7 +375,7 @@ const Mapa = () => {
       <TopHeader
         current="Mapa Operacional"
         showStatusBadges
-        rightSlot={<GlobalFilters />}
+        rightSlot={<><SatelliteRefreshButton /><GlobalFilters /></>}
       />
       <div className="relative h-[calc(100vh-72px)] w-full overflow-hidden">
         <h1 className="sr-only">Mapa operacional da malha rodoviária</h1>
