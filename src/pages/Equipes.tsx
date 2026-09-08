@@ -82,7 +82,7 @@ const Equipes = () => {
   const capacidadeDia = allTeams.filter(t => t.status !== "afastada" && t.status !== "manutencao").reduce((a, t) => a + t.capacidade_dia, 0);
   const eficienciaMedia = allTeams.length ? Math.round(allTeams.reduce((a, t) => a + t.eficiencia, 0) / allTeams.length) : 0;
 
-  const ranking = [...teams].sort((a, b) => b.eficiencia - a.eficiencia);
+  
 
   const openCreate = () => { setEditing(null); setForm(emptyForm); setOpen(true); };
   const openEdit = (t: FieldTeam) => {
@@ -286,23 +286,6 @@ const Equipes = () => {
           </div>
         </section>
 
-        <section className="bg-surface-lowest rounded-xl p-5 border border-border/40 shadow-card">
-          <h2 className="text-[14px] font-semibold tracking-wide uppercase mb-4">Ranking de eficiência</h2>
-          <div className="space-y-3">
-            {ranking.map((t, i) => (
-              <div key={t.id} className="flex items-center gap-3">
-                <span className="h-7 w-7 rounded-full bg-primary/10 text-primary text-[12px] font-bold flex items-center justify-center tabular-nums">{i + 1}</span>
-                <div className="flex-1 min-w-0">
-                  <div className="text-[13px] font-semibold truncate">{t.nome}</div>
-                  <div className="h-1.5 mt-1.5 rounded-full bg-surface-high overflow-hidden">
-                    <div className="h-full bg-gradient-primary rounded-full transition-smooth" style={{ width: `${t.eficiencia}%` }} />
-                  </div>
-                </div>
-                <span className="text-[14px] font-bold tabular-nums w-12 text-right">{t.eficiencia}%</span>
-              </div>
-            ))}
-          </div>
-        </section>
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>

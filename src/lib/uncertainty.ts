@@ -127,10 +127,11 @@ export const evaluateDecision = ({
  * Incerteza efetiva de um trecho: usa o valor calculado na leitura do satélite
  * quando existir; senão cai no resíduo base do modelo.
  */
-export const segmentUncertainty = <T extends { uncertaintyCm?: number | null }>(seg: T): number =>
-  seg.uncertaintyCm != null && Number.isFinite(seg.uncertaintyCm) && seg.uncertaintyCm > 0
+export const segmentUncertainty = (seg?: { uncertaintyCm?: number | null } | null): number =>
+  seg?.uncertaintyCm != null && Number.isFinite(seg.uncertaintyCm) && seg.uncertaintyCm > 0
     ? Math.round(seg.uncertaintyCm * 10) / 10
     : MODEL_UNCERTAINTY_CM;
+
 
 export const ZONE_CLASS: Record<DecisionZone, string> = {
   baixo: "bg-primary/10 text-primary border-primary/25",
