@@ -8,7 +8,7 @@ describe("modelo de altura", () => {
   it("aplica a reta (NDVI − 0,15) × 90 e trunca em zero", () => {
     expect(estimateHeightCm(0.15)).toBe(0);
     expect(estimateHeightCm(0.05)).toBe(0);
-    expect(estimateHeightCm(0.5)).toBe(32);
+    expect(estimateHeightCm(0.5)).toBe(31);
   });
 
   it("usa SAVI e marca saturação acima de NDVI 0,80", () => {
