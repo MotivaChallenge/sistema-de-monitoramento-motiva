@@ -476,7 +476,7 @@ export const useLastSatelliteRefresh = () =>
 export const useRefreshSatellite = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (rodovia = "SP-021") => {
+    mutationFn: async (rodovia: string = "SP-021") => {
       const { data, error } = await supabase.functions.invoke("gee-refresh-segments", {
         body: { rodovia, trigger: "manual" },
       });
