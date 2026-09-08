@@ -9,6 +9,7 @@ import { useIsFetching, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { formatDateBR } from "@/lib/utils";
 import { TopHeader } from "@/components/vegia/TopHeader";
+import { SatelliteRefreshButton } from "@/components/vegia/SatelliteRefreshButton";
 import { AutoCarousel } from "@/components/dashboard/AutoCarousel";
 import { KpiCarousel } from "@/components/dashboard/KpiCarousel";
 import { InfoBanner } from "@/components/dashboard/InfoBanner";
@@ -120,6 +121,7 @@ const Dashboard = () => {
         rightSlot={
           <>
             <HighwaySelect className="hidden sm:inline-flex" />
+            <SatelliteRefreshButton />
             <GlobalFilters />
             <button
               onClick={async () => {
