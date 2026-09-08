@@ -9,6 +9,7 @@ export interface PlannedItem {
   s: {
     id: string; km: string; kmStart: number; kmEnd: number; tipo: string;
     altura: number; limite: number; status: string; _score: number; regiao?: string;
+    uncertaintyCm?: number | null;
   };
   dia: number;
 }
@@ -124,7 +125,7 @@ export const AllocationRationale = ({ team, assigned, otherTeams, slots, ownersB
                       <td className="py-2 pr-3 tabular-nums font-semibold">{it.s._score}</td>
                       <td className="py-2 pr-3 whitespace-nowrap">
                         <span className="uppercase text-[10px] font-bold tracking-wider">{it.s.status}</span>{" "}
-                        <span className="tabular-nums">{it.s.altura} ± {segmentUncertainty(it.s)} cm</span>
+                        <span className="tabular-nums">{it.s.altura} ± {segmentUncertainty({ uncertaintyCm: it.s.uncertaintyCm })} cm</span>
                         <span className="text-muted-foreground"> (limite {it.s.limite})</span>
                       </td>
                       <td className="py-2 pr-3 tabular-nums whitespace-nowrap">{dist.toFixed(0)} km · ~{travelMin} min</td>
