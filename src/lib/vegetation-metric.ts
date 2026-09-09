@@ -157,28 +157,30 @@ export const fitWeightsNNLS = (
   const my = mean(y);
   const yc = y.map((v) => v - my);
 
+  // Colunas centradas: o intercepto sai do problema e os coeficientes ficam
+  // identificáveis. Minimiza ||Xc·w − yc||² com w ≥ 0 (gradiente projetado).
+  const colMeans = [0, 1, 2].map((j) => mean(X.map((row) => row[j])));
+  const Xc = X.map((row) => row.map((v, j) => v - colMeans[j]));
   let w = [1 / 3, 1 / 3, 1 / 3];
-  // Passo do gradiente a partir da maior norma das colunas (estabilidade).
   const lip = Math.max(
     1e-6,
-    ...[0, 1, 2].map((j) => X.reduce((a, row) => a + row[j] * row[j], 0) / n)
+    ...[0, 1, 2].map((j) => Xc.reduce((a, row) => a + row[j] * row[j], 0) / n)
   );
   const step = 1 / (3 * lip);
-  for (let it = 0; it < 5000; it++) {
+  for (let it = 0; it < 20000; it++) {
     const grad = [0, 0, 0];
     for (let t = 0; t < n; t++) {
-      const pred = X[t][0] * w[0] + X[t][1] * w[1] + X[t][2] * w[2];
-      // Escala livre: comparamos a forma do preditor com o alvo centrado/escalado.
-      const resid = pred - (yc[t] / (Math.max(1e-9, Math.sqrt(yc.reduce((a, v) => a + v * v, 0) / n))) / 4 + 0.5);
-      grad[0] += resid * X[t][0];
-      grad[1] += resid * X[t][1];
-      grad[2] += resid * X[t][2];
+      const resid = Xc[t][0] * w[0] + Xc[t][1] * w[1] + Xc[t][2] * w[2] - yc[t];
+      grad[0] += resid * Xc[t][0];
+      grad[1] += resid * Xc[t][1];
+      grad[2] += resid * Xc[t][2];
     }
     const next = w.map((v, j) => Math.max(0, v - (step * grad[j]) / n));
     const delta = next.reduce((a, v, j) => a + Math.abs(v - w[j]), 0);
     w = next;
     if (delta < 1e-12) break;
   }
+
   const sum = w.reduce((a, v) => a + v, 0);
   if (!(sum > 0)) {
     return {
