@@ -61,6 +61,25 @@ export const savi = (nir: number, red: number, L = SAVI_L_DEFAULT): number | nul
   return Math.abs(den) < EPS ? null : ((nir - red) / den) * (1 + L);
 };
 
+/**
+ * SRVI / Simple Ratio (NIR / RED).
+ *
+ * Atenção matemática: SR é uma função monotônica exata do NDVI
+ * (SR = (1 + NDVI) / (1 − NDVI)). Ele NÃO acrescenta informação nova a uma
+ * combinação que já usa NDVI — só reescala. Por isso entra no diagnóstico de
+ * correlação, mas fica fora da métrica composta por padrão.
+ */
+export const srvi = (nir: number, red: number): number | null => {
+  if (!finite(nir, red)) return null;
+  return Math.abs(red) < EPS ? null : nir / red;
+};
+
+/** SR a partir do NDVI — demonstra a colinearidade exata entre os dois. */
+export const srviFromNdvi = (n: number): number | null => {
+  if (!Number.isFinite(n) || Math.abs(1 - n) < EPS) return null;
+  return (1 + n) / (1 - n);
+};
+
 /** Valida a faixa esperada do índice; fora da faixa vira null (sem dados). */
 export const validateIndex = (key: IndexKey, value: number | null): number | null => {
   if (value === null || !Number.isFinite(value)) return null;
@@ -71,3 +90,4 @@ export const validateIndex = (key: IndexKey, value: number | null): number | nul
 /** Confiança a partir da quantidade de pixels válidos na estatística zonal. */
 export const pixelConfidence = (validPixels: number): "alta" | "media" | "baixa" =>
   validPixels >= 100 ? "alta" : validPixels >= 20 ? "media" : "baixa";
+
