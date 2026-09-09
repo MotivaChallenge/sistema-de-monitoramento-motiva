@@ -456,6 +456,66 @@ export const useFieldHeightMeasurements = (segmentId?: string) =>
     },
   });
 
+/** Registra uma medição de altura feita em campo (verdade de campo). */
+export const useAddFieldMeasurement = (segmentId: string) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { alturaCm: number; measuredAt: string; autor?: string; observacao?: string }) => {
+      const { data: auth } = await supabase.auth.getUser();
+      const { error } = await supabase.from("field_height_measurements").insert({
+        segment_id: segmentId,
+        altura_cm: Math.round(input.alturaCm),
+        measured_at: input.measuredAt,
+        autor: input.autor?.trim() || auth.user?.email || null,
+        observacao: input.observacao?.trim() || null,
+        created_by: auth.user?.id ?? null,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["field_height_measurements"] });
+      toast.success("Medição de campo registrada");
+    },
+    onError: (e: Error) => toast.error(`Não foi possível registrar a medição: ${e.message}`),
+  });
+};
+
+/** Leituras orbitais gravadas (NDVI/EVI/SAVI por trecho) — base do diagnóstico estatístico. */
+export interface SatelliteReading {
+  id: number;
+  segmentId: string;
+  readAt: string;
+  ndviMedian: number | null;
+  eviMedian: number | null;
+  saviMedian: number | null;
+  ndviStd: number | null;
+  validPixels: number;
+}
+
+export const useSatelliteReadings = () =>
+  useQuery({
+    queryKey: ["segment_satellite_readings", "indices"],
+    queryFn: async (): Promise<SatelliteReading[]> => {
+      const { data, error } = await supabase
+        .from("segment_satellite_readings")
+        .select("id,segment_id,read_at,ndvi_median,evi_median,savi_median,ndvi_std,valid_pixels")
+        .order("read_at", { ascending: false })
+        .limit(1000);
+      if (error) throw error;
+      return (data ?? []).map(r => ({
+        id: Number(r.id),
+        segmentId: r.segment_id as string,
+        readAt: r.read_at as string,
+        ndviMedian: r.ndvi_median != null ? Number(r.ndvi_median) : null,
+        eviMedian: r.evi_median != null ? Number(r.evi_median) : null,
+        saviMedian: r.savi_median != null ? Number(r.savi_median) : null,
+        ndviStd: r.ndvi_std != null ? Number(r.ndvi_std) : null,
+        validPixels: Number(r.valid_pixels ?? 0),
+      }));
+    },
+  });
+
+
 /** Última execução do refresh orbital (para exibir data/estado na interface). */
 export const useLastSatelliteRefresh = () =>
   useQuery({
