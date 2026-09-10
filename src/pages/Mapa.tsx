@@ -12,6 +12,8 @@ import { useState, useMemo, lazy, Suspense, useEffect } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { toast } from "sonner";
 import { coordsForKm, kmForCoords, formatKmPrecise, formatKmRange } from "@/lib/km";
+import { evaluateDecision, segmentUncertainty, HEIGHT_MODEL_ID, HEIGHT_MODEL_VERSION, SATELLITE_DISCLAIMER } from "@/lib/uncertainty";
+import { newExecutionId } from "@/lib/report-export";
 
 type StatusKey = "critico" | "atencao" | "conforme";
 const PRIORIDADE: Record<StatusKey, string> = { critico: "Alta", atencao: "Média", conforme: "Baixa" };
@@ -120,26 +122,48 @@ const Mapa = () => {
         features.push({
           type: "Feature",
           geometry: { type: "Point", coordinates: [marker.lng, marker.lat] },
-          properties: {
-            kind: "segmento",
-            id: s.id,
-            km: s.km,
-            km_preciso: formatKmPrecise(s.kmStart),
-            km_start: s.kmStart,
-            km_end: s.kmEnd,
-            tipo: s.tipo,
-            status: s.status,
-            ndvi: s.ndvi,
-            altura_cm: s.altura,
-            limite_cm: s.limite,
-            clausula: s.clausula,
-            ultima_rocada: s.ultimaRocada,
-          },
+          properties: (() => {
+            const u = segmentUncertainty(s);
+            const d = evaluateDecision({ altura: s.altura, limite: s.limite, uncertaintyCm: u });
+            return {
+              kind: "segmento",
+              id: s.id,
+              km: s.km,
+              km_preciso: formatKmPrecise(s.kmStart),
+              km_start: s.kmStart,
+              km_end: s.kmEnd,
+              tipo: s.tipo,
+              status: s.status,
+              ndvi: s.ndvi,
+              altura_cm: s.altura,
+              altura_origem: s.ndviSource === "sentinel2" ? "estimada por satélite + modelo" : "dado demonstrativo",
+              incerteza_cm: u,
+              faixa_provavel_cm: d.lower == null ? null : [Math.round(d.lower), Math.round(d.upper!)],
+              zona_decisao: d.zone,
+              validacao_campo: d.needsFieldValidation,
+              limite_cm: s.limite,
+              clausula: s.clausula,
+              ultima_rocada: s.ultimaRocada,
+              modelo: `${HEIGHT_MODEL_ID} ${HEIGHT_MODEL_VERSION}`,
+              leitura_orbital_em: s.lastSatelliteReadAt ?? null,
+            };
+          })(),
         });
       });
     const geojson = {
       type: "FeatureCollection",
       name: `${currentHighway.code} - ${currentHighway.nome}`,
+      metadata: {
+        recorte: `${currentHighway.code} · ${currentHighway.concessao} · km ${currentHighway.km_inicio}–${currentHighway.km_fim}`,
+        fonte: currentHighway.code === "SP-021"
+          ? "Sentinel-2 SR Harmonized · Google Earth Engine"
+          : "base demonstrativa (traçado aproximado)",
+        periodo: "últimos 60 dias (composição mediana)",
+        modelo_altura: `${HEIGHT_MODEL_ID} ${HEIGHT_MODEL_VERSION}`,
+        aviso: SATELLITE_DISCLAIMER,
+        exportado_em: new Date().toISOString(),
+        execucao_id: newExecutionId(),
+      },
       features,
     };
     const blob = new Blob([JSON.stringify(geojson, null, 2)], { type: "application/geo+json" });

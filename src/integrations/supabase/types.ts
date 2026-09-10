@@ -450,6 +450,69 @@ export type Database = {
           },
         ]
       }
+      model_validation: {
+        Row: {
+          bias_cm: number | null
+          calibration_date: string | null
+          confidence_level: number | null
+          created_at: string
+          id: string
+          last_field_validation_at: string | null
+          mae_cm: number | null
+          metrics_by_height_range: Json | null
+          metrics_by_vegetation: Json | null
+          model_id: string
+          model_version: string
+          notes: string | null
+          rmse_cm: number | null
+          sample_count: number | null
+          uncertainty_cm: number | null
+          uncertainty_method: string | null
+          updated_at: string
+          validation_sample_count: number | null
+        }
+        Insert: {
+          bias_cm?: number | null
+          calibration_date?: string | null
+          confidence_level?: number | null
+          created_at?: string
+          id?: string
+          last_field_validation_at?: string | null
+          mae_cm?: number | null
+          metrics_by_height_range?: Json | null
+          metrics_by_vegetation?: Json | null
+          model_id: string
+          model_version: string
+          notes?: string | null
+          rmse_cm?: number | null
+          sample_count?: number | null
+          uncertainty_cm?: number | null
+          uncertainty_method?: string | null
+          updated_at?: string
+          validation_sample_count?: number | null
+        }
+        Update: {
+          bias_cm?: number | null
+          calibration_date?: string | null
+          confidence_level?: number | null
+          created_at?: string
+          id?: string
+          last_field_validation_at?: string | null
+          mae_cm?: number | null
+          metrics_by_height_range?: Json | null
+          metrics_by_vegetation?: Json | null
+          model_id?: string
+          model_version?: string
+          notes?: string | null
+          rmse_cm?: number | null
+          sample_count?: number | null
+          uncertainty_cm?: number | null
+          uncertainty_method?: string | null
+          updated_at?: string
+          validation_sample_count?: number | null
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           body: string | null

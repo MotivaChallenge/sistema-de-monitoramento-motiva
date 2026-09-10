@@ -31,6 +31,7 @@ import { ircForSegment } from "@/lib/irc";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { buildRecommendations } from "@/lib/recommendations";
 import { GeeDataSourcePanel } from "@/components/vegia/DataSourcePanel";
+import { ContextBar } from "@/components/vegia/ContextBar";
 import { DecisionZoneCard } from "@/components/vegia/DecisionZone";
 import { segmentOrigin } from "@/lib/data-provenance";
 import { isOverdue } from "@/lib/deadlines";
@@ -175,6 +176,13 @@ const Dashboard = () => {
             ))}
           />
         )}
+
+        {/* 1b — Contexto do recorte exibido */}
+        <ContextBar
+          recorte={`${rodovia ?? "Toda a malha"} · ${coverage.toFixed(1).replace(".", ",")} km · ${total} de ${allSegments.length} trechos`}
+          updatedAt={lastUpdate}
+          origin="satelite"
+        />
 
         {/* 2 — Resumo operacional rápido */}
         <OpsSummaryBar

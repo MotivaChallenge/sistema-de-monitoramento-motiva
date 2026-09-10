@@ -46,6 +46,17 @@ export interface DecisionInput {
 export const UNCALIBRATED_MESSAGE =
   "Margem de incerteza ainda não calibrada para este segmento. A decisão contratual exige validação de campo.";
 
+/** Rótulo padrão do conceito — nunca usar a palavra "precisão". */
+export const UNCERTAINTY_LABEL = "Incerteza estimada da altura";
+
+/** Texto único de tooltip do conceito de incerteza. */
+export const UNCERTAINTY_TOOLTIP =
+  "A incerteza é uma margem estatística estimada pelo modelo. Ela não representa resolução espacial do satélite nem garante medição contratual. Consulte a validação do modelo e confirme em campo quando a faixa de incerteza tocar ou cruzar o limite aplicável.";
+
+/** Frase exigida sempre que a decisão contratual depender de estimativa. */
+export const FIELD_CONFIRMATION_MESSAGE =
+  "Evidência: estimativa de satélite + modelo. A confirmação para fins contratuais deve ser realizada em campo.";
+
 export const evaluateDecision = ({
   altura,
   limite,
@@ -91,7 +102,7 @@ export const evaluateDecision = ({
   if (upper < limite) {
     return {
       zone: "baixo",
-      title: "Baixo risco — monitoramento remoto",
+      title: "Provavelmente conforme — monitoramento remoto",
       recommendation:
         "Mesmo no pior caso da incerteza, a estimativa fica abaixo do limite contratual. Manter monitoramento remoto.",
       summary: base,
@@ -100,10 +111,10 @@ export const evaluateDecision = ({
     };
   }
 
-  if (lower > limite) {
+  if (lower >= limite) {
     return {
       zone: "alto",
-      title: "Alto risco — priorizar inspeção/intervenção",
+      title: "Provavelmente não conforme — priorizar inspeção",
       recommendation:
         "Mesmo no melhor caso da incerteza, a estimativa ultrapassa o limite contratual. Priorizar inspeção e intervenção.",
       summary: base,
@@ -114,7 +125,7 @@ export const evaluateDecision = ({
 
   return {
     zone: "validar",
-    title: "Zona de validação — confirmar em campo",
+    title: "Zona de incerteza — validar em campo",
     recommendation:
       "A faixa de incerteza cruza o limite contratual. Validar em campo antes de concluir conformidade ou inconformidade.",
     summary: `${base} · Zona de decisão: validar em campo`,

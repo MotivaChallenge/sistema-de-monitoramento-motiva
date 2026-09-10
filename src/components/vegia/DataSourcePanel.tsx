@@ -17,14 +17,20 @@ export interface DataSourceInfo {
   demo?: boolean;
 }
 
+/** Valor ausente nunca aparece como placeholder silencioso. */
+export const NOT_COMPUTED = "não calculado nesta execução";
+
+const NOT_COMPUTED_HINT =
+  "Esta execução não retornou o metadado. Pode significar que não havia leitura orbital carregada para o recorte ou que a consulta foi respondida pelo cache sem recalcular a estatística zonal.";
+
 const fmtDate = (v?: string | null) => {
-  if (!v) return "—";
+  if (!v) return NOT_COMPUTED;
   const d = new Date(v.length <= 10 ? `${v}T00:00:00` : v);
   return Number.isNaN(d.getTime()) ? v : d.toLocaleDateString("pt-BR");
 };
 
 const fmtDateTime = (v?: string | Date | null) => {
-  if (!v) return "—";
+  if (!v) return NOT_COMPUTED;
   const d = v instanceof Date ? v : new Date(v);
   return Number.isNaN(d.getTime()) ? String(v) : d.toLocaleString("pt-BR");
 };
@@ -64,13 +70,13 @@ export const DataSourcePanel = ({ info = {}, className = "", title = "Fonte e qu
       label: "Período analisado",
       value: info.periodo ? `${fmtDate(info.periodo.de)} → ${fmtDate(info.periodo.ate)}` : "últimos 60 dias",
     },
-    { label: "Nº de imagens", value: info.imagens != null ? `${info.imagens} cena(s)` : "—" },
+    { label: "Nº de imagens", value: info.imagens != null ? `${info.imagens} cena(s)` : NOT_COMPUTED },
     { label: "Composição", value: info.composite ?? "mediana temporal · CLOUDY_PIXEL_PERCENTAGE < 60" },
     { label: "Filtro de nuvens", value: "CLOUDY_PIXEL_PERCENTAGE < 60" },
     { label: "Máscara", value: info.cloudMask ?? "SCL (classes 4, 5, 6, 7, 11)" },
     { label: "Resolução nativa", value: `${info.nativeResolutionM ?? 10} m/pixel` },
     { label: "Buffer analisado", value: `${info.bufferM ?? 150} m` },
-    { label: "Pixels válidos", value: info.validPixels != null ? `${info.validPixels}` : "—" },
+    { label: "Pixels válidos", value: info.validPixels != null ? `${info.validPixels}` : NOT_COMPUTED },
     { label: "Atualização", value: fmtDateTime(info.updatedAt) },
   ];
 
@@ -93,7 +99,12 @@ export const DataSourcePanel = ({ info = {}, className = "", title = "Fonte e qu
         {rows.map(r => (
           <div key={r.label} className="min-w-0">
             <dt className="text-[10px] uppercase tracking-wider text-muted-foreground">{r.label}</dt>
-            <dd className="text-[12.5px] font-semibold leading-snug break-words">{r.value}</dd>
+            <dd
+              className={`text-[12.5px] font-semibold leading-snug break-words ${r.value === NOT_COMPUTED ? "text-muted-foreground italic font-normal" : ""}`}
+              title={r.value === NOT_COMPUTED ? NOT_COMPUTED_HINT : undefined}
+            >
+              {r.value}
+            </dd>
           </div>
         ))}
       </dl>
