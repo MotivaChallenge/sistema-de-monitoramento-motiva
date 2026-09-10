@@ -103,6 +103,8 @@ const Planejamento = () => {
   }, [segmentsRaw, rain5d, horizonte, teams]);
 
   const totalProgramado = Object.values(plan).reduce((a, b) => a + b.length, 0);
+  const capacidadeHorizonte = teams.reduce((a, t) => a + t.capacidade_dia, 0) * (horizonte === "semana" ? 5 : 22);
+  const folga = capacidadeHorizonte - totalProgramado;
 
   // Trecho → equipes que o receberam (detecção de duplicidade antes de gerar OS)
   const ownersBySegment = useMemo(() => {
@@ -219,18 +221,30 @@ const Planejamento = () => {
           <div className="bg-surface-lowest rounded-xl p-5 border border-border/40 shadow-card">
             <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Trechos programados</div>
             <div className="text-[28px] font-bold tabular-nums mt-1">{totalProgramado}</div>
+            <div className="text-[11px] text-muted-foreground mt-1">de {segmentsRaw.length} trechos no recorte</div>
           </div>
           <div className="bg-surface-lowest rounded-xl p-5 border border-border/40 shadow-card">
             <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Equipes alocadas</div>
             <div className="text-[28px] font-bold tabular-nums mt-1">{teams.length}</div>
+            <div className="text-[11px] text-muted-foreground mt-1 leading-snug">
+              {teamsRaw.length} cadastradas · {teamsRaw.filter(t => t.status === "disponivel").length} disponíveis ·{" "}
+              {teamsRaw.filter(t => t.status === "campo").length} em campo. Entram no plano as equipes disponíveis ou em campo
+              {regiao !== "todas" && ` da região ${regiao}`}; equipes em manutenção ou afastadas ficam de fora.
+            </div>
           </div>
           <div className="bg-surface-lowest rounded-xl p-5 border border-border/40 shadow-card">
-            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Capacidade total/dia</div>
-            <div className="text-[28px] font-bold tabular-nums mt-1">{teams.reduce((a, t) => a + t.capacidade_dia, 0)}</div>
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Capacidade no horizonte</div>
+            <div className="text-[28px] font-bold tabular-nums mt-1">{capacidadeHorizonte}</div>
+            <div className="text-[11px] text-muted-foreground mt-1">
+              usada {totalProgramado} · {folga >= 0 ? `folga ${folga}` : `sobrecarga ${Math.abs(folga)}`} trechos
+            </div>
           </div>
           <div className="bg-surface-lowest rounded-xl p-5 border border-border/40 shadow-card">
             <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Dias úteis</div>
             <div className="text-[28px] font-bold tabular-nums mt-1">{slotsLabel}</div>
+            <div className="text-[11px] text-muted-foreground mt-1">
+              {teams.reduce((a, t) => a + t.capacidade_dia, 0)} trechos/dia somando as equipes do plano
+            </div>
           </div>
         </div>
 
