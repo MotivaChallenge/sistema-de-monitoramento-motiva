@@ -1,5 +1,9 @@
 import { ShieldCheck, AlertTriangle, Search, HelpCircle } from "lucide-react";
-import { DecisionZone as Zone, evaluateDecision, ZONE_CLASS, MODEL_UNCERTAINTY_CM } from "@/lib/uncertainty";
+import {
+  DecisionZone as Zone, evaluateDecision, ZONE_CLASS, MODEL_UNCERTAINTY_CM,
+  UNCERTAINTY_LABEL, UNCERTAINTY_TOOLTIP, FIELD_CONFIRMATION_MESSAGE,
+} from "@/lib/uncertainty";
+import { UncertaintyBar } from "./UncertaintyBar";
 import { DataOriginBadge } from "./DataOriginBadge";
 import type { DataOrigin } from "@/lib/data-provenance";
 
@@ -56,16 +60,25 @@ export const DecisionZoneCard = ({
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
         <Field label={measured ? "Medido em campo" : "Altura estimada"} value={`${Math.round(altura)} cm`} />
         <Field
-          label="Incerteza"
+          label={measured ? "Incerteza" : UNCERTAINTY_LABEL}
+          hint={measured ? undefined : UNCERTAINTY_TOOLTIP}
           value={d.uncertaintyCm == null ? "não calibrada" : measured ? "medição direta" : `± ${d.uncertaintyCm} cm`}
         />
         <Field label="Limite contratual" value={`${limite} cm`} />
-        <Field label="Validação de campo" value={d.needsFieldValidation ? "necessária" : "não necessária"} />
+        <Field
+          label="Faixa provável"
+          value={d.lower == null || d.upper == null ? "não calculada" : `${Math.round(d.lower)}–${Math.round(d.upper)} cm`}
+        />
       </div>
+
+      {!measured && <UncertaintyBar altura={altura} limite={limite} uncertaintyCm={uncertaintyCm} className="mb-3" />}
 
       <p className="text-[13px] font-semibold leading-snug">{d.title}</p>
       <p className="text-[12px] leading-relaxed opacity-90 mt-1">{d.recommendation}</p>
       <p className="text-[11px] font-mono mt-2 opacity-80">{d.summary}</p>
+      {!measured && (
+        <p className="text-[11px] mt-2 opacity-90">{FIELD_CONFIRMATION_MESSAGE}</p>
+      )}
       {clausula && (
         <p className="text-[11px] mt-2 opacity-80">
           Regra aplicada: cláusula {clausula} — limite específico deste ativo é {limite} cm
@@ -76,9 +89,11 @@ export const DecisionZoneCard = ({
   );
 };
 
-const Field = ({ label, value }: { label: string; value: string }) => (
+const Field = ({ label, value, hint }: { label: string; value: string; hint?: string }) => (
   <div>
-    <div className="text-[10px] uppercase tracking-wider opacity-70">{label}</div>
+    <div className="text-[10px] uppercase tracking-wider opacity-70" title={hint}>
+      {label}
+    </div>
     <div className="text-[14px] font-bold tabular-nums leading-tight">{value}</div>
   </div>
 );
