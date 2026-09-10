@@ -21,11 +21,15 @@ import { ORIGIN_META, POSITIONING_MESSAGE, segmentOrigin } from "@/lib/data-prov
 import { evaluateDecision, segmentUncertainty } from "@/lib/uncertainty";
 import { useSettings } from "@/hooks/useSettings";
 import { settingsVersionLabel } from "@/lib/settings-version";
+import { ContextBar } from "@/components/vegia/ContextBar";
+import { ModelValidationCard } from "@/components/vegia/ModelValidationCard";
+import { downloadCsv, newExecutionId, segmentsToCsv } from "@/lib/report-export";
+import { kmLabel } from "@/lib/km-format";
 
 const Relatorio = () => {
   const { data: segmentsRaw = [], isLoading: loadingSegs, isError: errorSegs, refetch: refetchSegs } = useSegments();
   const { data: reports = [], isLoading: loadingReports, isError: errorReports, refetch: refetchReports } = useInspectionReports();
-  const { matches } = useFilters();
+  const { matches, rodovia } = useFilters();
   const { user } = useAuth();
   const { settings } = useSettings();
   const parametrosVersao = settingsVersionLabel(settings);
@@ -57,6 +61,30 @@ const Relatorio = () => {
   const intervencoes = lvl3;
   const conformidadeLvl1Pct = Math.round((lvl1 / totalCounted) * 100);
   const inconformidadePct = Math.max(0, 100 - conformidadeLvl1Pct);
+
+  const kmMin = segments.length ? Math.min(...segments.map(s => s.kmStart)) : 0;
+  const kmMaxSel = segments.length ? Math.max(...segments.map(s => s.kmEnd)) : 0;
+  const extensao = Math.max(0, kmMaxSel - kmMin);
+  const recorte = `${rodovia ?? "Toda a malha"} · ${extensao.toFixed(1).replace(".", ",")} km · ${segments.length} de ${segmentsRaw.length} trechos`;
+  const periodoFonte = "últimos 60 dias (composição mediana Sentinel-2)";
+
+  const handleExportCsv = () => {
+    if (!segments.length) {
+      toast.error("Nada a exportar", { description: "O recorte atual não tem trechos." });
+      return;
+    }
+    const execucaoId = newExecutionId();
+    downloadCsv(
+      `relatorio-${selectedReport?.report_code ?? "malha"}-${execucaoId}.csv`,
+      segmentsToCsv(segments, {
+        recorte,
+        periodo: periodoFonte,
+        fonte: "Sentinel-2 SR Harmonized · Google Earth Engine",
+        execucaoId,
+      })
+    );
+    toast.success("CSV exportado", { description: `${segments.length} trechos · ${execucaoId}` });
+  };
 
   const handleExportPdf = () => {
     if (!selectedReport) return;
