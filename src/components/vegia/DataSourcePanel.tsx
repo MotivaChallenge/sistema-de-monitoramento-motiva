@@ -17,14 +17,20 @@ export interface DataSourceInfo {
   demo?: boolean;
 }
 
+/** Valor ausente nunca aparece como placeholder silencioso. */
+export const NOT_COMPUTED = "não calculado nesta execução";
+
+const NOT_COMPUTED_HINT =
+  "Esta execução não retornou o metadado. Pode significar que não havia leitura orbital carregada para o recorte ou que a consulta foi respondida pelo cache sem recalcular a estatística zonal.";
+
 const fmtDate = (v?: string | null) => {
-  if (!v) return "—";
+  if (!v) return NOT_COMPUTED;
   const d = new Date(v.length <= 10 ? `${v}T00:00:00` : v);
   return Number.isNaN(d.getTime()) ? v : d.toLocaleDateString("pt-BR");
 };
 
 const fmtDateTime = (v?: string | Date | null) => {
-  if (!v) return "—";
+  if (!v) return NOT_COMPUTED;
   const d = v instanceof Date ? v : new Date(v);
   return Number.isNaN(d.getTime()) ? String(v) : d.toLocaleString("pt-BR");
 };
