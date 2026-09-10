@@ -1,5 +1,6 @@
 import type { Segment, Status } from "@/types/domain";
 import { formatDateBR } from "@/lib/utils";
+import { kmLabel } from "@/lib/km-format";
 
 export interface OpsRecommendation {
   id: string;
@@ -18,7 +19,7 @@ interface RecommendationInput {
   pendingOrders: number;
 }
 
-const fmtKm = (s: Segment) => `KM ${s.km}`;
+const fmtKm = (s: Segment) => kmLabel(s.km);
 
 /**
  * Recomendações operacionais derivadas dos dados reais da malha

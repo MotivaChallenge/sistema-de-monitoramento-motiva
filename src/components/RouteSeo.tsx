@@ -61,6 +61,10 @@ const STATIC: Record<string, Meta> = {
     title: "Alertas da malha",
     description: "Histórico de mudanças de status dos trechos monitorados, com criticidade e trecho de origem.",
   },
+  "/notificacoes": {
+    title: "Central de notificações",
+    description: "Alertas da malha, mudanças de status de trechos e atualizações de ordens de serviço em um único lugar.",
+  },
   "/configuracoes": {
     title: "Configurações",
     description: "Pesos do índice de risco, limiares de altura, notificações e preferências de exibição do painel.",
