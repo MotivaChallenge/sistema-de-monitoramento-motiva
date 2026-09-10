@@ -31,6 +31,7 @@ import { ircForSegment } from "@/lib/irc";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { buildRecommendations } from "@/lib/recommendations";
 import { GeeDataSourcePanel } from "@/components/vegia/DataSourcePanel";
+import { ContextBar } from "@/components/vegia/ContextBar";
 import { DecisionZoneCard } from "@/components/vegia/DecisionZone";
 import { segmentOrigin } from "@/lib/data-provenance";
 import { isOverdue } from "@/lib/deadlines";
