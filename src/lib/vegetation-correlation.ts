@@ -182,7 +182,7 @@ export const solve = (A: Matrix, b: number[]): number[] | null => {
       for (let j = c; j <= k; j++) m[r][j] -= f * m[c][j];
     }
   }
-  return m.map((row, i) => row[k] / row[i][i] as number);
+  return m.map((row, i) => row[k] / row[i]);
 };
 
 /**

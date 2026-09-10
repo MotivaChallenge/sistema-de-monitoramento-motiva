@@ -16,6 +16,7 @@ import { GeeDataSourcePanel } from "@/components/vegia/DataSourcePanel";
 import { DataOriginBadge } from "@/components/vegia/DataOriginBadge";
 import { segmentOrigin } from "@/lib/data-provenance";
 import { segmentUncertainty } from "@/lib/uncertainty";
+import { FieldMeasurementForm } from "@/components/vegia/FieldMeasurementForm";
 
 const OSMMap = lazy(() => import("@/components/vegia/OSMMap").then(m => ({ default: m.OSMMap })));
 const NDVILineChart = lazy(() => import("@/components/vegia/NDVILineChart").then(m => ({ default: m.NDVILineChart })));
@@ -163,6 +164,8 @@ const Segmento = () => {
               lng={lng}
               contexto={{ rodovia: seg.rodovia ?? undefined, trecho: seg.km }}
             />
+
+            <FieldMeasurementForm segmentId={seg.id} />
 
             <RocadaTimeline segmentId={seg.id} />
           </div>

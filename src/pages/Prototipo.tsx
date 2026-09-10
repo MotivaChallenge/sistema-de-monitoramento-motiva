@@ -13,6 +13,7 @@ import { useCvResults, useFieldHeightMeasurements, useSegments } from "@/hooks/u
 import { useFilters } from "@/contexts/FiltersContext";
 import { estimateHeightCm, heightModelSummary } from "@/lib/height-model";
 import { GeeFieldTest } from "@/components/vegia/GeeFieldTest";
+import { CompositeMetricPanel } from "@/components/vegia/CompositeMetricPanel";
 
 const PONTOS_TESTE = [
   { label: "Ponto de teste 1", lat: -23.443071, lng: -46.035497 },
@@ -132,6 +133,8 @@ const Prototipo = () => {
             Quando não há cena válida no período, o cartão exibe um valor simulado, sinalizado como tal.
           </p>
         </section>
+
+        <CompositeMetricPanel />
 
         {isLoading ? (
           <Skeleton className="h-[130px] w-full rounded-xl" />
