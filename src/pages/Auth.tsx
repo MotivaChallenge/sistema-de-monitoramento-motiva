@@ -78,8 +78,7 @@ const Auth = () => {
         height={1280}
         className="absolute inset-0 h-full w-full object-cover"
       />
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/70 via-foreground/60 to-foreground/80" aria-hidden />
-      <div className="relative w-full max-w-md rounded-2xl p-8 bg-background/10 backdrop-blur-xl border border-primary-foreground/25 shadow-2xl text-primary-foreground">
+      <div className="relative w-full max-w-md rounded-2xl p-8 bg-foreground/45 backdrop-blur-xl border border-primary-foreground/25 shadow-2xl text-primary-foreground">
         <div className="flex items-center gap-3 mb-7">
           <img src={motivaLogo.url} alt="Motiva" className="h-11 w-11 rounded-xl object-contain" />
           <div>
