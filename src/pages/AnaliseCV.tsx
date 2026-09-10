@@ -3,6 +3,7 @@ import { CVImageGrid, type CvScope } from "@/components/vegia/CVImageGrid";
 import { DecisionZoneCard } from "@/components/vegia/DecisionZone";
 import { segmentOrigin } from "@/lib/data-provenance";
 import { segmentUncertainty } from "@/lib/uncertainty";
+import { kmLabel } from "@/lib/km-format";
 import { VisionAnalyzer } from "@/components/vegia/VisionAnalyzer";
 import { useParams } from "react-router-dom";
 import {

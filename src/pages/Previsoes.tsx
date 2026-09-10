@@ -1,5 +1,6 @@
 import { TopHeader } from "@/components/vegia/TopHeader";
 import { MODEL_UNCERTAINTY_CM } from "@/lib/uncertainty";
+import { kmLabel } from "@/lib/km-format";
 import { useSegments } from "@/hooks/useVegiaData";
 import { useWeather } from "@/hooks/useWeather";
 import { ircForSegment } from "@/lib/irc";

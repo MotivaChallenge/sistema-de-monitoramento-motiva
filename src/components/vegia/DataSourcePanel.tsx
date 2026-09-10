@@ -99,7 +99,12 @@ export const DataSourcePanel = ({ info = {}, className = "", title = "Fonte e qu
         {rows.map(r => (
           <div key={r.label} className="min-w-0">
             <dt className="text-[10px] uppercase tracking-wider text-muted-foreground">{r.label}</dt>
-            <dd className="text-[12.5px] font-semibold leading-snug break-words">{r.value}</dd>
+            <dd
+              className={`text-[12.5px] font-semibold leading-snug break-words ${r.value === NOT_COMPUTED ? "text-muted-foreground italic font-normal" : ""}`}
+              title={r.value === NOT_COMPUTED ? NOT_COMPUTED_HINT : undefined}
+            >
+              {r.value}
+            </dd>
           </div>
         ))}
       </dl>
