@@ -12,6 +12,8 @@ import { useState, useMemo, lazy, Suspense, useEffect } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { toast } from "sonner";
 import { coordsForKm, kmForCoords, formatKmPrecise, formatKmRange } from "@/lib/km";
+import { evaluateDecision, segmentUncertainty, HEIGHT_MODEL_ID, HEIGHT_MODEL_VERSION, SATELLITE_DISCLAIMER } from "@/lib/uncertainty";
+import { newExecutionId } from "@/lib/report-export";
 
 type StatusKey = "critico" | "atencao" | "conforme";
 const PRIORIDADE: Record<StatusKey, string> = { critico: "Alta", atencao: "Média", conforme: "Baixa" };
