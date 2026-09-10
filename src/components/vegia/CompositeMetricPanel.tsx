@@ -56,7 +56,7 @@ export const CompositeMetricPanel = () => {
         const v = byField.get(r.segmentId);
         return v?.length ? { row: r, alturaCm: v.reduce((a, x) => a + x, 0) / v.length } : null;
       })
-      .filter((x): x is { row: IndexSample; alturaCm: number } => x !== null);
+      .filter((x): x is NonNullable<typeof x> => x !== null);
 
     const pca = fitWeightsPCA(rows);
     const reg = fitWeightsNNLS(paired.map(p => p.row), paired.map(p => p.alturaCm), norm);
