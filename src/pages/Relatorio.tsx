@@ -161,6 +161,14 @@ const Relatorio = () => {
             ))}
           </select>
           <button
+            onClick={handleExportCsv}
+            disabled={!segments.length}
+            aria-label="Exportar trechos do recorte em CSV"
+            className="h-11 px-5 rounded-lg border border-border bg-surface-high text-[13px] font-semibold inline-flex items-center gap-2 disabled:opacity-50"
+          >
+            <FileDown className="h-4 w-4" /> Exportar CSV
+          </button>
+          <button
             onClick={handleExportPdf}
             disabled={!selectedReport}
             aria-label="Exportar relatório em PDF"
@@ -213,7 +221,11 @@ const Relatorio = () => {
         </div>
       </div>
 
+      <ContextBar className="mb-6" recorte={recorte} periodo={periodoFonte} updatedAt={new Date()} origin="satelite" />
+
       <DataSourcePanel className="mb-6" info={{ updatedAt: new Date(), demo: false }} note="Nº de cenas e pixels válidos variam por trecho — consulte o detalhe de cada segmento para os valores calculados no Earth Engine daquele ponto." />
+
+      <ModelValidationCard className="mb-6" />
 
       <div className="mb-6 rounded-xl border border-border/60 bg-surface-low px-4 py-3 text-[12.5px] leading-relaxed">
         <div className="flex flex-wrap items-center gap-2 mb-1.5">
@@ -244,7 +256,7 @@ const Relatorio = () => {
             return (
               <div key={s.id} className="rounded-lg border border-border/50 bg-surface-low p-3 text-[12.5px] leading-relaxed">
                 <div className="flex items-center justify-between gap-2 mb-1">
-                  <span className="font-semibold">{s.km} · {s.tipo}</span>
+                  <span className="font-semibold">{kmLabel(s.km)} · {s.tipo}</span>
                   <DataOriginBadge origin={segmentOrigin(s)} />
                 </div>
                 <p>
