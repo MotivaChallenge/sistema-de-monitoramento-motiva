@@ -132,7 +132,7 @@ const Previsoes = () => {
                 <div key={s.id} className="py-3 flex items-center gap-3">
                   <span className="h-7 w-7 rounded-full bg-destructive/10 text-destructive text-[12px] font-bold flex items-center justify-center tabular-nums">{i + 1}</span>
                   <div className="flex-1 min-w-0">
-                    <div className="text-[13px] font-semibold truncate">KM {s.km} · {s.tipo}</div>
+                    <div className="text-[13px] font-semibold truncate">{kmLabel(s.km)} · {s.tipo}</div>
                     <div className="text-[11px] text-muted-foreground">NDVI {s.ndvi.toFixed(2)} · altura {s.altura} cm</div>
                   </div>
                   <div className="text-right">

@@ -115,7 +115,7 @@ const AnaliseCV = () => {
       <div className="px-10 pb-12">
         <div className="flex items-end justify-between mb-8">
           <div>
-            <h1 className="text-[30px] font-bold tracking-tight text-primary">Análise visual · {seg.km} · KM {seg.kmStart}–{seg.kmEnd}</h1>
+            <h1 className="text-[30px] font-bold tracking-tight text-primary">Análise visual · {kmLabel(seg.km)} · km {seg.kmStart}–{seg.kmEnd}</h1>
             <p className="label-md mt-2">Processamento de visão computacional em tempo real</p>
           </div>
           <div className="flex items-center gap-3">

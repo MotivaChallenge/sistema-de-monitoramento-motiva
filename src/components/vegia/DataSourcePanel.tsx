@@ -64,13 +64,13 @@ export const DataSourcePanel = ({ info = {}, className = "", title = "Fonte e qu
       label: "Período analisado",
       value: info.periodo ? `${fmtDate(info.periodo.de)} → ${fmtDate(info.periodo.ate)}` : "últimos 60 dias",
     },
-    { label: "Nº de imagens", value: info.imagens != null ? `${info.imagens} cena(s)` : "—" },
+    { label: "Nº de imagens", value: info.imagens != null ? `${info.imagens} cena(s)` : NOT_COMPUTED },
     { label: "Composição", value: info.composite ?? "mediana temporal · CLOUDY_PIXEL_PERCENTAGE < 60" },
     { label: "Filtro de nuvens", value: "CLOUDY_PIXEL_PERCENTAGE < 60" },
     { label: "Máscara", value: info.cloudMask ?? "SCL (classes 4, 5, 6, 7, 11)" },
     { label: "Resolução nativa", value: `${info.nativeResolutionM ?? 10} m/pixel` },
     { label: "Buffer analisado", value: `${info.bufferM ?? 150} m` },
-    { label: "Pixels válidos", value: info.validPixels != null ? `${info.validPixels}` : "—" },
+    { label: "Pixels válidos", value: info.validPixels != null ? `${info.validPixels}` : NOT_COMPUTED },
     { label: "Atualização", value: fmtDateTime(info.updatedAt) },
   ];
 
