@@ -176,6 +176,13 @@ const Dashboard = () => {
           />
         )}
 
+        {/* 1b — Contexto do recorte exibido */}
+        <ContextBar
+          recorte={`${rodovia ?? "Toda a malha"} · ${coverage.toFixed(1).replace(".", ",")} km · ${total} de ${allSegments.length} trechos`}
+          updatedAt={lastUpdate}
+          origin="satelite"
+        />
+
         {/* 2 — Resumo operacional rápido */}
         <OpsSummaryBar
           lastUpdate={lastUpdate}
