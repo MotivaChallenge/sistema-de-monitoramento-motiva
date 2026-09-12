@@ -123,8 +123,8 @@ const Dashboard = () => {
         showLastReading
         rightSlot={
           <>
-            <HighwaySelect className="hidden sm:inline-flex" />
-            <SatelliteRefreshButton />
+            <HighwaySelect className="hidden xl:inline-flex [&_select]:max-w-[150px] [&_select]:h-8 [&_select]:text-[11px]" />
+            <SatelliteRefreshButton className="h-8 px-2 [&_span]:hidden 2xl:[&_span]:inline" />
             <GlobalFilters />
             <button
               onClick={async () => {
@@ -138,10 +138,10 @@ const Dashboard = () => {
               }}
               disabled={refreshing || fetching > 0}
               aria-label="Atualizar dados"
-              className="ml-1 inline-flex items-center gap-1.5 px-3 h-9 rounded-lg bg-gradient-to-b from-primary to-primary-glow text-primary-foreground text-[11px] font-semibold tracking-wider uppercase whitespace-nowrap disabled:opacity-60"
+              className="inline-flex items-center gap-1.5 px-2 h-8 rounded-lg bg-gradient-to-b from-primary to-primary-glow text-primary-foreground text-[10px] font-semibold tracking-wider uppercase whitespace-nowrap disabled:opacity-60"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${refreshing || fetching > 0 ? "animate-spin" : ""}`} />
-              <span className="hidden xl:inline">{refreshing ? "Atualizando" : "Atualizar"} Dados</span>
+              <span className="hidden 2xl:inline">{refreshing ? "Atualizando" : "Atualizar"} Dados</span>
             </button>
           </>
         }
