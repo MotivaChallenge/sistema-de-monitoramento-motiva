@@ -16,6 +16,10 @@ import { HighwaySelect } from "@/components/vegia/HighwaySelect";
 import { GlobalFilters } from "@/components/vegia/GlobalFilters";
 import { formatKmPrecise } from "@/lib/km";
 import { AllocationRationale } from "@/components/vegia/AllocationRationale";
+import { segmentPriority } from "@/lib/operational-priority";
+import { evaluateHeightDecision, PRIORITY_LEVEL_LABEL, priorityLevelFromScore } from "@/lib/vegetation-model";
+import { segmentUncertainty } from "@/lib/uncertainty";
+
 
 const DAYS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 
@@ -63,12 +67,23 @@ const Planejamento = () => {
     [teamsRaw]
   );
 
-  // Prioriza trechos por IRC, distribui por equipe round-robin respeitando capacidade
+  // Prioriza trechos pelo Índice de Prioridade Operacional (altura estimada,
+  // NDVI, chuva acumulada e dias desde a última roçada) e distribui por equipe
+  // respeitando capacidade diária e região.
   const plan = useMemo(() => {
     if (!teams.length) return {} as Record<string, Array<{ s: any; dia: number }>>;
     const sorted = [...segmentsRaw]
-      .map(s => ({ ...s, _score: ircForSegment(s, rain5d).score }))
+      .map(s => {
+        const p = segmentPriority(s, rain5d);
+        return {
+          ...s,
+          _score: p.score,
+          _level: p.level,
+          _needsField: evaluateHeightDecision(s.altura, s.limite, segmentUncertainty(s)).needsFieldValidation,
+        };
+      })
       .sort((a, b) => b._score - a._score);
+
 
     const slots = horizonte === "semana" ? 5 : 22; // dias úteis
     const totalCap = teams.reduce((a, t) => a + t.capacidade_dia, 0);
