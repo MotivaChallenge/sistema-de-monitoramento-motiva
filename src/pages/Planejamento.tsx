@@ -2,7 +2,7 @@ import { TopHeader } from "@/components/vegia/TopHeader";
 import { segmentProvenance } from "@/lib/data-provenance";
 import { useSegments, useFieldTeams, FieldTeam } from "@/hooks/useVegiaData";
 import { useWeather } from "@/hooks/useWeather";
-import { ircForSegment } from "@/lib/irc";
+
 import { useMemo, useState } from "react";
 import { CalendarDays, Users, Gauge, MapPin, Loader2, ClipboardPlus, TrendingUp } from "lucide-react";
 import { Link } from "react-router-dom";

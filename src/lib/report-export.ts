@@ -2,6 +2,9 @@ import type { Segment } from "@/types/domain";
 import { ORIGIN_META, segmentOrigin } from "@/lib/data-provenance";
 import { evaluateDecision, segmentUncertainty, HEIGHT_MODEL_ID, HEIGHT_MODEL_VERSION } from "@/lib/uncertainty";
 import { kmLabel } from "@/lib/km-format";
+import { segmentPriority } from "@/lib/operational-priority";
+import { PRIORITY_LEVEL_LABEL, SATELLITE_NOT_A_RULER_TEXT, VEGETATION_MODEL } from "@/lib/vegetation-model";
+
 
 const ZONE_LABEL: Record<string, string> = {
   baixo: "provavelmente conforme",
