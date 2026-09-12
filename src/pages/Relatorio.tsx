@@ -51,7 +51,7 @@ const Relatorio = () => {
   const selectedReport = reports.find(r => r.id === reportId);
   const periodLabel = selectedReport
     ? new Date(selectedReport.data_levantamento + "T00:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" })
-    : "—";
+    : "Período não selecionado";
 
   // Compute compliance metrics from real measurements (only counted ones, not N/A)
   const counted = measurements.filter(m => !m.na && m.nivel != null);
