@@ -9,6 +9,9 @@ import { formatKmPrecise } from "@/lib/km";
 import { VegetationIndicesPanel } from "@/components/vegia/VegetationIndicesPanel";
 import { GeeDataSourcePanel } from "@/components/vegia/DataSourcePanel";
 import { DecisionZoneCard } from "@/components/vegia/DecisionZone";
+import { segmentPriority } from "@/lib/operational-priority";
+import { PRIORITY_LEVEL_LABEL } from "@/lib/vegetation-model";
+
 import { useSegment } from "@/hooks/useVegiaData";
 import { segmentOrigin } from "@/lib/data-provenance";
 
@@ -176,6 +179,29 @@ export const MapPointSheet = ({ open, point, kmInfo, onClose }: Props) => {
                 clausula={nearestSeg.clausula}
               />
             )}
+
+            {/* Prioridade operacional do segmento mais próximo */}
+            {nearestSeg && (() => {
+              const p = segmentPriority(nearestSeg, data.weather?.rain5dMm ?? 0);
+              return (
+                <section className="rounded-lg border border-border/50 bg-surface-low p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                      Prioridade operacional
+                    </span>
+                    <span className="text-sm font-semibold tabular-nums">
+                      {p.score}/100 · {PRIORITY_LEVEL_LABEL[p.level]}
+                    </span>
+                  </div>
+                  <p className="mt-1.5 text-[11px] text-muted-foreground leading-relaxed">
+                    Combina risco de altura estimada, vigor da vegetação, chuva dos últimos 5 dias e tempo desde a
+                    última roçada. Serve para ordenar o trabalho das equipes — não é medição de campo nem conclusão
+                    contratual.
+                  </p>
+                </section>
+              );
+            })()}
+
 
             {/* Segmento próximo */}
             {data.nearest && (
