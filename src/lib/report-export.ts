@@ -17,7 +17,10 @@ export interface ExportContext {
   fonte: string;
   /** Identificador da execução da exportação. */
   execucaoId: string;
+  /** Chuva acumulada em 5 dias (mm) usada na prioridade operacional. */
+  chuva5dMm?: number;
 }
+
 
 /** Identificador legível e único da execução da exportação. */
 export const newExecutionId = (): string =>
