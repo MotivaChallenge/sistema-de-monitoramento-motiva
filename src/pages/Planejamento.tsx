@@ -141,6 +141,18 @@ const Planejamento = () => {
   const teamNames = useMemo(() => new Map(teamsRaw.map(t => [t.id, t.nome])), [teamsRaw]);
   const slotsLabel = horizonte === "semana" ? 5 : 22;
 
+  /** Assinatura do plano já convertido em OS — bloqueia clique duplo/repetido. */
+  const planSignature = useMemo(
+    () => Object.entries(plan)
+      .map(([teamId, items]) => `${teamId}:${items.map(i => `${i.s.id}@${i.dia}`).join(",")}`)
+      .sort()
+      .join("|"),
+    [plan]
+  );
+  const [generatedSignature, setGeneratedSignature] = useState<string | null>(null);
+  const alreadyGenerated = generatedSignature !== null && generatedSignature === planSignature;
+
+
   const generateOS = useMutation({
     mutationFn: async () => {
       const today = new Date();
