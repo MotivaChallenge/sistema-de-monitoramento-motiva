@@ -35,7 +35,15 @@ export interface HeightResult {
   indexUsed: "ndvi" | "savi";
 }
 
-export const estimateHeight = (i: HeightInput): HeightResult => {
+/** Coeficientes publicados pela calibração de campo (src/lib/calibration.ts). */
+export interface HeightCalibration {
+  slope: number;
+  intercept: number;
+  /** Erro de previsão medido (RMSE de LOOCV) — substitui MODEL_RESIDUAL_CM. */
+  residualCm: number;
+}
+
+export const estimateHeight = (i: HeightInput, calib?: HeightCalibration | null): HeightResult => {
   if (i.ndviMedian == null || !Number.isFinite(i.ndviMedian)) {
     return { cm: null, uncertaintyCm: null, saturated: false, indexUsed: "ndvi" };
   }
@@ -46,14 +54,18 @@ export const estimateHeight = (i: HeightInput): HeightResult => {
     index = Math.min(1, Math.max(i.ndviMedian, i.saviMedian));
     indexUsed = "savi";
   }
-  const cm = Math.max(0, Math.round((index - NDVI_FLOOR) * HEIGHT_SLOPE));
+  const slope = calib?.slope ?? HEIGHT_SLOPE;
+  const cm = calib
+    ? Math.max(0, Math.round(calib.slope * index + calib.intercept))
+    : Math.max(0, Math.round((index - NDVI_FLOOR) * HEIGHT_SLOPE));
   const n = Math.max(1, i.validPixels ?? 1);
   const std = i.ndviStd != null && Number.isFinite(i.ndviStd) ? i.ndviStd : 0;
-  const spatial = (HEIGHT_SLOPE * std) / Math.sqrt(n);
+  const spatial = (Math.abs(slope) * std) / Math.sqrt(n);
   const aging = GROWTH_CM_PER_DAY * Math.max(0, i.ageDays ?? 0);
   const saturationPenalty = saturated ? 5 : 0;
+  const residual = calib?.residualCm ?? MODEL_RESIDUAL_CM;
   const uncertaintyCm =
-    Math.round(Math.sqrt(MODEL_RESIDUAL_CM ** 2 + spatial ** 2 + aging ** 2 + saturationPenalty ** 2) * 10) / 10;
+    Math.round(Math.sqrt(residual ** 2 + spatial ** 2 + aging ** 2 + saturationPenalty ** 2) * 10) / 10;
   return { cm, uncertaintyCm, saturated, indexUsed };
 };
 
