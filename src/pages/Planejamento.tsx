@@ -2,7 +2,7 @@ import { TopHeader } from "@/components/vegia/TopHeader";
 import { segmentProvenance } from "@/lib/data-provenance";
 import { useSegments, useFieldTeams, FieldTeam } from "@/hooks/useVegiaData";
 import { useWeather } from "@/hooks/useWeather";
-import { ircForSegment } from "@/lib/irc";
+
 import { useMemo, useState } from "react";
 import { CalendarDays, Users, Gauge, MapPin, Loader2, ClipboardPlus, TrendingUp } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -16,11 +16,16 @@ import { HighwaySelect } from "@/components/vegia/HighwaySelect";
 import { GlobalFilters } from "@/components/vegia/GlobalFilters";
 import { formatKmPrecise } from "@/lib/km";
 import { AllocationRationale } from "@/components/vegia/AllocationRationale";
+import { segmentPriority } from "@/lib/operational-priority";
+import { evaluateHeightDecision, PRIORITY_LEVEL_LABEL, priorityLevelFromScore } from "@/lib/vegetation-model";
+import { segmentUncertainty } from "@/lib/uncertainty";
+
 
 const DAYS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 
-const priorityFromScore = (score: number): "critica" | "alta" | "media" | "baixa" =>
-  score >= 75 ? "critica" : score >= 55 ? "alta" : score >= 35 ? "media" : "baixa";
+/** Prioridade da OS derivada do Índice de Prioridade Operacional (0–100). */
+const priorityFromScore = priorityLevelFromScore;
+
 
 const addBusinessDays = (base: Date, offset: number): string => {
   const d = new Date(base);
@@ -63,12 +68,23 @@ const Planejamento = () => {
     [teamsRaw]
   );
 
-  // Prioriza trechos por IRC, distribui por equipe round-robin respeitando capacidade
+  // Prioriza trechos pelo Índice de Prioridade Operacional (altura estimada,
+  // NDVI, chuva acumulada e dias desde a última roçada) e distribui por equipe
+  // respeitando capacidade diária e região.
   const plan = useMemo(() => {
     if (!teams.length) return {} as Record<string, Array<{ s: any; dia: number }>>;
     const sorted = [...segmentsRaw]
-      .map(s => ({ ...s, _score: ircForSegment(s, rain5d).score }))
+      .map(s => {
+        const p = segmentPriority(s, rain5d);
+        return {
+          ...s,
+          _score: p.score,
+          _level: p.level,
+          _needsField: evaluateHeightDecision(s.altura, s.limite, segmentUncertainty(s)).needsFieldValidation,
+        };
+      })
       .sort((a, b) => b._score - a._score);
+
 
     const slots = horizonte === "semana" ? 5 : 22; // dias úteis
     const totalCap = teams.reduce((a, t) => a + t.capacidade_dia, 0);
@@ -102,9 +118,16 @@ const Planejamento = () => {
     return buckets;
   }, [segmentsRaw, rain5d, horizonte, teams]);
 
-  const totalProgramado = Object.values(plan).reduce((a, b) => a + b.length, 0);
+  const planItems = Object.values(plan).flat();
+  const totalProgramado = planItems.length;
   const capacidadeHorizonte = teams.reduce((a, t) => a + t.capacidade_dia, 0) * (horizonte === "semana" ? 5 : 22);
   const folga = capacidadeHorizonte - totalProgramado;
+  const scoreMedio = totalProgramado
+    ? Math.round(planItems.reduce((a, it) => a + it.s._score, 0) / totalProgramado)
+    : 0;
+  const precisamValidacao = planItems.filter(it => it.s._needsField).length;
+  const intervencaoImediata = planItems.filter(it => it.s._level === "critica").length;
+
 
   // Trecho → equipes que o receberam (detecção de duplicidade antes de gerar OS)
   const ownersBySegment = useMemo(() => {
@@ -118,8 +141,21 @@ const Planejamento = () => {
   const teamNames = useMemo(() => new Map(teamsRaw.map(t => [t.id, t.nome])), [teamsRaw]);
   const slotsLabel = horizonte === "semana" ? 5 : 22;
 
+  /** Assinatura do plano já convertido em OS — bloqueia clique duplo/repetido. */
+  const planSignature = useMemo(
+    () => Object.entries(plan)
+      .map(([teamId, items]) => `${teamId}:${items.map(i => `${i.s.id}@${i.dia}`).join(",")}`)
+      .sort()
+      .join("|"),
+    [plan]
+  );
+  const [generatedSignature, setGeneratedSignature] = useState<string | null>(null);
+  const alreadyGenerated = generatedSignature !== null && generatedSignature === planSignature;
+
+
   const generateOS = useMutation({
     mutationFn: async () => {
+      if (generateOS.isPending || alreadyGenerated) throw new Error("Este plano já foi convertido em ordens de serviço.");
       const today = new Date();
       const rows: any[] = [];
       const suffix = Date.now().toString(36).toUpperCase().slice(-4);
@@ -143,9 +179,11 @@ const Planejamento = () => {
       return rows.length;
     },
     onSuccess: (n) => {
+      setGeneratedSignature(planSignature);
       qc.invalidateQueries({ queryKey: ["work_orders"] });
       toast.success("Ordens geradas", { description: `${n} ordens de serviço criadas com base no plano atual.` });
     },
+
     onError: (e: any) => {
       toast.error("Falha ao gerar OS", { description: e.message ?? "Erro inesperado" });
     },
@@ -205,19 +243,26 @@ const Planejamento = () => {
             <Button
               size="sm"
               onClick={() => generateOS.mutate()}
-              disabled={generateOS.isPending || totalProgramado === 0 || conflicts > 0}
-              title={conflicts > 0 ? "Resolva as duplicidades antes de gerar OS" : undefined}
+              disabled={generateOS.isPending || totalProgramado === 0 || conflicts > 0 || alreadyGenerated}
+              title={
+                conflicts > 0
+                  ? "Resolva as duplicidades antes de gerar OS"
+                  : alreadyGenerated
+                    ? "Este plano já foi convertido em ordens de serviço"
+                    : undefined
+              }
               className="h-8"
             >
               {generateOS.isPending
                 ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
                 : <ClipboardPlus className="h-3.5 w-3.5 mr-1.5" />}
-              Gerar ordens de serviço
+              {alreadyGenerated ? "Ordens já geradas" : "Gerar ordens de serviço"}
+
             </Button>
           </div>
         </header>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5">
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3 md:gap-5">
           <div className="bg-surface-lowest rounded-xl p-5 border border-border/40 shadow-card">
             <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Trechos programados</div>
             <div className="text-[28px] font-bold tabular-nums mt-1">{totalProgramado}</div>
@@ -246,7 +291,18 @@ const Planejamento = () => {
               {teams.reduce((a, t) => a + t.capacidade_dia, 0)} trechos/dia somando as equipes do plano
             </div>
           </div>
+          <div className="bg-surface-lowest rounded-xl p-5 border border-border/40 shadow-card">
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Prioridade média do plano</div>
+            <div className="text-[28px] font-bold tabular-nums mt-1">
+              {scoreMedio}<span className="text-[14px] font-semibold text-muted-foreground">/100</span>
+            </div>
+            <div className="text-[11px] text-muted-foreground mt-1 leading-snug">
+              {PRIORITY_LEVEL_LABEL[priorityLevelFromScore(scoreMedio)]} · {intervencaoImediata} de intervenção imediata ·{" "}
+              {precisamValidacao} pedem confirmação em campo
+            </div>
+          </div>
         </div>
+
 
         {isLoading || teamsLoading ? (
           <Skeleton className="h-72 w-full" />

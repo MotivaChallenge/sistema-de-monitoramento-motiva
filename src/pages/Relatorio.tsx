@@ -25,6 +25,8 @@ import { ContextBar } from "@/components/vegia/ContextBar";
 import { ModelValidationCard } from "@/components/vegia/ModelValidationCard";
 import { downloadCsv, newExecutionId, segmentsToCsv } from "@/lib/report-export";
 import { kmLabel } from "@/lib/km-format";
+import { DemoModelPanel } from "@/components/vegia/DemoModelPanel";
+
 
 const Relatorio = () => {
   const { data: segmentsRaw = [], isLoading: loadingSegs, isError: errorSegs, refetch: refetchSegs } = useSegments();
@@ -276,8 +278,12 @@ const Relatorio = () => {
         )}
       </section>
 
+      {/* Modelo demonstrativo aplicado aos trechos */}
+      <DemoModelPanel className="mt-6" />
+
       {/* Metodologia e limitações */}
       <section className="mt-6 bg-surface-lowest rounded-xl p-5 border border-border/40 shadow-card" id="metodologia">
+
         <h2 className="text-[14px] font-semibold tracking-wider uppercase mb-4">Metodologia e limitações</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           {METHODOLOGY_SECTIONS.map(sec => (

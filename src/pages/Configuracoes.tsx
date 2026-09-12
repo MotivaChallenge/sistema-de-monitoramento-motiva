@@ -9,11 +9,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Save, RotateCcw, User as UserIcon, Sliders, Bell, Palette, History } from "lucide-react";
+import { Save, RotateCcw, User as UserIcon, Sliders, Bell, Palette, History, FlaskConical } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { settingsVersionLabel } from "@/lib/settings-version";
+import { MODEL_METHOD_TEXT, UNCERTAINTY_EXPLANATION_TEXT, VEGETATION_MODEL, weightSum } from "@/lib/vegetation-model";
+
 
 const Section = ({ icon: Icon, title, desc, children }: { icon: any; title: string; desc?: string; children: React.ReactNode }) => (
   <section className="bg-surface-lowest rounded-xl p-6">
@@ -308,6 +310,38 @@ const Configuracoes = () => {
                 <NumberInput id="hc" invalid={invalidNum(draft.altura_critica_cm) || draft.altura_critica_cm < draft.altura_atencao_cm} value={draft.altura_critica_cm} min={1} max={300} suffix="cm" onChange={n => setDraft({ ...draft, altura_critica_cm: n })} />
               </Field>
             </Section>
+
+            <Section
+              icon={FlaskConical}
+              title="Parâmetros do modelo demonstrativo"
+              desc="Fórmula usada para estimar altura e prioridade a partir dos índices espectrais."
+            >
+              <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-[12.5px]">
+                {[
+                  ["Peso do NDVI", `${VEGETATION_MODEL.weights.ndvi} de ${weightSum()} (${Math.round((VEGETATION_MODEL.weights.ndvi / weightSum()) * 100)}%)`],
+                  ["Peso do EVI", `${VEGETATION_MODEL.weights.evi} de ${weightSum()} (${Math.round((VEGETATION_MODEL.weights.evi / weightSum()) * 100)}%)`],
+                  ["Peso do SAVI", `${VEGETATION_MODEL.weights.savi} de ${weightSum()} (${Math.round((VEGETATION_MODEL.weights.savi / weightSum()) * 100)}%)`],
+                  ["Coeficiente de altura", `${VEGETATION_MODEL.heightCalibration.vegetationIndexCoefficient} cm por unidade de índice`],
+                  ["Intercepto", `${VEGETATION_MODEL.heightCalibration.interceptCm} cm`],
+                  ["Limite contratual geral", `${VEGETATION_MODEL.contractualHeightLimitCm} cm`],
+                  ["Incerteza estimada", `± ${VEGETATION_MODEL.uncertainty.valueCm} cm (${VEGETATION_MODEL.uncertainty.method})`],
+                  ["Versão do modelo", `${VEGETATION_MODEL.modelVersion} · calibração ${VEGETATION_MODEL.heightCalibration.version}`],
+                ].map(([k, v]) => (
+                  <div key={k} className="contents">
+                    <dt className="text-muted-foreground">{k}</dt>
+                    <dd className="font-semibold tabular-nums text-right">{v}</dd>
+                  </div>
+                ))}
+              </dl>
+              <p className="mt-3 text-[12px] leading-relaxed">{MODEL_METHOD_TEXT}</p>
+              <div className="mt-3 rounded-lg border border-tertiary/40 bg-tertiary/10 px-3 py-2 text-[12px] text-tertiary">
+                Esses parâmetros pertencem ao modelo demonstrativo. Alterações podem alterar a classificação dos trechos
+                e devem ser validadas antes do uso operacional — por isso são exibidos somente para leitura nesta versão
+                e mudam apenas por atualização de versão do modelo, com registro em auditoria.
+              </div>
+              <p className="mt-2 text-[12px] text-muted-foreground leading-relaxed">{UNCERTAINTY_EXPLANATION_TEXT}</p>
+            </Section>
+
 
             <Section icon={Bell} title="Notificações" desc="Escolha quando e como ser avisado.">
               <SwitchField
