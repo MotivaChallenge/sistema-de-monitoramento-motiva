@@ -243,14 +243,21 @@ const Planejamento = () => {
             <Button
               size="sm"
               onClick={() => generateOS.mutate()}
-              disabled={generateOS.isPending || totalProgramado === 0 || conflicts > 0}
-              title={conflicts > 0 ? "Resolva as duplicidades antes de gerar OS" : undefined}
+              disabled={generateOS.isPending || totalProgramado === 0 || conflicts > 0 || alreadyGenerated}
+              title={
+                conflicts > 0
+                  ? "Resolva as duplicidades antes de gerar OS"
+                  : alreadyGenerated
+                    ? "Este plano já foi convertido em ordens de serviço"
+                    : undefined
+              }
               className="h-8"
             >
               {generateOS.isPending
                 ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
                 : <ClipboardPlus className="h-3.5 w-3.5 mr-1.5" />}
-              Gerar ordens de serviço
+              {alreadyGenerated ? "Ordens já geradas" : "Gerar ordens de serviço"}
+
             </Button>
           </div>
         </header>
