@@ -287,6 +287,69 @@ export type Database = {
         }
         Relationships: []
       }
+      height_model_calibration: {
+        Row: {
+          active: boolean
+          bias_cm: number | null
+          created_at: string
+          created_by: string | null
+          id: string
+          intercept: number
+          mae_cm: number | null
+          max_lag_days: number
+          method: string
+          model_id: string
+          model_version: string
+          n_pairs: number
+          notes: string | null
+          r2: number | null
+          residual_sd_cm: number | null
+          rmse_cm: number | null
+          slope: number
+          uncertainty_cm: number | null
+        }
+        Insert: {
+          active?: boolean
+          bias_cm?: number | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          intercept: number
+          mae_cm?: number | null
+          max_lag_days?: number
+          method?: string
+          model_id?: string
+          model_version: string
+          n_pairs: number
+          notes?: string | null
+          r2?: number | null
+          residual_sd_cm?: number | null
+          rmse_cm?: number | null
+          slope: number
+          uncertainty_cm?: number | null
+        }
+        Update: {
+          active?: boolean
+          bias_cm?: number | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          intercept?: number
+          mae_cm?: number | null
+          max_lag_days?: number
+          method?: string
+          model_id?: string
+          model_version?: string
+          n_pairs?: number
+          notes?: string | null
+          r2?: number | null
+          residual_sd_cm?: number | null
+          rmse_cm?: number | null
+          slope?: number
+          uncertainty_cm?: number | null
+        }
+        Relationships: []
+      }
       highways: {
         Row: {
           code: string
