@@ -262,7 +262,7 @@ const Planejamento = () => {
           </div>
         </header>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5">
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3 md:gap-5">
           <div className="bg-surface-lowest rounded-xl p-5 border border-border/40 shadow-card">
             <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Trechos programados</div>
             <div className="text-[28px] font-bold tabular-nums mt-1">{totalProgramado}</div>
@@ -291,7 +291,18 @@ const Planejamento = () => {
               {teams.reduce((a, t) => a + t.capacidade_dia, 0)} trechos/dia somando as equipes do plano
             </div>
           </div>
+          <div className="bg-surface-lowest rounded-xl p-5 border border-border/40 shadow-card">
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Prioridade média do plano</div>
+            <div className="text-[28px] font-bold tabular-nums mt-1">
+              {scoreMedio}<span className="text-[14px] font-semibold text-muted-foreground">/100</span>
+            </div>
+            <div className="text-[11px] text-muted-foreground mt-1 leading-snug">
+              {PRIORITY_LEVEL_LABEL[priorityLevelFromScore(scoreMedio)]} · {intervencaoImediata} de intervenção imediata ·{" "}
+              {precisamValidacao} pedem confirmação em campo
+            </div>
+          </div>
         </div>
+
 
         {isLoading || teamsLoading ? (
           <Skeleton className="h-72 w-full" />
