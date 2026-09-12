@@ -104,6 +104,12 @@ export const weightSum = (w: IndexWeights = VEGETATION_MODEL.weights) => w.ndvi 
 
 /**
  * Normaliza NDVI/EVI/SAVI para 0–1 e devolve o índice composto.
+ *
+ * Regra demonstrativa: valores negativos (água, asfalto, solo muito exposto)
+ * são remapeados de [-1, 1] para [0, 1]; valores não negativos — a faixa em que
+ * a vegetação efetivamente ocorre — são apenas limitados a [0, 1], preservando
+ * a escala do índice na região de interesse.
+ *
  * Retorna `null` quando algum índice está ausente — nunca calcula em silêncio.
  */
 export const normalizeSpectralIndices = (
@@ -113,9 +119,11 @@ export const normalizeSpectralIndices = (
   const n = num(ndvi), e = num(evi), s = num(savi);
   if (n === null || e === null || s === null) return null;
 
-  const ndviNormalized = clamp((n + 1) / 2);
-  const eviNormalized = clamp(e);
-  const saviNormalized = clamp((s + 1) / 2);
+  const norm = (x: number) => clamp(x < 0 ? (x + 1) / 2 : x);
+  const ndviNormalized = norm(n);
+  const eviNormalized = norm(e);
+  const saviNormalized = norm(s);
+
   const total = weightSum(weights);
   const vegetationIndex = clamp(
     (weights.ndvi * ndviNormalized + weights.evi * eviNormalized + weights.savi * saviNormalized) / total
