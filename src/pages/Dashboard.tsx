@@ -33,6 +33,8 @@ import { buildRecommendations } from "@/lib/recommendations";
 import { GeeDataSourcePanel } from "@/components/vegia/DataSourcePanel";
 import { ContextBar } from "@/components/vegia/ContextBar";
 import { DecisionZoneCard } from "@/components/vegia/DecisionZone";
+import { DemoModelPanel } from "@/components/vegia/DemoModelPanel";
+
 import { segmentOrigin } from "@/lib/data-provenance";
 import { isOverdue } from "@/lib/deadlines";
 import { useKmMarkers } from "@/hooks/useVegiaData";
@@ -282,6 +284,10 @@ const Dashboard = () => {
           <UpcomingMaintenance />
           <TeamsStatus />
         </div>
+
+        {/* 6b — Modelo demonstrativo: índice composto, altura estimada e prioridade */}
+        <DemoModelPanel />
+
 
         {/* 7 — Análises e alertas */}
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-4 items-start">
