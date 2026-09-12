@@ -23,8 +23,9 @@ import { segmentUncertainty } from "@/lib/uncertainty";
 
 const DAYS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 
-const priorityFromScore = (score: number): "critica" | "alta" | "media" | "baixa" =>
-  score >= 75 ? "critica" : score >= 55 ? "alta" : score >= 35 ? "media" : "baixa";
+/** Prioridade da OS derivada do Índice de Prioridade Operacional (0–100). */
+const priorityFromScore = priorityLevelFromScore;
+
 
 const addBusinessDays = (base: Date, offset: number): string => {
   const d = new Date(base);
@@ -117,9 +118,16 @@ const Planejamento = () => {
     return buckets;
   }, [segmentsRaw, rain5d, horizonte, teams]);
 
-  const totalProgramado = Object.values(plan).reduce((a, b) => a + b.length, 0);
+  const planItems = Object.values(plan).flat();
+  const totalProgramado = planItems.length;
   const capacidadeHorizonte = teams.reduce((a, t) => a + t.capacidade_dia, 0) * (horizonte === "semana" ? 5 : 22);
   const folga = capacidadeHorizonte - totalProgramado;
+  const scoreMedio = totalProgramado
+    ? Math.round(planItems.reduce((a, it) => a + it.s._score, 0) / totalProgramado)
+    : 0;
+  const precisamValidacao = planItems.filter(it => it.s._needsField).length;
+  const intervencaoImediata = planItems.filter(it => it.s._level === "critica").length;
+
 
   // Trecho → equipes que o receberam (detecção de duplicidade antes de gerar OS)
   const ownersBySegment = useMemo(() => {
