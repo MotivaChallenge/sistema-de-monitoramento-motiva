@@ -260,7 +260,7 @@ export const SegmentTable = ({ rows }: { rows: Segment[] }) => {
               <span className="block text-[10px] text-muted-foreground mt-0.5">limite {r.limite} cm</span>
             </span>
             <span className={`text-[13px] tabular-nums ${r.deadlineUrgent ? "text-destructive font-semibold" : "text-muted-foreground"}`}>
-              {r.deadline ? r.deadline.split(" ")[0] : "—"}
+              {r.deadline ? r.deadline.split(" ")[0] : <span className="text-[11px]">Sem prazo definido</span>}
             </span>
           </button>
         ))}

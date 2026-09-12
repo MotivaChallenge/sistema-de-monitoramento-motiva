@@ -32,7 +32,7 @@ export const TopHeader = ({ breadcrumb = [{ label: "Rodoanel SP-021" }], current
   const analysisTo = analysisSegment ? `/analise-cv/${analysisSegment.id}` : "/relatorio";
   const lastReading = dataUpdatedAt
     ? new Date(dataUpdatedAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
-    : "—";
+    : "aguardando processamento";
   const refresh = () => { qc.invalidateQueries(); toast.success("Atualizando dados…"); };
   return (
     <header className="h-14 md:h-[72px] px-3 md:px-6 flex items-center justify-between gap-2 md:gap-3 bg-background/85 backdrop-blur-md sticky top-0 z-30 border-b border-border/40 overflow-hidden">

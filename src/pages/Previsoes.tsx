@@ -79,7 +79,7 @@ const Previsoes = () => {
           <div className="text-[11px] uppercase tracking-wider text-muted-foreground bg-surface-low border border-border/40 rounded-full px-3 py-1.5">
             {segmentsRaw.length} trechos · atualizado {dataUpdatedAt
               ? new Date(dataUpdatedAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
-              : "—"}
+              : "aguardando processamento"}
           </div>
         </header>
 

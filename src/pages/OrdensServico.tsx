@@ -387,7 +387,7 @@ const OrdensServico = () => {
                         ) : o.segment_id}
                       </td>
                       <td className="px-3 py-3 capitalize">{o.tipo_servico}</td>
-                      <td className="px-3 py-3">{team?.nome ?? <span className="text-muted-foreground">—</span>}</td>
+                      <td className="px-3 py-3">{team?.nome ?? <span className="text-muted-foreground text-[11px]">Equipe não atribuída</span>}</td>
                       <td className="px-3 py-3 leading-tight">
                         <span className="font-semibold" style={{ color: pm.fg }}>{pm.label}</span>
                         <div className="text-[10px] text-muted-foreground">SLA {SLA_DAYS[o.priority]} dia(s)</div>
@@ -400,7 +400,7 @@ const OrdensServico = () => {
                           return (
                             <>
                               <div className={st === "atrasada" ? "text-destructive font-semibold" : "text-muted-foreground"}>
-                                {o.scheduled_for ? formatDateBR(o.scheduled_for) : "—"}
+                                {o.scheduled_for ? formatDateBR(o.scheduled_for) : <span className="text-[11px]">Sem data programada</span>}
                               </div>
                               {st !== "encerrada" && st !== "sem_prazo" && (
                                 <span className={`mt-1 inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold tracking-wider ${meta.className}`}>
