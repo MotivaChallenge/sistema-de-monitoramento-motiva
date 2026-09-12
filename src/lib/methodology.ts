@@ -1,6 +1,11 @@
 import { HEIGHT_MODEL_ID, HEIGHT_MODEL_UPDATED_AT, HEIGHT_MODEL_VERSION, MODEL_UNCERTAINTY_CM, SATELLITE_DISCLAIMER } from "@/lib/uncertainty";
 import { heightModelSummary } from "@/lib/height-model";
 import { POSITIONING_MESSAGE } from "@/lib/data-provenance";
+import {
+  MODEL_METHOD_TEXT, NON_CONFORMITY_TEXT, SATELLITE_NOT_A_RULER_TEXT,
+  UNCERTAINTY_EXPLANATION_TEXT, VEGETATION_MODEL,
+} from "@/lib/vegetation-model";
+
 
 export interface MethodologySection {
   title: string;
@@ -37,14 +42,27 @@ export const METHODOLOGY_SECTIONS: MethodologySection[] = [
     ],
   },
   {
+    title: "Modelo demonstrativo composto (NDVI + EVI + SAVI)",
+    items: [
+      SATELLITE_NOT_A_RULER_TEXT,
+      MODEL_METHOD_TEXT,
+      `Prioridade operacional = ${VEGETATION_MODEL.priorityWeights.heightRisk} × risco de altura + ${VEGETATION_MODEL.priorityWeights.ndvi} × NDVI + ${VEGETATION_MODEL.priorityWeights.rainfall} × chuva acumulada em 5 dias + ${VEGETATION_MODEL.priorityWeights.daysSinceMowing} × dias desde a última roçada, apresentada em escala 0–100.`,
+      `Limite contratual geral parametrizado: ${VEGETATION_MODEL.contractualHeightLimitCm} cm. Incerteza demonstrativa: ± ${VEGETATION_MODEL.uncertainty.valueCm} cm (método ${VEGETATION_MODEL.uncertainty.method}, validação ${VEGETATION_MODEL.uncertainty.validationStatus === "pending" ? "pendente" : "concluída"}).`,
+      UNCERTAINTY_EXPLANATION_TEXT,
+      NON_CONFORMITY_TEXT,
+      `Evolução prevista do modelo: ${VEGETATION_MODEL.heightCalibration.futureForm}.`,
+    ],
+  },
+  {
     title: "Estimativa de altura",
     items: [
       SATELLITE_DISCLAIMER,
       heightModelSummary,
       `Modelo: ${HEIGHT_MODEL_ID} · versão ${HEIGHT_MODEL_VERSION} · atualizado em ${HEIGHT_MODEL_UPDATED_AT}.`,
-      `Incerteza declarada do modelo: ± ${MODEL_UNCERTAINTY_CM} cm. Não há, nesta versão, recalibração estatística com amostra de campo pareada por segmento; onde a incerteza específica não existir, o sistema declara "não calibrada" em vez de afirmar acurácia.`,
+      `Incerteza declarada do modelo: ± ${MODEL_UNCERTAINTY_CM} cm — margem estimada, não precisão garantida. Não há, nesta versão, recalibração estatística com amostra de campo pareada por segmento; onde a incerteza específica não existir, o sistema declara "não calibrada" em vez de afirmar acurácia.`,
     ],
   },
+
   {
     title: "Regra de decisão e encaminhamento a campo",
     items: [
