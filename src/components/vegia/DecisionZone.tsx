@@ -57,17 +57,13 @@ export const DecisionZoneCard = ({
         {origin && <DataOriginBadge origin={origin} />}
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-3">
         <Field label={measured ? "Medido em campo" : "Altura estimada"} value={`${Math.round(altura)} cm`} />
-        <Field
-          label={measured ? "Incerteza" : UNCERTAINTY_LABEL}
-          hint={measured ? undefined : UNCERTAINTY_TOOLTIP}
-          value={d.uncertaintyCm == null ? "não calibrada" : measured ? "medição direta" : `± ${d.uncertaintyCm} cm`}
-        />
         <Field label="Limite contratual" value={`${limite} cm`} />
         <Field
-          label="Faixa provável"
-          value={d.lower == null || d.upper == null ? "não calculada" : `${Math.round(d.lower)}–${Math.round(d.upper)} cm`}
+          label="Situação"
+          hint={measured ? undefined : UNCERTAINTY_TOOLTIP}
+          value={altura > limite ? "Acima do limite" : "Dentro do limite"}
         />
       </div>
 
@@ -75,7 +71,14 @@ export const DecisionZoneCard = ({
 
       <p className="text-[13px] font-semibold leading-snug">{d.title}</p>
       <p className="text-[12px] leading-relaxed opacity-90 mt-1">{d.recommendation}</p>
-      <p className="text-[11px] font-mono mt-2 opacity-80">{d.summary}</p>
+      {!measured && (
+        <p className="text-[11px] mt-2 opacity-70" title={UNCERTAINTY_TOOLTIP}>
+          {UNCERTAINTY_LABEL}:{" "}
+          {d.uncertaintyCm == null
+            ? "não calibrada"
+            : `± ${d.uncertaintyCm} cm (faixa provável ${Math.round(d.lower!)}–${Math.round(d.upper!)} cm)`}
+        </p>
+      )}
       {!measured && (
         <p className="text-[11px] mt-2 opacity-90">{FIELD_CONFIRMATION_MESSAGE}</p>
       )}

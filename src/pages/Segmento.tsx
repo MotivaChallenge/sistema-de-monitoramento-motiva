@@ -124,9 +124,12 @@ const Segmento = () => {
               <dl className="divide-y divide-border/40">
                 <Row label="Índice NDVI (Vegetação)" value={<span className="text-primary">{seg.ndvi.toFixed(2)} <span className="text-muted-foreground text-[12px] font-normal">vigente</span></span>} />
                 <Row label="Altura Estimada (Média)" value={
-                  <span className={`flex items-center gap-2 justify-end ${seg.altura > seg.limite ? "text-destructive" : ""}`}>
+                  <span
+                    className={`flex items-center gap-2 justify-end ${seg.altura > seg.limite ? "text-destructive" : ""}`}
+                    title={`Margem estimada do modelo: ± ${segmentUncertainty(seg)} cm.`}
+                  >
                     <DataOriginBadge origin={segmentOrigin(seg)} />
-                    {seg.altura} <span className="text-muted-foreground font-normal text-[12px]">± {segmentUncertainty(seg)}</span> cm {seg.altura > seg.limite && <ArrowUpRight className="h-4 w-4" />}
+                    {seg.altura} cm {seg.altura > seg.limite && <ArrowUpRight className="h-4 w-4" />}
                   </span>
                 } />
                 <Row label={`Limite Contratual (cláusula ${seg.clausula})`} value={`${seg.limite} cm`} />

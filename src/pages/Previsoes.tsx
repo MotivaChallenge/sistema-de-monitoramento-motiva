@@ -73,7 +73,7 @@ const Previsoes = () => {
               de roçada — projeta crescimento vegetativo e probabilidade de criticidade.
             </p>
             <p className="mt-2 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-tertiary bg-tertiary/10 border border-tertiary/30 rounded-md px-2 py-1">
-              Previsões — valores projetados, não medições. Alturas base estimadas por satélite ± {MODEL_UNCERTAINTY_CM} cm.
+              <span title={`Margem estimada do modelo: ± ${MODEL_UNCERTAINTY_CM} cm.`}>Previsões — valores projetados, não medições. Alturas base estimadas por satélite e comparadas ao limite contratual.</span>
             </p>
           </div>
           <div className="text-[11px] uppercase tracking-wider text-muted-foreground bg-surface-low border border-border/40 rounded-full px-3 py-1.5">

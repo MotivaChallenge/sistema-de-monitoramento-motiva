@@ -268,7 +268,7 @@ export const SegmentTable = ({ rows }: { rows: Segment[] }) => {
       </div>
       </div>
       <div className="flex flex-wrap items-center justify-between gap-2 mt-5 pt-4">
-        <span className="label-md">Alturas estimadas por satélite + modelo (incerteza por trecho, mínimo ± {MODEL_UNCERTAINTY_CM} cm) — {generatedAt}</span>
+        <span className="label-md" title={`Margem estimada do modelo: ± ${MODEL_UNCERTAINTY_CM} cm quando não calibrada por trecho.`}>Alturas estimadas por satélite + modelo, comparadas ao limite contratual do trecho — {generatedAt}</span>
         <button onClick={resetFilters} className="text-primary text-[13px] font-semibold hover:underline">
           Ver todos os segmentos ›
         </button>
