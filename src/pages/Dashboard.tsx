@@ -258,7 +258,7 @@ const Dashboard = () => {
                 </div>
               } />,
               <MetricCard key="ale" icon={BellRing} label="Alertas Ativos" value={String(totalAlerts)} unit="em aberto" variant={totalAlerts > 0 ? "danger" : undefined} footer={
-                <p className="text-[11px] text-muted-foreground">{criticos} críticos · {Math.max(totalAlerts - criticos, 0)} em atenção</p>
+                <p className="text-[11px] text-muted-foreground">{criticos} críticos · {Math.max(totalAlerts - criticos, 0)} em atenção · de {segments.length} trechos monitorados</p>
               } />,
               <MetricCard key="os" icon={CalendarCheck} label="Ordens em Aberto" value={String(pendingOrders)} unit="pendentes / em andamento" footer={
                 <button onClick={() => navigate("/ordens")} className="text-[11px] font-semibold uppercase tracking-wider text-primary hover:underline">Ver ordens</button>
