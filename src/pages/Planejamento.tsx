@@ -155,6 +155,7 @@ const Planejamento = () => {
 
   const generateOS = useMutation({
     mutationFn: async () => {
+      if (generateOS.isPending || alreadyGenerated) throw new Error("Este plano já foi convertido em ordens de serviço.");
       const today = new Date();
       const rows: any[] = [];
       const suffix = Date.now().toString(36).toUpperCase().slice(-4);
@@ -178,9 +179,11 @@ const Planejamento = () => {
       return rows.length;
     },
     onSuccess: (n) => {
+      setGeneratedSignature(planSignature);
       qc.invalidateQueries({ queryKey: ["work_orders"] });
       toast.success("Ordens geradas", { description: `${n} ordens de serviço criadas com base no plano atual.` });
     },
+
     onError: (e: any) => {
       toast.error("Falha ao gerar OS", { description: e.message ?? "Erro inesperado" });
     },
