@@ -138,10 +138,14 @@ export const evaluateDecision = ({
  * Incerteza efetiva de um trecho: usa o valor calculado na leitura do satélite
  * quando existir; senão cai no resíduo base do modelo.
  */
-export const segmentUncertainty = (seg?: { uncertaintyCm?: number | null } | null): number =>
+export const segmentUncertainty = (
+  seg?: { uncertaintyCm?: number | null } | null,
+  /** Resíduo base vigente: a calibração de campo, quando publicada. */
+  fallbackCm: number = MODEL_UNCERTAINTY_CM,
+): number =>
   seg?.uncertaintyCm != null && Number.isFinite(seg.uncertaintyCm) && seg.uncertaintyCm > 0
     ? Math.round(seg.uncertaintyCm * 10) / 10
-    : MODEL_UNCERTAINTY_CM;
+    : fallbackCm;
 
 
 export const ZONE_CLASS: Record<DecisionZone, string> = {
