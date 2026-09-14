@@ -211,9 +211,12 @@ export type Database = {
           created_at: string
           created_by: string | null
           id: string
+          location_type: string | null
           measured_at: string
           observacao: string | null
+          satellite_image_date: string | null
           segment_id: string
+          temporal_difference_days: number | null
         }
         Insert: {
           altura_cm: number
@@ -221,9 +224,12 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
+          location_type?: string | null
           measured_at?: string
           observacao?: string | null
+          satellite_image_date?: string | null
           segment_id: string
+          temporal_difference_days?: number | null
         }
         Update: {
           altura_cm?: number
@@ -231,9 +237,12 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
+          location_type?: string | null
           measured_at?: string
           observacao?: string | null
+          satellite_image_date?: string | null
           segment_id?: string
+          temporal_difference_days?: number | null
         }
         Relationships: [
           {
