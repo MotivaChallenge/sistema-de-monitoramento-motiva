@@ -24,6 +24,7 @@ import { settingsVersionLabel } from "@/lib/settings-version";
 import { ContextBar } from "@/components/vegia/ContextBar";
 import { ModelValidationCard } from "@/components/vegia/ModelValidationCard";
 import { ModelCalibrationCard } from "@/components/vegia/ModelCalibrationCard";
+import { CompositeHeightPanel } from "@/components/vegia/CompositeHeightPanel";
 import { downloadCsv, newExecutionId, segmentsToCsv } from "@/lib/report-export";
 import { kmLabel } from "@/lib/km-format";
 import { DemoModelPanel } from "@/components/vegia/DemoModelPanel";
@@ -229,6 +230,8 @@ const Relatorio = () => {
       <DataSourcePanel className="mb-6" info={{ updatedAt: new Date(), demo: false }} note="Nº de cenas e pixels válidos variam por trecho — consulte o detalhe de cada segmento para os valores calculados no Earth Engine daquele ponto." />
 
       <ModelValidationCard className="mb-6" />
+
+      <CompositeHeightPanel className="mb-6" />
 
       <ModelCalibrationCard className="mb-6" />
 

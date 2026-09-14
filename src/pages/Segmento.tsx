@@ -17,6 +17,7 @@ import { DataOriginBadge } from "@/components/vegia/DataOriginBadge";
 import { segmentOrigin } from "@/lib/data-provenance";
 import { segmentUncertainty } from "@/lib/uncertainty";
 import { FieldMeasurementForm } from "@/components/vegia/FieldMeasurementForm";
+import { CompositeHeightPanel } from "@/components/vegia/CompositeHeightPanel";
 import { ModelCalibrationCard } from "@/components/vegia/ModelCalibrationCard";
 
 const OSMMap = lazy(() => import("@/components/vegia/OSMMap").then(m => ({ default: m.OSMMap })));
@@ -168,6 +169,8 @@ const Segmento = () => {
               lng={lng}
               contexto={{ rodovia: seg.rodovia ?? undefined, trecho: seg.km }}
             />
+
+            <CompositeHeightPanel segmentId={seg.id} />
 
             <FieldMeasurementForm segmentId={seg.id} />
 
