@@ -9,6 +9,10 @@
  * isso explicitamente em vez de inventar uma acurácia.
  */
 
+/** Aviso curto sobre a natureza indireta da medição por satélite. */
+export const SATELLITE_DISCLAIMER =
+  "O satélite não mede altura diretamente. A altura mostrada é uma estimativa por modelo e deve ser conferida em campo quando estiver perto do limite contratual.";
+
 /** Resíduo base (± cm) do modelo de altura por NDVI, documentado na auditoria GEE.
  *  A incerteza efetiva de cada trecho é maior quando a leitura é heterogênea,
  *  antiga ou saturada — ver `segmentUncertainty`. */
@@ -154,6 +158,3 @@ export const ZONE_CLASS: Record<DecisionZone, string> = {
   alto: "bg-destructive/10 text-destructive border-destructive/25",
   nao_calibrado: "bg-muted text-muted-foreground border-border",
 };
-
-export const SATELLITE_DISCLAIMER =
-  "O satélite não mede diretamente a altura da vegetação em centímetros. Ele fornece imagens e índices espectrais usados para identificar tendência, cobertura e risco. A altura apresentada pelo sistema é uma estimativa calibrada por modelo e deve ser validada em campo quando estiver próxima do limite contratual.";
