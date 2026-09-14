@@ -432,6 +432,10 @@ export interface FieldHeightMeasurement {
   alturaCm: number;
   autor: string | null;
   observacao: string | null;
+  /** Data da imagem de satélite pareada com a medição (qualidade temporal). */
+  satelliteImageDate: string | null;
+  locationType: string | null;
+  temporalDifferenceDays: number | null;
 }
 
 export const useFieldHeightMeasurements = (segmentId?: string) =>
@@ -440,7 +444,9 @@ export const useFieldHeightMeasurements = (segmentId?: string) =>
     queryFn: async (): Promise<FieldHeightMeasurement[]> => {
       let q = supabase
         .from("field_height_measurements")
-        .select("id,segment_id,measured_at,altura_cm,autor,observacao")
+        .select(
+          "id,segment_id,measured_at,altura_cm,autor,observacao,satellite_image_date,location_type,temporal_difference_days"
+        )
         .order("measured_at", { ascending: false });
       if (segmentId) q = q.eq("segment_id", segmentId);
       const { data, error } = await q;
@@ -452,6 +458,10 @@ export const useFieldHeightMeasurements = (segmentId?: string) =>
         alturaCm: Number(r.altura_cm),
         autor: (r.autor as string | null) ?? null,
         observacao: (r.observacao as string | null) ?? null,
+        satelliteImageDate: (r.satellite_image_date as string | null) ?? null,
+        locationType: (r.location_type as string | null) ?? null,
+        temporalDifferenceDays:
+          r.temporal_difference_days == null ? null : Number(r.temporal_difference_days),
       }));
     },
   });
@@ -460,7 +470,14 @@ export const useFieldHeightMeasurements = (segmentId?: string) =>
 export const useAddFieldMeasurement = (segmentId: string) => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { alturaCm: number; measuredAt: string; autor?: string; observacao?: string }) => {
+    mutationFn: async (input: {
+      alturaCm: number;
+      measuredAt: string;
+      autor?: string;
+      observacao?: string;
+      satelliteImageDate?: string | null;
+      locationType?: string | null;
+    }) => {
       const { data: auth } = await supabase.auth.getUser();
       const { error } = await supabase.from("field_height_measurements").insert({
         segment_id: segmentId,
@@ -468,6 +485,8 @@ export const useAddFieldMeasurement = (segmentId: string) => {
         measured_at: input.measuredAt,
         autor: input.autor?.trim() || auth.user?.email || null,
         observacao: input.observacao?.trim() || null,
+        satellite_image_date: input.satelliteImageDate || null,
+        location_type: input.locationType || null,
         created_by: auth.user?.id ?? null,
       });
       if (error) throw error;
