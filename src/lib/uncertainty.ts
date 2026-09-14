@@ -9,6 +9,10 @@
  * isso explicitamente em vez de inventar uma acurácia.
  */
 
+/** Aviso curto sobre a natureza indireta da medição por satélite. */
+export const SATELLITE_DISCLAIMER =
+  "O satélite não mede altura diretamente. A altura mostrada é uma estimativa por modelo e deve ser conferida em campo quando estiver perto do limite contratual.";
+
 /** Resíduo base (± cm) do modelo de altura por NDVI, documentado na auditoria GEE.
  *  A incerteza efetiva de cada trecho é maior quando a leitura é heterogênea,
  *  antiga ou saturada — ver `segmentUncertainty`. */
