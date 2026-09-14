@@ -151,7 +151,7 @@ export const DataSourcePanel = ({ info = {}, className = "", title = "Origem dos
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {mainItems.map((item) => (
           <div
             key={item.label}
@@ -165,7 +165,7 @@ export const DataSourcePanel = ({ info = {}, className = "", title = "Origem dos
                 {item.label}
               </p>
               <p
-                className={`text-[15px] font-semibold leading-snug ${item.warning ? "text-muted-foreground italic font-normal" : ""}`}
+                className={`text-[15px] font-semibold leading-tight ${item.warning ? "text-muted-foreground italic font-normal" : ""}`}
                 title={item.warning ? NOT_COMPUTED_HINT : undefined}
               >
                 {item.value}
