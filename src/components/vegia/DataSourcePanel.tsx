@@ -59,7 +59,7 @@ interface Props {
 }
 
 /**
- * "Fonte e qualidade do dado" — resumo sempre visível de como o dado foi capturado.
+ * "Origem dos dados" — resumo sempre visível de como o dado foi capturado.
  * Nunca inventa medições: sem leitura orbital carregada, marca como demonstrativo.
  */
 export const DataSourcePanel = ({ info = {}, className = "", title = "Origem dos dados", note }: Props) => {
@@ -83,27 +83,27 @@ export const DataSourcePanel = ({ info = {}, className = "", title = "Origem dos
     {
       icon: Satellite,
       label: "Fonte",
-      value: "Sentinel-2 (satélite)",
-      detail: "Imagens multiespectrais processadas no Google Earth Engine",
+      value: "Sentinel-2",
+      detail: "Satélite · Google Earth Engine",
     },
     {
       icon: Calendar,
       label: "Período analisado",
       value: periodText,
-      detail: "Intervalo de datas usado na composição das imagens",
+      detail: "Intervalo de datas das imagens",
     },
     {
       icon: Image,
       label: "Qualidade da leitura",
       value: qualityText,
-      detail: info.cloudMask ?? "Filtro de nuvens e pixels de vegetação aplicados",
+      detail: info.cloudMask ?? "Filtro de nuvens e pixels de vegetação",
       warning: qualityText === NOT_COMPUTED,
     },
     {
       icon: Clock,
       label: "Última atualização",
       value: fmtDateTime(info.updatedAt),
-      detail: "Data do processamento mais recente deste recorte",
+      detail: "Processamento mais recente",
     },
   ];
 
@@ -155,9 +155,9 @@ export const DataSourcePanel = ({ info = {}, className = "", title = "Origem dos
         {mainItems.map((item) => (
           <div
             key={item.label}
-            className="rounded-md border border-border/40 bg-surface p-3 flex gap-3 items-start"
+            className="rounded-md border border-border/40 bg-surface p-3.5 flex gap-3 items-start"
           >
-            <div className="mt-0.5 rounded-md bg-primary/10 p-1.5 text-primary">
+            <div className="mt-0.5 rounded-md bg-primary/10 p-1.5 text-primary shrink-0">
               <item.icon className="h-4 w-4" aria-hidden="true" />
             </div>
             <div className="min-w-0 flex-1">
@@ -165,18 +165,18 @@ export const DataSourcePanel = ({ info = {}, className = "", title = "Origem dos
                 {item.label}
               </p>
               <p
-                className={`text-sm font-semibold leading-snug ${item.warning ? "text-muted-foreground italic font-normal" : ""}`}
+                className={`text-[15px] font-semibold leading-snug ${item.warning ? "text-muted-foreground italic font-normal" : ""}`}
                 title={item.warning ? NOT_COMPUTED_HINT : undefined}
               >
                 {item.value}
               </p>
-              <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">{item.detail}</p>
+              <p className="text-[11px] text-muted-foreground leading-snug mt-1">{item.detail}</p>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="mt-4 flex items-start gap-2 rounded-md bg-amber-500/8 border border-amber-500/15 p-3 text-[12px] leading-relaxed text-foreground/90">
+      <div className="mt-4 flex items-start gap-2.5 rounded-md bg-amber-500/8 border border-amber-500/15 p-3 text-[12px] leading-relaxed text-foreground/90">
         <Info className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" aria-hidden="true" />
         <span>{SATELLITE_DISCLAIMER}</span>
       </div>
@@ -204,8 +204,8 @@ export const DataSourcePanel = ({ info = {}, className = "", title = "Origem dos
       </button>
 
       {open && (
-        <div className="mt-2 rounded-md border border-border/40 bg-surface p-3">
-          <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-2.5">
+        <div className="mt-2 rounded-md border border-border/40 bg-surface p-3.5">
+          <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-3">
             {details.map((d) => (
               <div key={d.label} className="min-w-0">
                 <dt className="text-[10px] uppercase tracking-wide text-muted-foreground">{d.label}</dt>
