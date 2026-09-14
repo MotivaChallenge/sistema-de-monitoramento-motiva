@@ -96,7 +96,7 @@ export const DataSourcePanel = ({ info = {}, className = "", title = "Origem dos
       icon: Image,
       label: "Qualidade da leitura",
       value: qualityText,
-      detail: info.cloudMask ?? "Filtro de nuvens e pixels de vegetação",
+      detail: "Nuvens filtradas · pixels de vegetação válidos",
       warning: qualityText === NOT_COMPUTED,
     },
     {
