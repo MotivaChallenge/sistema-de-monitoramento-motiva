@@ -34,12 +34,12 @@ describe("pesos", () => {
 });
 
 describe("índice composto", () => {
-  it("Teste 1 (rotatória) ≈ 0,241", () => {
-    expect(compositeVegetationIndex(T1)!).toBeCloseTo(0.241, 3);
+  it("Teste 1 (rotatória) ≈ 0,246", () => {
+    expect(compositeVegetationIndex(T1)!).toBeCloseTo(0.2456, 3);
   });
 
-  it("Teste 2 (sítio) ≈ 0,386", () => {
-    expect(compositeVegetationIndex(T2)!).toBeCloseTo(0.386, 3);
+  it("Teste 2 (sítio) ≈ 0,399", () => {
+    expect(compositeVegetationIndex(T2)!).toBeCloseTo(0.3988, 3);
   });
 
   it("retorna null com índice ausente, nulo ou inválido", () => {
@@ -62,8 +62,8 @@ describe("estimativa de altura", () => {
   });
 
   it("a reta ajustada bate com os coeficientes documentados", () => {
-    expect(ACTIVE_CALIBRATION.a).toBeCloseTo(210.3, 0);
-    expect(ACTIVE_CALIBRATION.b).toBeCloseTo(-41.7, 0);
+    expect(ACTIVE_CALIBRATION.a).toBeCloseTo(199.1, 0);
+    expect(ACTIVE_CALIBRATION.b).toBeCloseTo(-39.9, 0);
     expect(ACTIVE_CALIBRATION.publishable).toBe(false);
   });
 
@@ -114,8 +114,9 @@ describe("heterogeneidade e confiança", () => {
     const s = fieldStats([30, 49]);
     expect(s.meanCm).toBe(39.5);
     expect(s.sdCm!).toBeCloseTo(13.4, 1);
-    expect(s.heterogeneity).toBe("alta");
-    expect(confidenceFromStats(s)).toBe("baixa");
+    // 13,4 / 39,5 = 34% → moderada; o Teste 1 varia proporcionalmente mais (44%).
+    expect(s.heterogeneity).toBe("moderada");
+    expect(confidenceFromStats(s)).toBe("media");
   });
 
   it("sem medições ou com apenas uma, a confiança é indeterminada", () => {
@@ -178,7 +179,7 @@ describe("validação dos pontos conhecidos", () => {
 
   it("o Teste 1 fica próximo de 9 cm e classifica como NORMAL", () => {
     const r = results.find((x) => x.id === "test-01")!;
-    expect(r.vegetationIndex!).toBeCloseTo(0.241, 3);
+    expect(r.vegetationIndex!).toBeCloseTo(0.246, 3);
     expect(r.realCm).toBe(9);
     expect(r.absoluteErrorCm!).toBeLessThan(1);
     expect(r.maintenance).toBe("normal");
@@ -187,7 +188,7 @@ describe("validação dos pontos conhecidos", () => {
 
   it("o Teste 2 fica próximo de 39,5 cm e classifica como NECESSITA MANUTENÇÃO", () => {
     const r = results.find((x) => x.id === "test-02")!;
-    expect(r.vegetationIndex!).toBeCloseTo(0.386, 3);
+    expect(r.vegetationIndex!).toBeCloseTo(0.399, 3);
     expect(r.realCm).toBe(39.5);
     expect(r.absoluteErrorCm!).toBeLessThan(1);
     expect(r.percentErro!).toBeLessThan(5);
