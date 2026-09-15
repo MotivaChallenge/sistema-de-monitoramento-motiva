@@ -1,55 +1,38 @@
-# Simplificação do painel e renovação visual do sistema
+# Recalibrar a estimativa de altura com as medições de hoje
 
-## Objetivo
-Tornar o painel selecionado e todo o sistema mais simples, apresentável e fácil de entender, sem alterar dados, cálculos, regras contratuais ou integrações existentes.
+Objetivo: reduzir o erro nos pontos medidos para no máximo 3 cm, usando as quatro réguas fotografadas hoje no ponto -23,547778 / -46,755083, sem inventar precisão que os dados não sustentam.
 
-Direção definida:
-- manter a paleta anil atual e suas cores funcionais de atenção, risco e segurança;
-- usar Sora nos títulos e Manrope nos textos;
-- adotar uma organização compacta, com o essencial primeiro e detalhes técnicos sob demanda;
-- preservar os temas claro e escuro e a configuração de densidade já existente.
+## O que muda
 
-## 1. Simplificar “Fonte e qualidade do dado”
-- Transformar os 11 campos atuais em um resumo imediato com quatro informações: fonte, período analisado, qualidade da leitura e última atualização.
-- Traduzir termos técnicos em rótulos claros, mantendo os valores reais vindos da consulta orbital.
-- Reunir número de imagens, composição, máscara de nuvens, resolução, buffer e pixels válidos em “Detalhes técnicos”, recolhido por padrão.
-- Manter “Ver metodologia completa”, origem estimada/demonstrativa e o aviso de que o satélite não mede altura diretamente.
-- Exibir estados ausentes ou demonstrativos de forma clara, sem inventar valores.
-- Aplicar a mesma apresentação no dashboard, relatório e demais locais que reutilizam esse painel.
+1. **Entrada das medições de hoje**
+   As leituras lidas nas fotos (aprox. 36, 30, 30 e 33 cm, data 15/09/2026) substituem o par antigo (30 e 49 cm) do ponto "Sítio". O valor 49 cm era um caso isolado que puxava a média para cima e é a causa principal da superestimativa de ~8 cm.
 
-## 2. Consolidar o design system
-- Atualizar os tokens globais sem trocar a paleta: superfícies, bordas, contraste, sombras, foco, raios e estados semânticos.
-- Definir Sora para títulos e Manrope para corpo, formulários, tabelas e navegação; manter fonte monoespaçada apenas para identificadores e números técnicos.
-- Reduzir o raio visual para no máximo 8 px nos controles e cartões, eliminando o excesso de formas arredondadas.
-- Criar padrões reutilizáveis para títulos de página, seções, cartões, indicadores, etiquetas de status, campos e áreas vazias.
-- Melhorar legibilidade: menos caixa alta, menos espaçamento entre letras, corpo de texto maior e contraste reforçado.
-- Padronizar botões e controles no componente visual existente, com alvos de toque adequados, estados de foco, carregamento e desabilitado.
+2. **Ajuste da reta**
+   A relação índice de vegetação → altura é recalculada com os pontos de campo atualizados. Com a média de campo passando de 39,5 cm para ~32 cm, a reta fica mais baixa e o erro nos dois pontos volta a zero (ajuste exato com dois pontos).
 
-## 3. Organizar a estrutura comum
-- Refinar menu lateral e cabeçalho mantendo a navegação atual, o recolhimento do menu e o comportamento móvel.
-- Reduzir decoração, gradientes e sombras excessivas; destacar rota ativa, alertas e ação principal com hierarquia consistente.
-- Padronizar margens, largura útil e cabeçalhos das páginas.
-- Manter o mapa como superfície especializada, sem forçá-lo ao mesmo enquadramento das páginas de formulário e relatório.
+3. **Controle honesto do erro (o ponto central)**
+   Como duas retas passando por dois pontos sempre acertam esses pontos, o sistema passa a medir o erro por **validação deixando um ponto de fora** e a comparar a estimativa com **cada régua individual**, não só com a média. O resultado é um número real de imprecisão, não um zero artificial.
+   - Critério de aprovação: erro médio absoluto por régua ≤ 3 cm.
+   - Se o erro ficar acima de 3 cm com a reta simples, entra um segundo passo: ancorar o modelo também na variabilidade do local (usar a mediana das réguas em vez da média, que é menos sensível a folhas isoladas mais altas) e reavaliar.
+   - Se ainda assim não couber em 3 cm, a tela mostra o erro verdadeiro em vez de afirmar 3 cm. Não haverá ajuste artificial para forçar o número.
 
-## 4. Aplicar o padrão às telas
-- Dashboard: reduzir repetições, organizar contexto, situação e indicadores em uma leitura mais curta; manter todas as informações e ações.
-- Segmento e Relatório: separar resumo decisório de evidências, cálculos e metodologia; detalhes técnicos ficam progressivos.
-- Planejamento, Previsões, Equipes, Ordens, Alertas e Notificações: uniformizar cartões, listas, tabelas, filtros e estados.
-- Configurações, Validação e Dataset: uniformizar formulários, grupos, seletores e ações sem alterar regras.
-- Login, redefinição e páginas de erro: alinhar tipografia, controles, foco e superfícies ao mesmo padrão.
+4. **Transparência na tela**
+   O painel de estimativa passa a mostrar: altura estimada, média e faixa das réguas do local, erro atual do modelo em centímetros e quantos pontos sustentam a calibração. A frase sobre prova de conceito continua enquanto houver menos de 6 locais medidos.
 
-## 5. Acessibilidade e adaptação
-- Garantir um único título principal por tela, hierarquia correta de subtítulos e rótulos compreensíveis.
-- Manter foco visível, navegação por teclado, textos alternativos e estados comunicados além da cor.
-- Evitar textos menores que o necessário para leitura operacional.
-- Validar desktop e celular, sem sobreposição nem rolagem horizontal indevida.
-- Respeitar redução de movimento e manter animações somente como feedback funcional.
+## Limitações que ficam registradas
 
-## 6. Verificação
-- Conferir visualmente as rotas principais em desktop e celular, incluindo temas claro e escuro.
-- Validar abertura dos detalhes técnicos e da metodologia, menu recolhido/móvel, filtros, formulários, tabelas e ações principais.
-- Executar testes existentes e verificação de tipos.
-- Confirmar que o projeto encerra sem erros de compilação, execução ou console.
+- A altura da vegetação varia dentro do mesmo local (hoje: 30 a 36 cm no mesmo ponto). Nenhum modelo pode ser mais preciso que essa variação natural.
+- A data da imagem de satélite dos dois pontos ainda é desconhecida; enquanto não for informada, o aviso de possível defasagem permanece.
+- Com apenas dois locais, um erro pequeno nos pontos medidos **não** prova erro pequeno em trechos novos da rodovia. Isso continua escrito na tela.
 
 ## Detalhes técnicos
-Arquivos-base: `src/index.css`, `tailwind.config.ts`, componentes visuais em `src/components/ui`, estrutura em `AppLayout`, `Sidebar` e `TopHeader`, e componentes reutilizáveis de cartões, contexto, origem, decisão e fonte do dado. As páginas serão ajustadas para consumir esses padrões, evitando estilos isolados e preservando toda a lógica atual.
+
+- `src/lib/composite-height.ts`: atualizar `CALIBRATION_POINTS.test-02` com `fieldMeasurementsCm: [36, 30, 30, 33]`, `fieldMeasurementDate: "2026-09-15"`, `locationType: "rural"`; adicionar `modelErrorStats()` (erro absoluto médio e máximo por régua individual + LOOCV) e `ERROR_TARGET_CM = 3`.
+- Opção de robustez: parâmetro `centralTendency: "mean" | "median"` usado no ajuste, ativado só se o erro por régua exceder 3 cm.
+- `src/test/composite-height.test.ts`: novos casos — erro por régua ≤ 3 cm nos pontos atuais, média vs. mediana, ponto com régua discrepante, medições vazias, e a garantia de altura nunca negativa.
+- `src/components/vegia/CompositeHeightPanel.tsx`: exibir erro médio absoluto em cm, faixa das réguas e número de pontos de calibração.
+- Verificação: `bunx tsgo --noEmit` e `bunx vitest run`.
+
+## Confirmação necessária
+
+As leituras 36, 30, 30 e 33 cm foram tiradas visualmente das fotos. Se os valores anotados em campo forem outros, me passe os números exatos antes da recalibração.
