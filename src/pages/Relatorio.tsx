@@ -226,19 +226,6 @@ const Relatorio = () => {
 
       <DataSourcePanel className="mb-6" info={{ updatedAt: new Date(), demo: false }} note="Nº de cenas e pixels válidos variam por trecho — consulte o detalhe de cada segmento para os valores calculados no Earth Engine daquele ponto." />
 
-      <div className="mb-6 rounded-xl border border-border/60 bg-surface-low px-4 py-3 text-[12.5px] leading-relaxed">
-        <div className="flex flex-wrap items-center gap-2 mb-1.5">
-          <DataOriginBadge origin="campo" variant="full" />
-          <span className="text-muted-foreground">medições ARTESP acima ·</span>
-          <DataOriginBadge origin="satelite" variant="full" />
-          <span className="text-muted-foreground">segmentos abaixo</span>
-        </div>
-        <p className="text-muted-foreground">
-          Pontos <strong className="text-foreground">conformes estimados</strong> por satélite + modelo não equivalem a pontos
-          <strong className="text-foreground"> medidos em campo</strong>. Quando a estimativa cruza o limite considerando a incerteza,
-          o trecho é encaminhado à validação presencial antes de concluir conformidade. Parâmetros de cálculo: <span className="font-mono">{parametrosVersao}</span>.
-        </p>
-      </div>
 
       <SegmentTable rows={segments} />
 
