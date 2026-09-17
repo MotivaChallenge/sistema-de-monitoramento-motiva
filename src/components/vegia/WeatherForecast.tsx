@@ -17,7 +17,7 @@ export const WeatherForecast = () => {
       : "text-primary";
 
   return (
-    <section className="bg-surface-lowest rounded-xl p-6">
+    <section className="bg-surface-lowest rounded-lg border border-border/60 p-5 shadow-card">
       <div className="flex items-center justify-between mb-5">
         <h3 className="text-[15px] font-semibold tracking-wide uppercase flex items-center gap-2">
           <Cloud className="h-4 w-4 text-primary" /> Clima no Rodoanel & Crescimento Estimado
@@ -36,7 +36,7 @@ export const WeatherForecast = () => {
 
       {data && (
         <>
-          <div className="grid grid-cols-5 gap-3 mb-5">
+           <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3 mb-5">
             {data.forecast.map((d) => (
               <div key={d.date} className="bg-surface-low rounded-lg p-3 text-center">
                 <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">{dayLabel(d.date)}</div>

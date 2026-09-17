@@ -46,7 +46,7 @@ export const DecisionZoneCard = ({
   }
 
   return (
-    <section className={`rounded-xl border p-4 ${ZONE_CLASS[d.zone]} ${className}`} aria-label="Zona de decisão">
+    <section className={`rounded-lg border p-5 shadow-card ${ZONE_CLASS[d.zone]} ${className}`} aria-label="Zona de decisão">
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex items-center gap-2 font-semibold text-[13px]">
           <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
@@ -55,7 +55,7 @@ export const DecisionZoneCard = ({
         {origin && <DataOriginBadge origin={origin} />}
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-1 gap-3 mb-4">
         <Field label={measured ? "Medido em campo" : "Altura estimada"} value={`${Math.round(altura)} cm`} />
         <Field label="Limite contratual" value={`${limite} cm`} />
         <Field label="Situação" value={altura > limite ? "Acima do limite" : "Dentro do limite"} />

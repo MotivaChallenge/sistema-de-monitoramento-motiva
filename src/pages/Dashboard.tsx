@@ -147,7 +147,7 @@ const Dashboard = () => {
         }
       />
 
-      <div className="px-4 md:px-8 lg:px-10 pt-2 pb-12 space-y-5">
+       <div className="mx-auto w-full max-w-[1480px] px-4 md:px-6 lg:px-8 pt-4 pb-12 space-y-4">
         <h1 className="sr-only">Painel de monitoramento de vegetação rodoviária</h1>
         {isError && <QueryErrorState onRetry={() => qc.invalidateQueries()} />}
 
@@ -160,7 +160,7 @@ const Dashboard = () => {
 
         {/* 1 — Situação geral */}
         {isLoading ? (
-          <Skeleton className="h-[112px] w-full rounded-xl" />
+           <Skeleton className="h-[112px] w-full rounded-lg" />
         ) : (
           <AutoCarousel
             ariaLabel="Situação geral dos trechos"
@@ -198,19 +198,21 @@ const Dashboard = () => {
 
         {/* 2b — Fonte e qualidade do dado + zona de decisão do trecho em destaque */}
         {!isLoading && (
-          <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-4 items-start">
+           <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 items-stretch">
             <GeeDataSourcePanel
               lat={spotlightMarker?.lat}
               lng={spotlightMarker?.lng}
-              enabled={!!spotlightMarker}
+               enabled={!!spotlightMarker}
+               className="xl:col-span-8 h-full"
             />
             {spotlight && (
-              <div className="space-y-2">
+               <div className="xl:col-span-4 flex flex-col gap-2">
                 <DecisionZoneCard
                   altura={spotlight.altura}
                   limite={spotlight.limite}
                   origin={segmentOrigin(spotlight)}
-                  clausula={spotlight.clausula}
+                   clausula={spotlight.clausula}
+                   className="flex-1"
                 />
                 <button
                   onClick={() => navigate(`/segmento/${spotlight.id}`)}
@@ -228,7 +230,7 @@ const Dashboard = () => {
 
         {/* 4 — Indicadores operacionais (carrossel) */}
         {isLoading ? (
-          <Skeleton className="h-[150px] w-full rounded-xl" />
+           <Skeleton className="h-[150px] w-full rounded-lg" />
         ) : (
           <KpiCarousel
             ariaLabel="Indicadores operacionais da malha"
@@ -292,7 +294,7 @@ const Dashboard = () => {
         {/* 7 — Análises e alertas */}
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-4 items-start">
           <div className="space-y-4">
-            <section className="bg-surface-lowest rounded-xl p-4 md:p-5 border border-border/40 shadow-card">
+             <section className="bg-surface-lowest rounded-lg p-4 md:p-5 border border-border/60 shadow-card">
               <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                 <h2 className="text-[13px] font-semibold tracking-wider uppercase">Tendência NDVI</h2>
                 <span className="text-[11px] text-muted-foreground bg-surface-high px-2.5 py-1 rounded-full">Conformidade {conformidadePct}%</span>
@@ -303,7 +305,7 @@ const Dashboard = () => {
             </section>
 
             {/* Recomendações da IA */}
-            <section className="bg-surface-lowest rounded-xl p-4 md:p-5 border border-border/40 shadow-card">
+             <section className="bg-surface-lowest rounded-lg p-4 md:p-5 border border-border/60 shadow-card">
               <h2 className="flex items-center gap-2 text-[13px] uppercase tracking-wider font-semibold mb-3">
                 <Sparkles className="h-3.5 w-3.5 text-primary" /> Recomendações da IA
               </h2>
@@ -323,7 +325,7 @@ const Dashboard = () => {
             </section>
           </div>
 
-          <aside className="bg-surface-lowest rounded-xl p-5 h-fit border border-border/40 shadow-card xl:sticky xl:top-[88px]">
+           <aside className="bg-surface-lowest rounded-lg p-5 h-fit border border-border/60 shadow-card xl:sticky xl:top-[88px]">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-[14px] font-semibold tracking-wider uppercase flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-destructive animate-pulse" />

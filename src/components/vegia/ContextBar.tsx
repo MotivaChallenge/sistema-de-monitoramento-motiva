@@ -26,7 +26,7 @@ export const ContextBar = ({
   recorte, periodo = "últimos 60 dias (composição mediana)", updatedAt, origin = "satelite", demo = false, className = "",
 }: Props) => (
   <div
-    className={`flex flex-wrap items-center gap-x-5 gap-y-2 rounded-xl border border-border/60 bg-surface-lowest px-4 py-2.5 shadow-card ${className}`}
+    className={`grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 items-center gap-x-5 gap-y-2 rounded-lg border border-border/60 bg-surface-lowest px-4 py-3 shadow-card ${className}`}
     aria-label="Contexto do recorte exibido"
   >
     <Item icon={MapPin} label="Recorte" value={recorte} />
