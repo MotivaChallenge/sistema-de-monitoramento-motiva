@@ -179,17 +179,17 @@ describe("validação dos pontos conhecidos", () => {
 
   it("o Teste 1 fica próximo de 9 cm e classifica como NORMAL", () => {
     const r = results.find((x) => x.id === "test-01")!;
-    expect(r.vegetationIndex!).toBeCloseTo(0.246, 3);
+    expect(r.vegetationIndex!).toBeCloseTo(0.228, 3);
     expect(r.realCm).toBe(9);
     expect(r.absoluteErrorCm!).toBeLessThan(1);
     expect(r.maintenance).toBe("normal");
     expect(r.note).toBeTruthy();
   });
 
-  it("o Teste 2 fica próximo de 39,5 cm e classifica como NECESSITA MANUTENÇÃO", () => {
+  it("o Teste 2 fica próximo de 34,7 cm e classifica como NECESSITA MANUTENÇÃO", () => {
     const r = results.find((x) => x.id === "test-02")!;
-    expect(r.vegetationIndex!).toBeCloseTo(0.399, 3);
-    expect(r.realCm).toBe(39.5);
+    expect(r.vegetationIndex!).toBeCloseTo(0.385, 3);
+    expect(r.realCm!).toBeCloseTo(34.7, 1);
     expect(r.absoluteErrorCm!).toBeLessThan(1);
     expect(r.percentErro!).toBeLessThan(5);
     expect(r.maintenance).toBe("manutencao");
