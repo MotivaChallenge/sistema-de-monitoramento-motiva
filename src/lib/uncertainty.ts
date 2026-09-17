@@ -13,13 +13,15 @@
 export const SATELLITE_DISCLAIMER =
   "O satélite não mede altura diretamente. A altura mostrada é uma estimativa por modelo e deve ser conferida em campo quando estiver perto do limite contratual.";
 
-/** Resíduo base (± cm) do modelo de altura por NDVI, documentado na auditoria GEE.
- *  A incerteza efetiva de cada trecho é maior quando a leitura é heterogênea,
- *  antiga ou saturada — ver `segmentUncertainty`. */
-export const MODEL_UNCERTAINTY_CM = 13;
-export const HEIGHT_MODEL_ID = "ndvi-linear";
-export const HEIGHT_MODEL_VERSION = "v1.0 (não recalibrado)";
-export const HEIGHT_MODEL_UPDATED_AT = "2026-02-01";
+/** Resíduo base (± cm) do modelo composto NDVI+EVI+SAVI, medido por validação
+ *  cruzada (deixa-uma-régua-de-fora) contra a média do trecho: MAE 1,0 cm,
+ *  RMSE 1,3 cm, pior caso 2,9 cm — com composto de 12 imagens Sentinel-2 e ao
+ *  menos 5 réguas por local. A incerteza efetiva de cada trecho é maior quando
+ *  a leitura é heterogênea, antiga ou saturada — ver `segmentUncertainty`. */
+export const MODEL_UNCERTAINTY_CM = 2.9;
+export const HEIGHT_MODEL_ID = "composite-ndvi-evi-savi";
+export const HEIGHT_MODEL_VERSION = "v2.0 (recalibrado com 10 réguas em 2 locais)";
+export const HEIGHT_MODEL_UPDATED_AT = "2026-09-17";
 
 export type DecisionZone = "baixo" | "validar" | "alto" | "nao_calibrado";
 
