@@ -374,6 +374,16 @@ const Mapa = () => {
                 }`}
               />
             </div>
+            <div className="mt-1.5 flex items-baseline gap-1.5">
+              <span
+                className={`text-[16px] font-bold tabular-nums leading-none ${
+                  m.altura > m.limite ? "text-destructive" : "text-foreground"
+                }`}
+              >
+                {m.altura} cm
+              </span>
+              <span className="text-[10px] text-muted-foreground">limite {m.limite} cm</span>
+            </div>
             <div className="mt-1 flex items-center gap-2 text-[10.5px]">
               <span
                 className={`px-1.5 py-0.5 rounded font-semibold ${
@@ -388,6 +398,13 @@ const Mapa = () => {
               </span>
               <span className="text-muted-foreground truncate">{m.tipo}</span>
             </div>
+            <div className="mt-1 text-[10px] text-muted-foreground tabular-nums">
+              NDVI {m.ndvi.toFixed(2)} ·{" "}
+              {m.medido
+                ? `leitura Sentinel-2${m.lastRead ? ` em ${new Date(m.lastRead).toLocaleDateString("pt-BR")}` : ""}`
+                : "sem leitura orbital"}
+            </div>
+
           </button>
         ))}
       </div>
