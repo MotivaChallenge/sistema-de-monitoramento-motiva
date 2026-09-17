@@ -14,14 +14,14 @@ export const AppLayout = () => {
     <FiltersProvider>
       <MobileMenuContext.Provider value={{ open, setOpen }}>
         <RealtimeMount />
-        <div className="flex min-h-screen w-full bg-background">
+        <div className="flex min-h-screen w-full bg-surface-low">
           <Sidebar />
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetContent side="left" className="p-0 w-[260px] max-w-[85vw] bg-sidebar border-sidebar-border">
               <SidebarBody onNavigate={() => setOpen(false)} />
             </SheetContent>
           </Sheet>
-          <main className="flex-1 min-w-0 w-full max-w-full overflow-x-hidden">
+          <main className="flex-1 min-w-0 w-full max-w-full overflow-x-hidden bg-background md:my-2 md:mr-2 md:rounded-lg md:border md:border-border/50 md:shadow-card">
             <Outlet />
           </main>
         </div>

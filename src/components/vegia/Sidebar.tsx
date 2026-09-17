@@ -109,12 +109,12 @@ export const SidebarBody = ({ onNavigate, collapsed = false, onToggle }: Sidebar
         aria-label={it.label}
         aria-current={active ? "page" : undefined}
         className={cn(
-          "group relative flex items-center rounded-2xl transition-all duration-200",
+          "group relative flex items-center rounded-md transition-all duration-200",
           opts.sub ? "text-[13px] font-normal" : "text-[14px] font-medium",
           collapsed ? "justify-center h-11 w-11 mx-auto" : opts.sub ? "gap-3 pl-10 pr-3 py-2" : "gap-3 px-4 py-2.5",
           active
             ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
-            : "text-sidebar-foreground/75 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground hover:translate-x-0.5",
+            : "text-sidebar-foreground/75 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
         )}
       >
         {active && !collapsed && (
@@ -158,7 +158,7 @@ export const SidebarBody = ({ onNavigate, collapsed = false, onToggle }: Sidebar
   return (
     <div
       className={cn(
-        "h-[calc(100vh-16px)] my-2 ml-2 bg-gradient-sidebar text-sidebar-foreground flex flex-col border border-sidebar-border/40 overflow-hidden rounded-3xl shadow-2xl",
+        "h-[calc(100vh-16px)] my-2 ml-2 bg-gradient-sidebar text-sidebar-foreground flex flex-col border border-sidebar-border/60 overflow-hidden rounded-lg shadow-elegant",
         "transition-[width] duration-300 ease-in-out",
         collapsed ? "w-[72px]" : "w-[248px]",
       )}
@@ -168,7 +168,7 @@ export const SidebarBody = ({ onNavigate, collapsed = false, onToggle }: Sidebar
           <img
             src={motivaLogo.url}
             alt="Motiva"
-            className="h-11 w-11 rounded-2xl object-contain shadow-glow transition-transform duration-300 hover:scale-105"
+            className="h-11 w-11 rounded-md object-contain shadow-glow transition-transform duration-300 hover:scale-105"
           />
           <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-turquoise ring-2 ring-sidebar" aria-label="Sistema online" />
         </div>
@@ -193,7 +193,7 @@ export const SidebarBody = ({ onNavigate, collapsed = false, onToggle }: Sidebar
                 <button
                   onClick={() => { navigate("/ordens?new=1"); onNavigate?.(); }}
                   aria-label="Nova ordem de serviço"
-                  className="h-11 w-11 mx-auto flex items-center justify-center rounded-2xl bg-gradient-primary text-primary-foreground shadow-glow hover:opacity-90 hover:scale-105 transition-all"
+                   className="h-11 w-11 mx-auto flex items-center justify-center rounded-md bg-gradient-primary text-primary-foreground shadow-glow hover:opacity-90 hover:scale-105 transition-all"
                 >
                   <Plus className="h-5 w-5" />
                 </button>
@@ -203,7 +203,7 @@ export const SidebarBody = ({ onNavigate, collapsed = false, onToggle }: Sidebar
           ) : (
             <button
               onClick={() => { navigate("/ordens?new=1"); onNavigate?.(); }}
-              className="w-full flex items-center justify-center gap-2 rounded-2xl bg-gradient-primary text-primary-foreground text-[13px] font-semibold py-3 shadow-glow hover:opacity-90 hover:scale-[1.02] transition-all"
+               className="w-full flex items-center justify-center gap-2 rounded-md bg-gradient-primary text-primary-foreground text-[13px] font-semibold py-3 shadow-glow hover:opacity-90 hover:scale-[1.01] transition-all"
             >
               <Plus className="h-4 w-4" /> Nova ordem de serviço
             </button>
@@ -222,7 +222,7 @@ export const SidebarBody = ({ onNavigate, collapsed = false, onToggle }: Sidebar
                 <button
                   onClick={() => setOpenGroups(prev => ({ ...prev, [g.id]: !open }))}
                   aria-expanded={open}
-                  className="w-full flex items-center gap-2 px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] font-semibold text-sidebar-foreground/45 hover:text-sidebar-foreground/70 transition-colors rounded-xl hover:bg-sidebar-accent/20"
+                   className="w-full flex items-center gap-2 px-3 py-1.5 text-[10px] uppercase tracking-wider font-semibold text-sidebar-foreground/50 hover:text-sidebar-foreground/75 transition-colors rounded-md hover:bg-sidebar-accent/20"
                 >
                   <span className="flex-1 text-left">{g.label}</span>
                   <ChevronDown className={cn("h-3.5 w-3.5 transition-transform duration-200", open ? "" : "-rotate-90")} />
@@ -255,7 +255,7 @@ export const SidebarBody = ({ onNavigate, collapsed = false, onToggle }: Sidebar
             onClick={onToggle}
             aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
             className={cn(
-              "flex items-center gap-2 rounded-2xl text-[12px] font-medium text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/40 transition-all duration-200",
+               "flex items-center gap-2 rounded-md text-[12px] font-medium text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/40 transition-all duration-200",
               collapsed ? "h-10 w-10 justify-center mx-auto" : "w-full px-3 py-2",
             )}
           >
@@ -265,7 +265,7 @@ export const SidebarBody = ({ onNavigate, collapsed = false, onToggle }: Sidebar
       )}
 
       <div className={cn("pb-4 pt-3 border-t border-sidebar-border/60", collapsed ? "px-3" : "px-3")}>
-        <div className={cn("flex items-center rounded-2xl hover:bg-sidebar-accent/30 transition-smooth", collapsed ? "flex-col gap-2 py-2" : "gap-3 px-2 py-2")}>
+         <div className={cn("flex items-center rounded-md hover:bg-sidebar-accent/30 transition-smooth", collapsed ? "flex-col gap-2 py-2" : "gap-3 px-2 py-2")}>
           <div className="h-10 w-10 rounded-full bg-gradient-primary flex items-center justify-center text-primary-foreground shadow-sm shrink-0">
             <User className="h-4 w-4" />
           </div>
@@ -279,7 +279,7 @@ export const SidebarBody = ({ onNavigate, collapsed = false, onToggle }: Sidebar
             onClick={signOut}
             aria-label="Sair"
             title="Sair"
-            className="h-9 w-9 rounded-xl flex items-center justify-center text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/60 transition-smooth shrink-0"
+             className="h-9 w-9 rounded-md flex items-center justify-center text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/60 transition-smooth shrink-0"
           >
             <LogOut className="h-4 w-4" />
           </button>

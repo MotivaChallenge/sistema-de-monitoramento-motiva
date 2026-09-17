@@ -15,7 +15,7 @@ export const MetricCard = ({ label, value, unit, footer, variant = "primary", ic
   const valueColor = variant === "danger" ? "text-destructive" : "text-primary";
   const iconBg = variant === "danger" ? "bg-destructive/10 text-destructive" : "bg-primary/10 text-primary";
   return (
-    <div className="group relative bg-surface-lowest rounded-xl p-5 border border-border/40 shadow-card hover:shadow-elegant hover:border-border transition-smooth">
+    <div className="group relative bg-surface-lowest rounded-lg p-5 border border-border/60 shadow-card hover:shadow-elegant hover:border-primary/25 transition-smooth">
       <div className="flex items-start justify-between gap-3">
         <div className="label-md">{label}</div>
         {Icon && (

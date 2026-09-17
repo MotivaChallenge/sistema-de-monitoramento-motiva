@@ -34,7 +34,7 @@ export const StatisticCard = ({
       onClick={onClick}
       type={onClick ? "button" : undefined}
       className={cn(
-        "text-left w-full bg-surface-lowest rounded-xl p-5 border border-border/50 shadow-card transition-smooth",
+        "text-left w-full bg-surface-lowest rounded-lg p-5 border border-border/60 shadow-card transition-smooth",
         onClick && "hover:-translate-y-0.5 hover:shadow-elegant hover:border-primary/40 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/50 outline-none"
       )}
     >

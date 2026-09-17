@@ -1,7 +1,7 @@
 import { Sparkles } from "lucide-react";
 
 export const AIInsightBubble = ({ children, version = "v2.4" }: { children: React.ReactNode; version?: string }) => (
-  <div className="bg-secondary-container/40 rounded-xl p-5 flex gap-4">
+  <div className="bg-secondary-container/40 rounded-lg border border-primary/10 p-5 flex gap-4">
     <div className="h-10 w-10 shrink-0 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
       <Sparkles className="h-5 w-5" />
     </div>
