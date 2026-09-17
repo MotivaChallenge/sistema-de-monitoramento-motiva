@@ -282,7 +282,7 @@ const Mapa = () => {
 
   const selectItem = (m: { id: string; lat: number; lng: number; label: string }) => {
     setFocus({ lat: m.lat, lng: m.lng, key: `${m.id}-${Date.now()}` });
-    setMapPoint({ lat: m.lat, lng: m.lng, label: m.label });
+    setMapPoint({ lat: m.lat, lng: m.lng, label: m.label, segmentId: m.id });
   };
 
   /** Localização precisa (km + metros) do ponto clicado no eixo da rodovia. */
@@ -290,6 +290,20 @@ const Mapa = () => {
     () => (mapPoint ? kmForCoords(kmMarkers, { lat: mapPoint.lat, lng: mapPoint.lng }) : null),
     [mapPoint, kmMarkers]
   );
+
+  /** Trecho real correspondente ao ponto: o marcador escolhido ou o mais próximo do clique. */
+  const pointSegmentId = useMemo(() => {
+    if (!mapPoint) return undefined;
+    if (mapPoint.segmentId) return mapPoint.segmentId;
+    let best: { id: string; d: number } | null = null;
+    for (const m of segmentMarkers) {
+      const d = (m.lat - mapPoint.lat) ** 2 + (m.lng - mapPoint.lng) ** 2;
+      if (!best || d < best.d) best = { id: m.id, d };
+    }
+    // ~0.01 grau ≈ 1,1 km: só associa quando o clique está perto do trecho.
+    return best && best.d <= 0.0001 ? best.id : undefined;
+  }, [mapPoint, segmentMarkers]);
+
 
   const listPanel = (
     <div className="flex flex-col h-full min-h-0">
