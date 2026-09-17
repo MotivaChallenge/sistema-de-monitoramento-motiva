@@ -35,7 +35,7 @@ export const InfoBanner = ({ status, local, title, detail, meta, onClick }: Prop
     onClick={onClick}
     onKeyDown={e => { if (onClick && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); onClick(); } }}
     className={cn(
-      "relative flex items-center gap-5 bg-surface-lowest border border-border/50 rounded-xl pl-12 pr-12 py-6 md:py-7 overflow-hidden",
+      "relative flex items-center gap-5 bg-surface-lowest border border-border/60 rounded-lg pl-10 pr-10 py-5 md:py-6 overflow-hidden shadow-card",
       onClick && "cursor-pointer transition-smooth hover:border-primary/40 hover:shadow-elegant focus-visible:ring-2 focus-visible:ring-primary/50 outline-none"
     )}
   >
@@ -47,7 +47,7 @@ export const InfoBanner = ({ status, local, title, detail, meta, onClick }: Prop
           {statusLabel[status]}
         </span>
       </div>
-      <h3 className="text-[16px] md:text-[18px] font-semibold tracking-tight truncate">{title}</h3>
+      <h3 className="text-[16px] md:text-[18px] font-semibold truncate">{title}</h3>
       {detail && <p className="text-[12px] md:text-[13px] text-muted-foreground mt-1 line-clamp-2">{detail}</p>}
     </div>
     {meta && (

@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -54,7 +52,7 @@
     --input: 250 16% 93%;
     --ring: 250 62% 44%;
 
-    --radius: 0.875rem;
+    --radius: 0.5rem;
 
     --sidebar-background: 250 45% 14%;    /* anil profundo */
     --sidebar-foreground: 250 25% 92%;
@@ -66,8 +64,8 @@
     --sidebar-ring: 252 72% 62%;
 
     /* Sombras e gradientes — usar em cards e elementos elevados */
-    --shadow-card: 0 1px 2px hsl(250 35% 14% / 0.04), 0 1px 3px hsl(250 35% 14% / 0.04);
-    --shadow-elegant: 0 4px 16px -4px hsl(250 45% 22% / 0.10), 0 2px 6px hsl(250 35% 14% / 0.04);
+    --shadow-card: 0 1px 2px hsl(250 35% 14% / 0.04), 0 3px 10px -6px hsl(250 35% 14% / 0.12);
+    --shadow-elegant: 0 10px 28px -18px hsl(250 45% 22% / 0.28), 0 2px 6px hsl(250 35% 14% / 0.05);
     --shadow-glow: 0 0 0 1px hsl(var(--primary) / 0.08), 0 8px 24px -8px hsl(var(--primary) / 0.18);
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary-glow)) 100%);
     --gradient-surface: linear-gradient(180deg, hsl(var(--surface-lowest)) 0%, hsl(var(--surface-low)) 100%);
@@ -135,15 +133,20 @@
   html, body, #root { height: 100%; }
   body {
     @apply bg-background text-foreground;
-    font-family: 'Sora', system-ui, sans-serif;
+    font-family: 'DM Sans', system-ui, sans-serif;
     font-feature-settings: 'ss01';
     -webkit-font-smoothing: antialiased;
   }
   /* Densidade da interface — Configurações > Aparência */
   html[data-density="compact"] { font-size: 93.75%; }
-  html[data-density="compact"] body { letter-spacing: -0.002em; }
+  html[data-density="compact"] body { letter-spacing: 0; }
 
   .font-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Space Grotesk', 'DM Sans', system-ui, sans-serif;
+    letter-spacing: 0;
+  }
 
   /* A11y: foco visível consistente para navegação por teclado */
   :focus { outline: none; }

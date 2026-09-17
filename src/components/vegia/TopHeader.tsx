@@ -30,7 +30,7 @@ export const TopHeader = ({ breadcrumb = [{ label: "Rodoanel SP-021" }], current
     : "aguardando processamento";
   const refresh = () => { qc.invalidateQueries(); toast.success("Atualizando dados…"); };
   return (
-    <header className="h-14 md:h-16 px-3 md:px-4 flex items-center justify-between gap-2 bg-background/85 backdrop-blur-md sticky top-0 z-30 border-b border-border/40 overflow-hidden">
+    <header className="h-14 md:h-16 px-3 md:px-6 flex items-center justify-between gap-2 bg-background/92 backdrop-blur-md sticky top-0 z-30 border-b border-border/60 overflow-hidden">
       <div className="flex items-center gap-1.5 text-[11px] tracking-wider min-w-0 flex-1 overflow-hidden">
         <button
           onClick={() => setOpen(true)}
@@ -79,7 +79,7 @@ export const TopHeader = ({ breadcrumb = [{ label: "Rodoanel SP-021" }], current
           onClick={refresh}
           title="Recarregar"
           aria-label="Recarregar dados"
-          className="flex h-8 w-8 rounded-full hover:bg-surface-high items-center justify-center text-muted-foreground shrink-0"
+           className="flex h-8 w-8 rounded-md hover:bg-surface-high items-center justify-center text-muted-foreground shrink-0"
         >
           <RefreshCw className="h-[16px] w-[16px]" />
         </button>

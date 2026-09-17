@@ -32,7 +32,7 @@ const Item = ({
 );
 
 export const OpsSummaryBar = ({ lastUpdate, segmentsShown, segmentsTotal, coverageKm, criticos, activeAlerts }: Props) => (
-  <div className="flex flex-wrap items-center gap-x-6 gap-y-2 bg-surface-lowest border border-border/40 rounded-xl px-4 py-2.5 shadow-card">
+  <div className="grid grid-cols-2 xl:grid-cols-4 gap-x-5 gap-y-3 bg-surface-lowest border border-border/60 rounded-lg px-4 py-3 shadow-card">
     <Item
       icon={Clock}
       label="Atualizado"
