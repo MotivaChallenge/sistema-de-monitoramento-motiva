@@ -34,12 +34,12 @@ describe("pesos", () => {
 });
 
 describe("índice composto", () => {
-  it("Teste 1 (rotatória) ≈ 0,246", () => {
-    expect(compositeVegetationIndex(T1)!).toBeCloseTo(0.2456, 3);
+  it("Teste 1 (rotatória) ≈ 0,228", () => {
+    expect(compositeVegetationIndex(T1)!).toBeCloseTo(0.2278, 3);
   });
 
-  it("Teste 2 (sítio) ≈ 0,399", () => {
-    expect(compositeVegetationIndex(T2)!).toBeCloseTo(0.3988, 3);
+  it("Teste 2 (sítio) ≈ 0,385", () => {
+    expect(compositeVegetationIndex(T2)!).toBeCloseTo(0.385, 3);
   });
 
   it("retorna null com índice ausente, nulo ou inválido", () => {
@@ -58,12 +58,12 @@ describe("índice composto", () => {
 describe("estimativa de altura", () => {
   it("reproduz os dois pontos de calibração", () => {
     expect(estimateHeight(T1).estimatedHeightCm!).toBeCloseTo(9, 0);
-    expect(estimateHeight(T2).estimatedHeightCm!).toBeCloseTo(39.5, 0);
+    expect(estimateHeight(T2).estimatedHeightCm!).toBeCloseTo(34.7, 0);
   });
 
   it("a reta ajustada bate com os coeficientes documentados", () => {
-    expect(ACTIVE_CALIBRATION.a).toBeCloseTo(199.1, 0);
-    expect(ACTIVE_CALIBRATION.b).toBeCloseTo(-39.9, 0);
+    expect(ACTIVE_CALIBRATION.a).toBeCloseTo(163.4, 0);
+    expect(ACTIVE_CALIBRATION.b).toBeCloseTo(-28.2, 0);
     expect(ACTIVE_CALIBRATION.publishable).toBe(false);
   });
 

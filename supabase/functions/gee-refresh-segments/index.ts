@@ -134,7 +134,7 @@ Deno.serve(async (req) => {
           const images = typeof out.images === "number" ? Math.round(out.images) : 0;
 
           const valid = images > 0 && ndvi.median !== null && ndvi.validPixels >= MIN_PIXELS;
-          const h = estimateHeight({ ndviMedian: ndvi.median, saviMedian: savi.median, ndviStd: ndvi.stdDev, validPixels: ndvi.validPixels });
+          const h = estimateHeight({ ndviMedian: ndvi.median, eviMedian: evi.median, saviMedian: savi.median, ndviStd: ndvi.stdDev, validPixels: ndvi.validPixels, images });
 
           if (!dryRun) {
             await admin.from("segment_satellite_readings").insert({
