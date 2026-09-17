@@ -12,6 +12,9 @@ import {
   estimateHeightCm,
   fieldStats,
   maintenanceLevel,
+  MODEL_VALIDATION,
+  MIN_FIELD_SAMPLES,
+  spectralNoiseCm,
   temporalQuality,
   validateCalibration,
 } from "@/lib/composite-height";
@@ -193,5 +196,25 @@ describe("validação dos pontos conhecidos", () => {
     expect(r.absoluteErrorCm!).toBeLessThan(1);
     expect(r.percentErro!).toBeLessThan(5);
     expect(r.maintenance).toBe("manutencao");
+  });
+});
+
+describe("erro medido do modelo recalibrado", () => {
+  it("o erro validado fica dentro de 3 cm", () => {
+    expect(MODEL_VALIDATION.maeCm).toBeLessThanOrEqual(3);
+    expect(MODEL_VALIDATION.maxErrorCm).toBeLessThanOrEqual(3);
+    expect(MODEL_VALIDATION.nFieldSamples).toBeGreaterThanOrEqual(10);
+  });
+
+  it("mais imagens no composto reduzem o ruído espectral", () => {
+    expect(spectralNoiseCm(1)).toBeCloseTo(1.3, 2);
+    expect(spectralNoiseCm(12)).toBeLessThan(spectralNoiseCm(1));
+    expect(spectralNoiseCm(12)).toBeLessThan(0.5);
+    expect(spectralNoiseCm(0)).toBe(spectralNoiseCm(1));
+  });
+
+  it("exige ao menos 5 réguas por local para a média do trecho", () => {
+    expect(MIN_FIELD_SAMPLES).toBeGreaterThanOrEqual(5);
+    expect(MODEL_VALIDATION.fieldVariabilityCm / Math.sqrt(MIN_FIELD_SAMPLES)).toBeLessThanOrEqual(3);
   });
 });
