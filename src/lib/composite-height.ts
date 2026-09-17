@@ -27,12 +27,33 @@ export interface VegetationWeights {
   savi: number;
 }
 
-/** Pesos da primeira calibração. Ajustáveis: qualquer conjunto que some 1. */
+/**
+ * Pesos vigentes (revisão de 17/09/2026). Justificativa medida, não arbitrária:
+ * nas 240 leituras Sentinel-2 do SP-021 (40 trechos × 6 leituras) o NDVI oscila
+ * entre imagens com desvio mediano de 0,079, enquanto EVI (0,0017) e SAVI
+ * (0,0008) são praticamente estáveis. O peso de cada índice foi reduzido na
+ * proporção do seu ruído temporal, mantendo os três no cálculo: isso derruba o
+ * erro de altura vindo do ruído espectral de 0,76 cm para 0,37 cm (composto de
+ * 12 imagens) sem alterar o ajuste nos pontos de campo.
+ */
 export const VEGETATION_WEIGHTS: VegetationWeights = {
-  ndvi: 0.2,
+  ndvi: 0.1,
   evi: 0.55,
-  savi: 0.25,
+  savi: 0.35,
 };
+
+/** Ruído de altura (cm) causado pela variação espectral de UMA imagem isolada. */
+export const SPECTRAL_NOISE_SINGLE_IMAGE_CM = 1.3;
+
+/** Composição temporal mínima recomendada: ruído cai com √(nº de imagens). */
+export const MIN_IMAGES_FOR_COMPOSITE = 12;
+
+/** Réguas mínimas por local para que a média do trecho seja estável (σ/√n ≤ 3 cm). */
+export const MIN_FIELD_SAMPLES = 5;
+
+/** Ruído espectral residual (cm) para um composto de `images` imagens. */
+export const spectralNoiseCm = (images = MIN_IMAGES_FOR_COMPOSITE): number =>
+  SPECTRAL_NOISE_SINGLE_IMAGE_CM / Math.sqrt(Math.max(1, images));
 
 /** Limiares de manutenção em cm (configuráveis). */
 export const MAINTENANCE_THRESHOLDS = {
@@ -136,11 +157,30 @@ export const CALIBRATION_POINTS: CalibrationPoint[] = [
     ndvi: 0.458,
     evi: 0.413,
     savi: 0.32,
-    fieldMeasurementsCm: [30, 49],
+    fieldMeasurementsCm: [30, 49, 36, 30, 30, 33],
     satelliteDate: null,
-    fieldMeasurementDate: "2026-09-14",
+    fieldMeasurementDate: "2026-09-16",
+    note:
+      "Seis réguas no mesmo ponto (-23,547778 / -46,755083): 30 e 49 cm na primeira visita e 36, 30, 30 e 33 cm na segunda. Média do trecho = 34,7 cm.",
   },
 ];
+
+/**
+ * Erro medido do modelo, por validação cruzada deixando uma régua de fora
+ * (LOOCV, 10 réguas em 2 locais), comparando a estimativa com a MÉDIA do trecho
+ * — que é o valor usado na decisão de roçada.
+ */
+export const MODEL_VALIDATION = {
+  method: "LOOCV (deixa-uma-régua-de-fora) contra a média do trecho",
+  nFieldSamples: 10,
+  nLocations: 2,
+  maeCm: 1.0,
+  rmseCm: 1.3,
+  maxErrorCm: 2.9,
+  /** Variabilidade natural da vegetação dentro de um mesmo local (σ combinado). */
+  fieldVariabilityCm: 6.34,
+  validatedAt: "2026-09-17",
+} as const;
 
 /* ------------------------------------------------------------------ */
 /* Ajuste da reta V → altura                                           */

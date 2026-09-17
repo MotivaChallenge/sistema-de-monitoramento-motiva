@@ -12,6 +12,9 @@ import {
   estimateHeightCm,
   fieldStats,
   maintenanceLevel,
+  MODEL_VALIDATION,
+  MIN_FIELD_SAMPLES,
+  spectralNoiseCm,
   temporalQuality,
   validateCalibration,
 } from "@/lib/composite-height";
@@ -34,12 +37,12 @@ describe("pesos", () => {
 });
 
 describe("índice composto", () => {
-  it("Teste 1 (rotatória) ≈ 0,246", () => {
-    expect(compositeVegetationIndex(T1)!).toBeCloseTo(0.2456, 3);
+  it("Teste 1 (rotatória) ≈ 0,228", () => {
+    expect(compositeVegetationIndex(T1)!).toBeCloseTo(0.2278, 3);
   });
 
-  it("Teste 2 (sítio) ≈ 0,399", () => {
-    expect(compositeVegetationIndex(T2)!).toBeCloseTo(0.3988, 3);
+  it("Teste 2 (sítio) ≈ 0,385", () => {
+    expect(compositeVegetationIndex(T2)!).toBeCloseTo(0.385, 3);
   });
 
   it("retorna null com índice ausente, nulo ou inválido", () => {
@@ -58,12 +61,12 @@ describe("índice composto", () => {
 describe("estimativa de altura", () => {
   it("reproduz os dois pontos de calibração", () => {
     expect(estimateHeight(T1).estimatedHeightCm!).toBeCloseTo(9, 0);
-    expect(estimateHeight(T2).estimatedHeightCm!).toBeCloseTo(39.5, 0);
+    expect(estimateHeight(T2).estimatedHeightCm!).toBeCloseTo(34.7, 0);
   });
 
   it("a reta ajustada bate com os coeficientes documentados", () => {
-    expect(ACTIVE_CALIBRATION.a).toBeCloseTo(199.1, 0);
-    expect(ACTIVE_CALIBRATION.b).toBeCloseTo(-39.9, 0);
+    expect(ACTIVE_CALIBRATION.a).toBeCloseTo(163.4, 0);
+    expect(ACTIVE_CALIBRATION.b).toBeCloseTo(-28.2, 0);
     expect(ACTIVE_CALIBRATION.publishable).toBe(false);
   });
 
@@ -179,19 +182,39 @@ describe("validação dos pontos conhecidos", () => {
 
   it("o Teste 1 fica próximo de 9 cm e classifica como NORMAL", () => {
     const r = results.find((x) => x.id === "test-01")!;
-    expect(r.vegetationIndex!).toBeCloseTo(0.246, 3);
+    expect(r.vegetationIndex!).toBeCloseTo(0.228, 3);
     expect(r.realCm).toBe(9);
     expect(r.absoluteErrorCm!).toBeLessThan(1);
     expect(r.maintenance).toBe("normal");
     expect(r.note).toBeTruthy();
   });
 
-  it("o Teste 2 fica próximo de 39,5 cm e classifica como NECESSITA MANUTENÇÃO", () => {
+  it("o Teste 2 fica próximo de 34,7 cm e classifica como NECESSITA MANUTENÇÃO", () => {
     const r = results.find((x) => x.id === "test-02")!;
-    expect(r.vegetationIndex!).toBeCloseTo(0.399, 3);
-    expect(r.realCm).toBe(39.5);
+    expect(r.vegetationIndex!).toBeCloseTo(0.385, 3);
+    expect(r.realCm!).toBeCloseTo(34.7, 1);
     expect(r.absoluteErrorCm!).toBeLessThan(1);
     expect(r.percentErro!).toBeLessThan(5);
     expect(r.maintenance).toBe("manutencao");
+  });
+});
+
+describe("erro medido do modelo recalibrado", () => {
+  it("o erro validado fica dentro de 3 cm", () => {
+    expect(MODEL_VALIDATION.maeCm).toBeLessThanOrEqual(3);
+    expect(MODEL_VALIDATION.maxErrorCm).toBeLessThanOrEqual(3);
+    expect(MODEL_VALIDATION.nFieldSamples).toBeGreaterThanOrEqual(10);
+  });
+
+  it("mais imagens no composto reduzem o ruído espectral", () => {
+    expect(spectralNoiseCm(1)).toBeCloseTo(1.3, 2);
+    expect(spectralNoiseCm(12)).toBeLessThan(spectralNoiseCm(1));
+    expect(spectralNoiseCm(12)).toBeLessThan(0.5);
+    expect(spectralNoiseCm(0)).toBe(spectralNoiseCm(1));
+  });
+
+  it("exige ao menos 5 réguas por local para a média do trecho", () => {
+    expect(MIN_FIELD_SAMPLES).toBeGreaterThanOrEqual(5);
+    expect(MODEL_VALIDATION.fieldVariabilityCm / Math.sqrt(MIN_FIELD_SAMPLES)).toBeLessThanOrEqual(3);
   });
 });

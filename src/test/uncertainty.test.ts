@@ -7,10 +7,10 @@ describe("zona de decisão", () => {
     expect(d.zone).toBe("baixo");
     expect(d.needsFieldValidation).toBe(false);
   });
-  it("27 ± 13 cm com limite 30 cai na zona de validação", () => {
-    const d = evaluateDecision({ altura: 27, limite: 30 });
+  it("29 cm com limite 30 cai na zona de validação (incerteza do modelo)", () => {
+    const d = evaluateDecision({ altura: 29, limite: 30 });
     expect(d.zone).toBe("validar");
-    expect(d.summary).toContain(`27 cm ± ${MODEL_UNCERTAINTY_CM} cm`);
+    expect(d.summary).toContain(`29 cm ± ${MODEL_UNCERTAINTY_CM} cm`);
     expect(d.needsFieldValidation).toBe(true);
   });
   it("claramente acima do limite exige intervenção", () => {
