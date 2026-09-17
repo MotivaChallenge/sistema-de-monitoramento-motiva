@@ -248,13 +248,20 @@ const Mapa = () => {
           status: s.status as "critico" | "atencao" | "conforme",
           tipo: s.tipo,
           kmLabel: formatKmRange(s.kmStart, s.kmEnd),
-          label: `${formatKmRange(s.kmStart, s.kmEnd)} · ${s.tipo}`,
+          altura: s.altura,
+          limite: s.limite,
+          ndvi: s.ndvi,
+          medido: s.ndviSource === "sentinel2",
+          lastRead: s.lastSatelliteReadAt,
+          label: `${formatKmRange(s.kmStart, s.kmEnd)} · ${s.altura} cm (limite ${s.limite} cm) · ${s.tipo}`,
         };
       })
       .filter(Boolean) as {
         id: string; lat: number; lng: number; status: StatusKey; tipo: string; kmLabel: string; label: string;
+        altura: number; limite: number; ndvi: number; medido: boolean; lastRead: string | null;
       }[];
   }, [segments, kmMarkers]);
+
 
   const listItems = useMemo(() => {
     const q = listSearch.trim().toLowerCase();
