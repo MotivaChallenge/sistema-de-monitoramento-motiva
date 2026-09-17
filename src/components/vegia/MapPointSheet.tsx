@@ -28,6 +28,8 @@ export interface PointInsightResult {
 interface Props {
   open: boolean;
   point: { lat: number; lng: number; label?: string } | null;
+  /** Trecho real (tabela de segmentos) correspondente ao ponto selecionado. */
+  segmentId?: string;
   /** Localização precisa projetada sobre o eixo da rodovia. */
   kmInfo?: { rodovia: string; km: number; offsetMeters: number } | null;
   onClose: () => void;
@@ -39,11 +41,12 @@ const riskColor = (r?: string) =>
   r === "moderado" ? "text-primary bg-primary/10" :
   "text-turquoise bg-turquoise/10";
 
-export const MapPointSheet = ({ open, point, kmInfo, onClose }: Props) => {
+export const MapPointSheet = ({ open, point, segmentId, kmInfo, onClose }: Props) => {
   const navigate = useNavigate();
   const [data, setData] = useState<PointInsightResult | null>(null);
   const [loading, setLoading] = useState(false);
-  const { data: nearestSeg } = useSegment(data?.nearest?.segmentId);
+  const { data: nearestSeg } = useSegment(segmentId ?? data?.nearest?.segmentId);
+
 
   useEffect(() => {
     if (!open || !point) { setData(null); return; }
@@ -90,6 +93,51 @@ export const MapPointSheet = ({ open, point, kmInfo, onClose }: Props) => {
             </div>
           )}
         </SheetHeader>
+
+        {nearestSeg && (
+          <section className="mb-5 rounded-xl border border-border bg-surface-low p-4">
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
+                Altura da vegetação no local
+              </span>
+              <span className="text-[10px] text-muted-foreground tabular-nums">{nearestSeg.km}</span>
+            </div>
+            <div className="flex items-end gap-2">
+              <span
+                className={`text-4xl font-bold leading-none tabular-nums ${
+                  nearestSeg.altura > nearestSeg.limite ? "text-destructive" : "text-foreground"
+                }`}
+              >
+                {nearestSeg.altura}
+              </span>
+              <span className="text-base font-semibold text-muted-foreground mb-0.5">cm</span>
+              <span className="ml-auto text-[11px] text-muted-foreground">
+                limite contratual {nearestSeg.limite} cm
+              </span>
+            </div>
+            <div className="mt-2 grid grid-cols-2 gap-2 text-[11px]">
+              <div className="rounded-lg bg-surface-high px-2.5 py-1.5">
+                <div className="text-[9px] uppercase tracking-wider text-muted-foreground">NDVI</div>
+                <div className="font-semibold tabular-nums">{nearestSeg.ndvi.toFixed(2)}</div>
+              </div>
+              <div className="rounded-lg bg-surface-high px-2.5 py-1.5">
+                <div className="text-[9px] uppercase tracking-wider text-muted-foreground">Última roçada</div>
+                <div className="font-semibold">{nearestSeg.ultimaRocada}</div>
+              </div>
+            </div>
+            <p className="mt-2 text-[10.5px] leading-relaxed text-muted-foreground">
+              {nearestSeg.ndviSource === "sentinel2"
+                ? `Altura estimada a partir da leitura Sentinel-2${
+                    nearestSeg.lastSatelliteReadAt
+                      ? ` de ${new Date(nearestSeg.lastSatelliteReadAt).toLocaleDateString("pt-BR")}`
+                      : ""
+                  }${nearestSeg.satelliteImages ? ` (${nearestSeg.satelliteImages} imagens)` : ""}.`
+                : "Sem leitura orbital carregada para este trecho — valor de referência."}{" "}
+              O satélite não mede altura diretamente; confirme em campo quando estiver perto do limite.
+            </p>
+          </section>
+        )}
+
 
         {loading && (
           <div className="space-y-3">

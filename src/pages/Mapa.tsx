@@ -35,7 +35,7 @@ const Mapa = () => {
   const routedLine = routed?.line;
   const routeSource = routed?.source;
   const { data: coverage = 0 } = useTotalCoverage();
-  const [mapPoint, setMapPoint] = useState<{ lat: number; lng: number; label?: string } | null>(null);
+  const [mapPoint, setMapPoint] = useState<{ lat: number; lng: number; label?: string; segmentId?: string } | null>(null);
   const [baseLayer, setBaseLayer] = useState<"street" | "satellite" | "hybrid">("hybrid");
   const [showPolyline, setShowPolyline] = useState(true);
   const [kpisOpen, setKpisOpen] = useState(true);
@@ -248,13 +248,20 @@ const Mapa = () => {
           status: s.status as "critico" | "atencao" | "conforme",
           tipo: s.tipo,
           kmLabel: formatKmRange(s.kmStart, s.kmEnd),
-          label: `${formatKmRange(s.kmStart, s.kmEnd)} · ${s.tipo}`,
+          altura: s.altura,
+          limite: s.limite,
+          ndvi: s.ndvi,
+          medido: s.ndviSource === "sentinel2",
+          lastRead: s.lastSatelliteReadAt,
+          label: `${formatKmRange(s.kmStart, s.kmEnd)} · ${s.altura} cm (limite ${s.limite} cm) · ${s.tipo}`,
         };
       })
       .filter(Boolean) as {
         id: string; lat: number; lng: number; status: StatusKey; tipo: string; kmLabel: string; label: string;
+        altura: number; limite: number; ndvi: number; medido: boolean; lastRead: string | null;
       }[];
   }, [segments, kmMarkers]);
+
 
   const listItems = useMemo(() => {
     const q = listSearch.trim().toLowerCase();
@@ -275,7 +282,7 @@ const Mapa = () => {
 
   const selectItem = (m: { id: string; lat: number; lng: number; label: string }) => {
     setFocus({ lat: m.lat, lng: m.lng, key: `${m.id}-${Date.now()}` });
-    setMapPoint({ lat: m.lat, lng: m.lng, label: m.label });
+    setMapPoint({ lat: m.lat, lng: m.lng, label: m.label, segmentId: m.id });
   };
 
   /** Localização precisa (km + metros) do ponto clicado no eixo da rodovia. */
@@ -283,6 +290,20 @@ const Mapa = () => {
     () => (mapPoint ? kmForCoords(kmMarkers, { lat: mapPoint.lat, lng: mapPoint.lng }) : null),
     [mapPoint, kmMarkers]
   );
+
+  /** Trecho real correspondente ao ponto: o marcador escolhido ou o mais próximo do clique. */
+  const pointSegmentId = useMemo(() => {
+    if (!mapPoint) return undefined;
+    if (mapPoint.segmentId) return mapPoint.segmentId;
+    let best: { id: string; d: number } | null = null;
+    for (const m of segmentMarkers) {
+      const d = (m.lat - mapPoint.lat) ** 2 + (m.lng - mapPoint.lng) ** 2;
+      if (!best || d < best.d) best = { id: m.id, d };
+    }
+    // ~0.01 grau ≈ 1,1 km: só associa quando o clique está perto do trecho.
+    return best && best.d <= 0.0001 ? best.id : undefined;
+  }, [mapPoint, segmentMarkers]);
+
 
   const listPanel = (
     <div className="flex flex-col h-full min-h-0">
@@ -353,6 +374,16 @@ const Mapa = () => {
                 }`}
               />
             </div>
+            <div className="mt-1.5 flex items-baseline gap-1.5">
+              <span
+                className={`text-[16px] font-bold tabular-nums leading-none ${
+                  m.altura > m.limite ? "text-destructive" : "text-foreground"
+                }`}
+              >
+                {m.altura} cm
+              </span>
+              <span className="text-[10px] text-muted-foreground">limite {m.limite} cm</span>
+            </div>
             <div className="mt-1 flex items-center gap-2 text-[10.5px]">
               <span
                 className={`px-1.5 py-0.5 rounded font-semibold ${
@@ -367,6 +398,13 @@ const Mapa = () => {
               </span>
               <span className="text-muted-foreground truncate">{m.tipo}</span>
             </div>
+            <div className="mt-1 text-[10px] text-muted-foreground tabular-nums">
+              NDVI {m.ndvi.toFixed(2)} ·{" "}
+              {m.medido
+                ? `leitura Sentinel-2${m.lastRead ? ` em ${new Date(m.lastRead).toLocaleDateString("pt-BR")}` : ""}`
+                : "sem leitura orbital"}
+            </div>
+
           </button>
         ))}
       </div>
@@ -798,6 +836,8 @@ const Mapa = () => {
       <MapPointSheet
         open={!!mapPoint}
         point={mapPoint}
+        segmentId={pointSegmentId}
+
         kmInfo={
           pointKm
             ? { rodovia: selectedHighway, km: pointKm.km, offsetMeters: pointKm.offsetMeters }
