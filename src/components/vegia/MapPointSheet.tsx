@@ -28,6 +28,8 @@ export interface PointInsightResult {
 interface Props {
   open: boolean;
   point: { lat: number; lng: number; label?: string } | null;
+  /** Trecho real (tabela de segmentos) correspondente ao ponto selecionado. */
+  segmentId?: string;
   /** Localização precisa projetada sobre o eixo da rodovia. */
   kmInfo?: { rodovia: string; km: number; offsetMeters: number } | null;
   onClose: () => void;
@@ -39,11 +41,12 @@ const riskColor = (r?: string) =>
   r === "moderado" ? "text-primary bg-primary/10" :
   "text-turquoise bg-turquoise/10";
 
-export const MapPointSheet = ({ open, point, kmInfo, onClose }: Props) => {
+export const MapPointSheet = ({ open, point, segmentId, kmInfo, onClose }: Props) => {
   const navigate = useNavigate();
   const [data, setData] = useState<PointInsightResult | null>(null);
   const [loading, setLoading] = useState(false);
-  const { data: nearestSeg } = useSegment(data?.nearest?.segmentId);
+  const { data: nearestSeg } = useSegment(segmentId ?? data?.nearest?.segmentId);
+
 
   useEffect(() => {
     if (!open || !point) { setData(null); return; }

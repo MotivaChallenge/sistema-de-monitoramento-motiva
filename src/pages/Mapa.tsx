@@ -836,6 +836,8 @@ const Mapa = () => {
       <MapPointSheet
         open={!!mapPoint}
         point={mapPoint}
+        segmentId={pointSegmentId}
+
         kmInfo={
           pointKm
             ? { rodovia: selectedHighway, km: pointKm.km, offsetMeters: pointKm.offsetMeters }
