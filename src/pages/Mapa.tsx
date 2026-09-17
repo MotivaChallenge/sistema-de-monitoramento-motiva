@@ -35,7 +35,7 @@ const Mapa = () => {
   const routedLine = routed?.line;
   const routeSource = routed?.source;
   const { data: coverage = 0 } = useTotalCoverage();
-  const [mapPoint, setMapPoint] = useState<{ lat: number; lng: number; label?: string } | null>(null);
+  const [mapPoint, setMapPoint] = useState<{ lat: number; lng: number; label?: string; segmentId?: string } | null>(null);
   const [baseLayer, setBaseLayer] = useState<"street" | "satellite" | "hybrid">("hybrid");
   const [showPolyline, setShowPolyline] = useState(true);
   const [kpisOpen, setKpisOpen] = useState(true);
