@@ -1,52 +1,115 @@
-# Challenge Motiva
+# VegiaMap — Monitoramento de Vegetação Rodoviária
 
-Build a React SPA called VegiaMap — a vegetation compliance monitoring dashboard for a Brazilian highway concessionaire (Motiva/Rodoanel SP-021). Convert the attached HTML screens into a fully navigable React app with React Router.
+![Dashboard preview](./docs/assets/dashboard-preview.png)
 
-**Design system (must match exactly):**
+> Painel operacional para concessões rodoviários acompanharem o comprimento da vegetação na faixa de domínio, priorizarem roçadas e reduzirem o risco de multas regulatórias.
 
-- Colors: primary #00694C, background #FCF9F1, surface-low #F6F4EB, surface-high #EAE8E0, error #BA1A1A, tertiary #854F0B, secondary-container #B7F473
+---
 
-- Font: Inter. Monospace (10px) for contract clauses
+## O que é
 
-- No box borders for sectioning — use background color shifts only
+O **VegiaMap** é uma aplicação web desenvolvida para a **Motiva / Rodoanel SP-021** que transforma imagens de satélite e dados operacionais em informação acionável para equipes de campo.
 
-- No drop shadows — elevation through tonal contrast
+Em vez de depender de inspeções manuais em toda a extensão da rodovia, o sistema cruza:
 
-**4 pages with React Router:**
+- **Imagens Sentinel-2** processadas no Google Earth Engine (NDVI, EVI, SAVI);
+- **Previsão meteorológica** (Open-Meteo) para antecipar aceleração do crescimento;
+- **Histórico de roçadas** para saber onde a vegetação está crescendo há mais tempo;
+- **Medições de campo** (régua) para calibrar o modelo e não fingir precisão.
 
-1. `/dashboard` — Fixed sidebar (220px) + top header with "3 CRÍTICOS / 7 ATENÇÃO" badges + 4 KPI metric cards (Cobertura 29.3km, Trechos Críticos, NDVI Médio 0.54, Conformidade ARTESP 84%) + linear NDVI heatmap of the Rodoanel (colored segments: green/amber/red) with KM markers (0, 5, 10, 15, 20, 25, 29.3) + right panel with alert list (each alert has: KM, status badge, NDVI value, estimated height, monospace ARTESP clause) + bar chart of last 6 NDVI readings. Clicking any alert navigates to `/segmento/:id`.
+O resultado é um painel onde o supervisor vê, em uma tela só, os trechos críticos, o mapa de calor ao longo dos quilômetros, a altura estimada em centímetros e a recomendação de ação.
 
-2. `/segmento/:id` — "Detalhamento de Segmento". Left column: data table (NDVI, altura estimada in red if >30cm, limite contratual 30cm, última roçada date, deadline ARTESP in red, normative clause in a gray monospace box). Line chart of 30-day NDVI evolution with red dashed threshold line at 30cm. AI insight bubble (green background). Right column: Street View photo card + CV detection result card (class + confidence %) + action buttons: "Gerar OS de roçada" (primary red), "Exportar", "Resolvido". Top right: critical state badge "48h para Resolução".
+---
 
-3. `/relatorio` — "Relatório de Conformidade". 4 KPI cards + sortable/filterable table with columns: Segmento (KM), Tipo, NDVI (mini colored bar), Altura, Status (dot + text), Cláusula (monospace pill), Deadline (red if urgent). "Exportar PDF" button top right. Footer: "R$ 84.000 em multas evitadas (estimado)" highlighted card.
+## Funcionalidades principais
 
-4. `/analise-cv/:id` — "Análise Visual". 2×3 image grid with bounding box overlays (colored rectangles with label + confidence %), KM badge on each image. "Diagnóstico AI Consolidado" section at bottom with operational recommendations list.
+- **Dashboard operacional** com KPIs de cobertura, trechos críticos, NDVI médio e conformidade estimada.
+- **Mapa interativo** com pontos por quilômetro, altura estimada e origem do dado (satélite, campo, demonstrativo).
+- **Heatmap linear** do traçado da rodovia com segmentos coloridos por criticidade.
+- **Detalhamento por trecho** (`/segmento/:id`): altura, limite contratual, histórico de NDVI, última roçada e recomendação de ação.
+- **Relatório de conformidade** com filtros, ordenação e exportação para PDF/CSV/GeoJSON.
+- **Planejamento e priorização** com Índice de Risco de Crescimento (IRC) e alocação sugerida de equipes.
+- **Alertas e notificações** centralizados para acompanhamento de prazos.
+- **Modo demonstração** para apresentações sem depender de leituras de satélite.
+- **Tema claro/escuro** e interface responsiva para uso em tablets e celulares.
 
-**State:** Use mock JSON data for all segments, alerts, and CV results. `useState` for active filters and selected segment. No real API calls needed.
+---
 
-**Components to create:** `Sidebar`, `TopHeader`, `MetricCard`, `AlertCard`, `NDVIHeatmapBar`, `NDVILineChart`, `SegmentTable`, `CVImageGrid`, `AIInsightBubble`, `ComplianceBadge`, `MonoClause`.
+## Demonstração ao vivo
 
-Make all navigation functional. "Gerar OS" button shows a success toast. The sidebar highlights the active route.
+🌐 **Aplicação publicada**: [https://sistema-de-monitoramento-motiva.lovable.app](https://sistema-de-monitoramento-motiva.lovable.app)
 
-This project was built with [Lovable](https://lovable.dev).
+> O acesso às rotas protegidas exige autenticação. A raiz (`/`) redireciona para a tela de login.
 
-**Live app**: https://sistema-de-monitoramento-motiva.lovable.app
+---
 
-## Build with Lovable
+## Stack tecnológica
 
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/070ca8a9-9f49-4040-a84b-3259ebce1a4a).
+| Camada | Tecnologia |
+|--------|------------|
+| Frontend | React 18 + Vite 5 + TypeScript 5 |
+| Estilos | Tailwind CSS 3 + shadcn/ui + Radix |
+| Roteamento | React Router 6 |
+| Estado | React Query (TanStack Query), Context API |
+| Backend / Banco | Lovable Cloud (Supabase): Postgres, Auth, Edge Functions |
+| Dados externos | Google Earth Engine, Open-Meteo, OpenStreetMap / OSRM |
+| Testes | Vitest + Testing Library |
+| Build/deploy | Vite → Lovable Cloud |
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
+---
 
-## Development
+## Rodando localmente
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+```bash
+# 1. Clone o repositório
+git clone <url-do-repositorio>
+cd <nome-do-repositorio>
 
-```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
+# 2. Instale as dependências
+npm install
+# ou
+bun install
+
+# 3. Inicie o servidor de desenvolvimento
 npm run dev
 ```
+
+O app estará disponível em `http://localhost:8080`.
+
+### Outros comandos úteis
+
+```bash
+npm run build       # build de produção
+npm run test        # executa todos os testes (Vitest)
+npm run lint        # lint do projeto
+```
+
+---
+
+## Documentação
+
+A documentação técnica completa está na pasta [`docs/`](./docs):
+
+- [`docs/ARQUITETURA.md`](./docs/ARQUITETURA.md) — estrutura do projeto, rotas, fluxo de dados e integrações.
+- [`docs/MATEMATICA.md`](./docs/MATEMATICA.md) — como a estimativa de altura funciona, fórmulas e limitações.
+- [`docs/DADOS.md`](./docs/DADOS.md) — fontes de dados, tabelas e pipeline de satélite.
+- [`docs/ROADMAP.md`](./docs/ROADMAP.md) — evolução do projeto, fase por fase, incluindo o que foi descartado e por quê.
+
+---
+
+## Avisos importantes
+
+- **O satélite não mede altura diretamente.** A altura mostrada é uma estimativa produzida por modelo e deve ser confirmada em campo quando estiver próxima do limite contratual.
+- **A margem de ±2,9 cm** foi medida por validação cruzada nos 2 locais calibrados, contra a **média do trecho**, usando composição de ~12 imagens Sentinel-2. Não é uma precisão garantida para qualquer ponto isolado.
+- **O modelo ainda é prova de conceito** enquanto não houver 8 a 10 locais calibrados com pelo menos 5 réguas cada e imagens Sentinel-2 a no máximo 3 dias da medição de campo.
+- **Decisão contratual**: o sistema indica "validar em campo" sempre que a faixa de incerteza toca ou cruza o limite aplicável (30 cm, 45 cm ou 60 cm, conforme a cláusula do ativo).
+
+---
+
+## Licença
+
+Este projeto foi desenvolvido como entrega para a **Motiva / Rodoanel SP-021**. O código-fonte é de propriedade do cliente, salvo bibliotecas de terceiros sob suas respectivas licenças.
+
+---
+
+*Construído com [Lovable](https://lovable.dev).*
