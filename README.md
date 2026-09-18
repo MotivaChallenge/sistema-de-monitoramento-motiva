@@ -1,9 +1,4 @@
 # VegiaMap — Monitoramento de Vegetação Rodoviária
-
-![Dashboard preview](./docs/assets/dashboard-preview.png)
-
-> Painel operacional para concessões rodoviários acompanharem o comprimento da vegetação na faixa de domínio, priorizarem roçadas e reduzirem o risco de multas regulatórias.
-
 ---
 
 ## O que é
@@ -111,5 +106,3 @@ A documentação técnica completa está na pasta [`docs/`](./docs):
 Este projeto foi desenvolvido como entrega para a **Motiva / Rodoanel SP-021**. O código-fonte é de propriedade do cliente, salvo bibliotecas de terceiros sob suas respectivas licenças.
 
 ---
-
-*Construído com [Lovable](https://lovable.dev).*
