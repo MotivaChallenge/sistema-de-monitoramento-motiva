@@ -1,6 +1,16 @@
 # VegiaMap — Monitoramento de Vegetação Rodoviária
 ---
 
+## Integrantes
+
+| Nome | RM |
+|------|----|
+| Luiz Henrique Barbosa Dias | 562399 |
+| João Victor Alves de Abreu | 564946 |
+| Rodrigo Kenshin Viana Matayoshi | 564026 |
+
+---
+
 ## O que é
 
 O **VegiaMap** é uma aplicação web desenvolvida para a **Motiva / Rodoanel SP-021** que transforma imagens de satélite e dados operacionais em informação acionável para equipes de campo.
@@ -89,6 +99,68 @@ A documentação técnica completa está na pasta [`docs/`](./docs):
 - [`docs/MATEMATICA.md`](./docs/MATEMATICA.md) — como a estimativa de altura funciona, fórmulas e limitações.
 - [`docs/DADOS.md`](./docs/DADOS.md) — fontes de dados, tabelas e pipeline de satélite.
 - [`docs/ROADMAP.md`](./docs/ROADMAP.md) — evolução do projeto, fase por fase, incluindo o que foi descartado e por quê.
+
+- [`docs/TESTES_MANUAIS.md`](./docs/TESTES_MANUAIS.md) — os 6 fluxos principais, com cenário, resultado esperado, resultado obtido e status.
+
+---
+
+## Acesso de teste
+
+**Ainda não existe uma conta de teste compartilhável.** Nenhuma credencial é publicada aqui.
+O que o grupo precisa fazer:
+1. Criar um usuário exclusivo para avaliação (por exemplo, `avaliacao@<domínio-do-grupo>`), com senha que não seja pessoal.
+2. Não atribuir papel `admin` a ele (acesso só de consulta).
+3. Enviar as credenciais ao professor por um canal privado, ou colocá-las nesta seção se o grupo decidir que isso é seguro.
+
+`[CONFIRMAR COM O GRUPO]`
+
+## Modo demonstração
+
+Depois do login, use o menu de modo demonstração no cabeçalho do painel. Ele permite apresentar o sistema sem depender de leituras de satélite. Os dados desse modo aparecem marcados como "demonstrativo".
+
+---
+
+## Status das funcionalidades
+
+| Funcionalidade | Status | Evidência |
+|---|---|---|
+| Login, proteção de rotas e recuperação de senha | Parcial | Proteção e login inválido testados à mão (Fluxo 1); login válido e recuperação de senha não testados |
+| Dashboard (indicadores, heatmap, prioridades) | Não verificada | Código existe; teste manual pendente (Fluxo 2) |
+| Mapa operacional com altura por ponto | Não verificada | Código existe; Fluxo 3 pendente |
+| Detalhe do trecho e zona de decisão | Não verificada | Fluxo 4 pendente |
+| Relatório com exportação CSV/PDF/GeoJSON | Não verificada | Fluxo 5 pendente |
+| Medição de campo (Operador/Admin) | Não verificada | Fluxo 6 pendente |
+| Modelo de altura (NDVI/EVI/SAVI) | Parcial | Coberto por testes automatizados; calibrado com só 2 locais (prova de conceito) |
+| IRC / priorização | Concluída (cálculo) | `src/test/irc.test.ts` |
+| Previsões, Planejamento, Equipes, Ordens de serviço | Não verificada | Telas existem; sem teste manual |
+| Modo demonstração | Não verificada | Fluxo manual ainda não registrado |
+
+## Pendências conhecidas
+
+- Conta de teste para avaliação ainda não foi criada.
+- Os fluxos 2 a 6 dos testes manuais ainda precisam ser executados e preenchidos.
+- A calibração usa só 2 locais; as datas das imagens Sentinel desses pontos não são conhecidas.
+- Trechos sem EVI/SAVI continuam com a margem antiga de ±13 cm.
+- As contribuições individuais precisam ser confirmadas pelo grupo.
+
+## Plano para a Sprint 4
+
+1. Criar a conta de avaliação e executar os 6 fluxos manuais, com capturas de tela.
+2. Fazer a campanha de calibração: 8 a 10 locais, 5 réguas cada, imagem Sentinel a no máximo 3 dias da medição.
+3. Registrar as medições no banco (hoje estão só no código) e recalibrar.
+4. Fazer commits individuais de cada integrante, com mensagens descritivas.
+
+---
+
+## Contribuições e uso de ferramentas
+
+| Integrante | Contribuição |
+|---|---|
+| João Victor Alves de Abreu | Estrutura lógica e escolha das tecnologias `[CONFIRMAR COM O GRUPO]` |
+| Luiz Henrique Barbosa Dias | Design do front-end e escolhas visuais `[CONFIRMAR COM O GRUPO]` |
+| Rodrigo Kenshin Viana Matayoshi | `[CONFIRMAR COM O GRUPO]` |
+
+**Uso do Lovable:** a maior parte do código foi gerada pela ferramenta Lovable (IA) a partir dos pedidos, revisões e medições de campo do grupo. Por isso o histórico tem cerca de 790 commits automáticos (`gpt-engineer-app[bot]`) e apenas 1 commit de um integrante. Esse histórico não mostra, por si só, a divisão de trabalho, e por isso a tabela acima precisa da confirmação do grupo.
 
 ---
 
