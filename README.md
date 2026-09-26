@@ -1,5 +1,6 @@
 # VegiaMap — Monitoramento de Vegetação Rodoviária
----
+
+> Entrega final — Challenge Motiva (Sprints 1 a 4)
 
 ## Integrantes
 
@@ -13,7 +14,7 @@
 
 ## O que é
 
-O **VegiaMap** é uma aplicação web desenvolvida para a **Motiva / Rodoanel SP-021** que transforma imagens de satélite e dados operacionais em informação acionável para equipes de campo.
+O **VegiaMap** é uma aplicação desenvolvida para a **Motiva / Rodoanel SP-021** que transforma imagens de satélite e dados operacionais em informação acionável para equipes de campo.
 
 Em vez de depender de inspeções manuais em toda a extensão da rodovia, o sistema cruza:
 
@@ -22,14 +23,25 @@ Em vez de depender de inspeções manuais em toda a extensão da rodovia, o sist
 - **Histórico de roçadas** para saber onde a vegetação está crescendo há mais tempo;
 - **Medições de campo** (régua) para calibrar o modelo e não fingir precisão.
 
-O resultado é um painel onde o supervisor vê, em uma tela só, os trechos críticos, o mapa de calor ao longo dos quilômetros, a altura estimada em centímetros e a recomendação de ação.
+O resultado é um painel onde o supervisor vê, em uma tela só, os trechos críticos, o mapa de calor ao longo dos quilômetros, a altura estimada em centímetros e a recomendação de ação contra o limite contratual de 30 cm.
+
+---
+
+## Links da entrega final
+
+- 🌐 **Aplicação publicada**: [https://sistema-de-monitoramento-motiva.lovable.app](https://sistema-de-monitoramento-motiva.lovable.app)
+- 📦 **APK para download (GitHub Releases)**: `[PENDENTE — o grupo publica o APK em Releases e cola o link aqui]`
+- 🎬 **Vídeo de pitch e demonstração (até 5 min)**: `[PENDENTE — o grupo grava e cola o link aqui]`
+- 📄 **Plano de negócio**: `docs/PLANO_DE_NEGOCIO.pdf` `[PENDENTE — anexar o PDF entregue ou link]`
+
+> O acesso às rotas protegidas exige autenticação. A raiz (`/`) redireciona para a tela de login.
 
 ---
 
 ## Funcionalidades principais
 
 - **Dashboard operacional** com KPIs de cobertura, trechos críticos, NDVI médio e conformidade estimada.
-- **Mapa interativo** com pontos por quilômetro, altura estimada e origem do dado (satélite, campo, demonstrativo).
+- **Mapa interativo** com pontos por quilômetro, altura estimada em centímetros e origem do dado (satélite, campo, demonstrativo).
 - **Heatmap linear** do traçado da rodovia com segmentos coloridos por criticidade.
 - **Detalhamento por trecho** (`/segmento/:id`): altura, limite contratual, histórico de NDVI, última roçada e recomendação de ação.
 - **Relatório de conformidade** com filtros, ordenação e exportação para PDF/CSV/GeoJSON.
@@ -37,14 +49,7 @@ O resultado é um painel onde o supervisor vê, em uma tela só, os trechos crí
 - **Alertas e notificações** centralizados para acompanhamento de prazos.
 - **Modo demonstração** para apresentações sem depender de leituras de satélite.
 - **Tema claro/escuro** e interface responsiva para uso em tablets e celulares.
-
----
-
-## Demonstração ao vivo
-
-🌐 **Aplicação publicada**: [https://sistema-de-monitoramento-motiva.lovable.app](https://sistema-de-monitoramento-motiva.lovable.app)
-
-> O acesso às rotas protegidas exige autenticação. A raiz (`/`) redireciona para a tela de login.
+- **App Android (APK)** empacotado com Capacitor a partir do mesmo código web.
 
 ---
 
@@ -58,24 +63,56 @@ O resultado é um painel onde o supervisor vê, em uma tela só, os trechos crí
 | Estado | React Query (TanStack Query), Context API |
 | Backend / Banco | Lovable Cloud (Supabase): Postgres, Auth, Edge Functions |
 | Dados externos | Google Earth Engine, Open-Meteo, OpenStreetMap / OSRM |
-| Testes | Vitest + Testing Library |
+| Mobile (APK) | Capacitor 8 (Android) |
+| Testes | Vitest + Testing Library (102 testes) |
 | Build/deploy | Vite → Lovable Cloud |
 
 ---
 
-## Rodando localmente
+## App Android (APK)
+
+O APK é gerado a partir deste repositório com **Capacitor**, sem reescrever o app: o mesmo código web roda dentro de um contêiner nativo Android.
+
+### Como gerar o APK
+
+Pré-requisitos: Node.js, Android Studio (com SDK Android) e JDK 17+.
 
 ```bash
-# 1. Clone o repositório
+# 1. Clone o repositório e instale as dependências
 git clone <url-do-repositorio>
 cd <nome-do-repositorio>
-
-# 2. Instale as dependências
 npm install
-# ou
-bun install
 
-# 3. Inicie o servidor de desenvolvimento
+# 2. Adicione a plataforma Android (só na primeira vez)
+npx cap add android
+
+# 3. Gere o build web e sincronize com o projeto Android
+npm run build
+npx cap sync
+
+# 4. Abra no Android Studio e gere o APK
+npx cap open android
+# No Android Studio: Build > Build Bundle(s) / APK(s) > Build APK(s)
+```
+
+O APK gerado fica em `android/app/build/outputs/apk/debug/app-debug.apk`.
+
+### Como instalar no dispositivo
+
+1. Baixe o APK pelo link de **GitHub Releases** (no topo deste README).
+2. No Android, autorize a instalação de apps de fontes desconhecidas quando solicitado.
+3. Abra o arquivo e confirme a instalação.
+
+> Sempre que o código for atualizado (`git pull`), rode `npm install && npm run build && npx cap sync` antes de gerar um novo APK.
+
+---
+
+## Rodando localmente (versão web)
+
+```bash
+git clone <url-do-repositorio>
+cd <nome-do-repositorio>
+npm install
 npm run dev
 ```
 
@@ -91,6 +128,19 @@ npm run lint        # lint do projeto
 
 ---
 
+## Resumo das entregas por Sprint
+
+| Sprint | Entrega |
+|--------|---------|
+| **Sprint 1** | Protótipo navegável da plataforma: dashboard, mapa e estrutura inicial de páginas. |
+| **Sprint 2** | Integrações reais: banco de dados, autenticação, Sentinel-2/GEE (NDVI, EVI, SAVI), clima e rotas; remoção dos dados fictícios. |
+| **Sprint 3** | Modelo de estimativa de altura calibrado com medições de campo (margem medida de ±2,9 cm na média do trecho), testes manuais documentados, correções de segurança (RLS) e README revisado. |
+| **Sprint 4** | Versão final: APK Android via Capacitor, plano de negócio, README consolidado e roteiro do vídeo de pitch. |
+
+Detalhes fase por fase, incluindo o que foi tentado e descartado: [`docs/ROADMAP.md`](./docs/ROADMAP.md).
+
+---
+
 ## Documentação
 
 A documentação técnica completa está na pasta [`docs/`](./docs):
@@ -99,8 +149,8 @@ A documentação técnica completa está na pasta [`docs/`](./docs):
 - [`docs/MATEMATICA.md`](./docs/MATEMATICA.md) — como a estimativa de altura funciona, fórmulas e limitações.
 - [`docs/DADOS.md`](./docs/DADOS.md) — fontes de dados, tabelas e pipeline de satélite.
 - [`docs/ROADMAP.md`](./docs/ROADMAP.md) — evolução do projeto, fase por fase, incluindo o que foi descartado e por quê.
-
 - [`docs/TESTES_MANUAIS.md`](./docs/TESTES_MANUAIS.md) — os 6 fluxos principais, com cenário, resultado esperado, resultado obtido e status.
+- [`docs/ROTEIRO_PITCH.md`](./docs/ROTEIRO_PITCH.md) — roteiro do vídeo final de pitch e demonstração (até 5 minutos).
 
 ---
 
@@ -134,6 +184,7 @@ Depois do login, use o menu de modo demonstração no cabeçalho do painel. Ele 
 | IRC / priorização | Concluída (cálculo) | `src/test/irc.test.ts` |
 | Previsões, Planejamento, Equipes, Ordens de serviço | Não verificada | Telas existem; sem teste manual |
 | Modo demonstração | Não verificada | Fluxo manual ainda não registrado |
+| APK Android | Configurado | Capacitor configurado; build do APK roda na máquina do grupo (Android Studio) |
 
 ## Pendências conhecidas
 
@@ -142,13 +193,7 @@ Depois do login, use o menu de modo demonstração no cabeçalho do painel. Ele 
 - A calibração usa só 2 locais; as datas das imagens Sentinel desses pontos não são conhecidas.
 - Trechos sem EVI/SAVI continuam com a margem antiga de ±13 cm.
 - As contribuições individuais precisam ser confirmadas pelo grupo.
-
-## Plano para a Sprint 4
-
-1. Criar a conta de avaliação e executar os 6 fluxos manuais, com capturas de tela.
-2. Fazer a campanha de calibração: 8 a 10 locais, 5 réguas cada, imagem Sentinel a no máximo 3 dias da medição.
-3. Registrar as medições no banco (hoje estão só no código) e recalibrar.
-4. Fazer commits individuais de cada integrante, com mensagens descritivas.
+- Links do APK (GitHub Releases), do vídeo final e do plano de negócio precisam ser colados neste README após a produção.
 
 ---
 
@@ -176,5 +221,3 @@ Depois do login, use o menu de modo demonstração no cabeçalho do painel. Ele 
 ## Licença
 
 Este projeto foi desenvolvido como entrega para a **Motiva / Rodoanel SP-021**. O código-fonte é de propriedade do cliente, salvo bibliotecas de terceiros sob suas respectivas licenças.
-
----
