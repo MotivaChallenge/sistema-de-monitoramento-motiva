@@ -1190,6 +1190,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      has_any_role: { Args: { _user_id: string }; Returns: boolean }
       verify_cron_token: { Args: { _token: string }; Returns: boolean }
     }
     Enums: {
