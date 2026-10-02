@@ -30,7 +30,7 @@ O resultado é um painel onde o supervisor vê, em uma tela só, os trechos crí
 ## Links da entrega final
 
 - 🌐 **Aplicação publicada**: [https://sistema-de-monitoramento-motiva.lovable.app](https://sistema-de-monitoramento-motiva.lovable.app)
-- 📦 **APK para download (GitHub Releases)**: `[PENDENTE — o grupo publica o APK em Releases e cola o link aqui]`
+- 📦 **APK para download (GitHub Releases)**: [baixar a versão mais recente](../../releases/latest/download/vegiamap.apk) · [todas as versões](../../releases)
 - 🎬 **Vídeo de pitch e demonstração (até 5 min)**: `[PENDENTE — o grupo grava e cola o link aqui]`
 - 📄 **Plano de negócio**: `docs/PLANO_DE_NEGOCIO.pdf` `[PENDENTE — anexar o PDF entregue ou link]`
 
@@ -73,7 +73,16 @@ O resultado é um painel onde o supervisor vê, em uma tela só, os trechos crí
 
 O APK é gerado a partir deste repositório com **Capacitor**, sem reescrever o app: o mesmo código web roda dentro de um contêiner nativo Android.
 
-### Como gerar o APK
+### Geração automática (GitHub Actions)
+
+O workflow `.github/workflows/android-apk.yml` compila o APK e publica no **GitHub Releases** automaticamente:
+
+- ao criar uma tag de versão (`git tag v1.0.0 && git push origin v1.0.0`), ou
+- manualmente em **Actions → Build APK e publicar no Releases → Run workflow**.
+
+O arquivo publicado se chama `vegiamap.apk`, e o link do topo deste README sempre aponta para a versão mais recente.
+
+### Como gerar o APK manualmente
 
 Pré-requisitos: Node.js, Android Studio (com SDK Android) e JDK 17+.
 
@@ -201,11 +210,11 @@ Depois do login, use o menu de modo demonstração no cabeçalho do painel. Ele 
 
 | Integrante | Contribuição |
 |---|---|
-| João Victor Alves de Abreu | Estrutura lógica e escolha das tecnologias `[CONFIRMAR COM O GRUPO]` |
-| Luiz Henrique Barbosa Dias | Design do front-end e escolhas visuais `[CONFIRMAR COM O GRUPO]` |
-| Rodrigo Kenshin Viana Matayoshi | `[CONFIRMAR COM O GRUPO]` |
+| João Victor Alves de Abreu | Estrutura lógica da plataforma e escolha das tecnologias. |
+| Luiz Henrique Barbosa Dias | Design do front-end e escolhas visuais. |
+| Rodrigo Kenshin Viana Matayoshi | Criou uma CNN (rede neural convolucional) para treinar o modelo de satélite e melhorar a precisão, e desenvolveu toda a parte matemática da estimativa de altura. |
 
-**Uso do Lovable:** a maior parte do código foi gerada pela ferramenta Lovable (IA) a partir dos pedidos, revisões e medições de campo do grupo. Por isso o histórico tem cerca de 790 commits automáticos (`gpt-engineer-app[bot]`) e apenas 1 commit de um integrante. Esse histórico não mostra, por si só, a divisão de trabalho, e por isso a tabela acima precisa da confirmação do grupo.
+**Uso do Lovable:** a maior parte do código foi gerada pela ferramenta Lovable (IA) a partir dos pedidos, revisões e medições de campo do grupo. Por isso o histórico tem cerca de 790 commits automáticos (`gpt-engineer-app[bot]`) e apenas 1 commit de um integrante. As contribuições acima foram confirmadas pelo grupo.
 
 ---
 
