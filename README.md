@@ -32,7 +32,7 @@ O resultado é um painel onde o supervisor vê, em uma tela só, os trechos crí
 - 🌐 **Aplicação publicada**: [https://sistema-de-monitoramento-motiva.lovable.app](https://sistema-de-monitoramento-motiva.lovable.app)
 - 📦 **APK para download (GitHub Releases)**: [baixar a versão mais recente](../../releases/latest/download/vegiamap.apk) · [todas as versões](../../releases)
 - 🎬 **Vídeo de pitch e demonstração (até 5 min)**: `[PENDENTE — o grupo grava e cola o link aqui]`
-- 📄 **Plano de negócio**: `docs/PLANO_DE_NEGOCIO.pdf` `[PENDENTE — anexar o PDF entregue ou link]`
+- 📄 **Plano de negócio**: [docs/PLANO_DE_NEGOCIO.pdf](./docs/PLANO_DE_NEGOCIO.pdf)
 
 > O acesso às rotas protegidas exige autenticação. A raiz (`/`) redireciona para a tela de login.
 
@@ -201,7 +201,7 @@ Depois do login, use o menu de modo demonstração no cabeçalho do painel. Ele 
 - Os fluxos 2 a 6 dos testes manuais ainda precisam ser executados e preenchidos.
 - A calibração usa só 2 locais; as datas das imagens Sentinel desses pontos não são conhecidas.
 - Trechos sem EVI/SAVI continuam com a margem antiga de ±13 cm.
-- Links do vídeo final e do plano de negócio precisam ser colados neste README após a produção.
+- O link do vídeo final precisa ser colados neste README após a produção.
 
 ---
 
