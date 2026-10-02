@@ -201,7 +201,7 @@ Depois do login, use o menu de modo demonstração no cabeçalho do painel. Ele 
 - Os fluxos 2 a 6 dos testes manuais ainda precisam ser executados e preenchidos.
 - A calibração usa só 2 locais; as datas das imagens Sentinel desses pontos não são conhecidas.
 - Trechos sem EVI/SAVI continuam com a margem antiga de ±13 cm.
-- O link do vídeo final precisa ser colados neste README após a produção.
+- O link do vídeo final precisa ser colado neste README após a produção.
 
 ---
 
