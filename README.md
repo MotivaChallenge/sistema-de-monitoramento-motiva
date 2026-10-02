@@ -193,7 +193,7 @@ Depois do login, use o menu de modo demonstração no cabeçalho do painel. Ele 
 | IRC / priorização | Concluída (cálculo) | `src/test/irc.test.ts` |
 | Previsões, Planejamento, Equipes, Ordens de serviço | Não verificada | Telas existem; sem teste manual |
 | Modo demonstração | Não verificada | Fluxo manual ainda não registrado |
-| APK Android | Configurado | Capacitor configurado; build do APK roda na máquina do grupo (Android Studio) |
+| APK Android | Configurado | Gerado e publicado no GitHub Releases pelo GitHub Actions |
 
 ## Pendências conhecidas
 
@@ -201,8 +201,7 @@ Depois do login, use o menu de modo demonstração no cabeçalho do painel. Ele 
 - Os fluxos 2 a 6 dos testes manuais ainda precisam ser executados e preenchidos.
 - A calibração usa só 2 locais; as datas das imagens Sentinel desses pontos não são conhecidas.
 - Trechos sem EVI/SAVI continuam com a margem antiga de ±13 cm.
-- As contribuições individuais precisam ser confirmadas pelo grupo.
-- Links do APK (GitHub Releases), do vídeo final e do plano de negócio precisam ser colados neste README após a produção.
+- Links do vídeo final e do plano de negócio precisam ser colados neste README após a produção.
 
 ---
 
