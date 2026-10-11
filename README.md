@@ -1,6 +1,6 @@
 # VegiaMap — Monitoramento de Vegetação Rodoviária
 
-> Entrega final — Challenge Motiva (Sprints 1 a 4)
+> Entrega da Sprint 4D para avaliação — Challenge Motiva (Sprints 1 a 4)
 
 ## Integrantes
 
@@ -81,23 +81,27 @@ O workflow `.github/workflows/android-apk.yml` compila o APK e publica no **GitH
 - manualmente em **Actions → Build APK e publicar no Releases → Run workflow**.
 
 O arquivo publicado se chama `vegiamap.apk`, e o link do topo deste README sempre aponta para a versão mais recente.
+O build no GitHub Actions lê `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` das variáveis do repositório; sem elas, a publicação é interrompida.
+O workflow gera um APK instalável assinado com a chave de depuração do Android. Para distribuição comercial, o grupo deverá configurar uma chave de assinatura de release própria.
 
 ### Como gerar o APK manualmente
 
-Pré-requisitos: Node.js, Android Studio (com SDK Android) e JDK 17+.
+Pré-requisitos: Node.js, Android Studio (com SDK Android) e JDK 21.
 
 ```bash
 # 1. Clone o repositório e instale as dependências
-git clone <url-do-repositorio>
-cd <nome-do-repositorio>
-npm install
+git clone https://github.com/MotivaChallenge/sistema-de-monitoramento-motiva.git
+cd sistema-de-monitoramento-motiva
+npm ci
+cp .env.example .env
+# Preencha .env com VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY do projeto.
 
 # 2. Adicione a plataforma Android (só na primeira vez)
-npx cap add android
+CAPACITOR_BUNDLED=true npx cap add android
 
 # 3. Gere o build web e sincronize com o projeto Android
 npm run build
-npx cap sync
+CAPACITOR_BUNDLED=true npx cap sync android
 
 # 4. Abra no Android Studio e gere o APK
 npx cap open android
@@ -112,16 +116,18 @@ O APK gerado fica em `android/app/build/outputs/apk/debug/app-debug.apk`.
 2. No Android, autorize a instalação de apps de fontes desconhecidas quando solicitado.
 3. Abra o arquivo e confirme a instalação.
 
-> Sempre que o código for atualizado (`git pull`), rode `npm install && npm run build && npx cap sync` antes de gerar um novo APK.
+> Sempre que o código for atualizado (`git pull`), rode `npm ci && npm run build && CAPACITOR_BUNDLED=true npx cap sync android` antes de gerar um novo APK. A variável `CAPACITOR_BUNDLED=true` faz o APK usar os arquivos locais compilados, sem apontar para o servidor de desenvolvimento do Lovable.
 
 ---
 
 ## Rodando localmente (versão web)
 
 ```bash
-git clone <url-do-repositorio>
-cd <nome-do-repositorio>
-npm install
+git clone https://github.com/MotivaChallenge/sistema-de-monitoramento-motiva.git
+cd sistema-de-monitoramento-motiva
+npm ci
+cp .env.example .env
+# Preencha .env com VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY do projeto.
 npm run dev
 ```
 
@@ -160,6 +166,7 @@ A documentação técnica completa está na pasta [`docs/`](./docs):
 - [`docs/ROADMAP.md`](./docs/ROADMAP.md) — evolução do projeto, fase por fase, incluindo o que foi descartado e por quê.
 - [`docs/TESTES_MANUAIS.md`](./docs/TESTES_MANUAIS.md) — os 6 fluxos principais, com cenário, resultado esperado, resultado obtido e status.
 - [`docs/ROTEIRO_PITCH.md`](./docs/ROTEIRO_PITCH.md) — roteiro do vídeo final de pitch e demonstração (até 5 minutos).
+- [`docs/VALIDACAO_SPRINT_4D.md`](./docs/VALIDACAO_SPRINT_4D.md) — resultados de build, testes e pendências verificáveis da entrega Android.
 
 ---
 
@@ -193,7 +200,7 @@ Depois do login, use o menu de modo demonstração no cabeçalho do painel. Ele 
 | IRC / priorização | Concluída (cálculo) | `src/test/irc.test.ts` |
 | Previsões, Planejamento, Equipes, Ordens de serviço | Não verificada | Telas existem; sem teste manual |
 | Modo demonstração | Não verificada | Fluxo manual ainda não registrado |
-| APK Android | Configurado | Gerado e publicado no GitHub Releases pelo GitHub Actions |
+| APK Android | Build validado; instalação em teste | `assembleDebug` concluiu com JDK 21; assinatura e conteúdo embutido verificados. Veja a validação da Sprint 4D. |
 
 ## Pendências conhecidas
 
@@ -202,6 +209,8 @@ Depois do login, use o menu de modo demonstração no cabeçalho do painel. Ele 
 - A calibração usa só 2 locais; as datas das imagens Sentinel desses pontos não são conhecidas.
 - Trechos sem EVI/SAVI continuam com a margem antiga de ±13 cm.
 - O link do vídeo final precisa ser colado neste README após a produção.
+- O lint geral ainda acusa 64 erros e 16 avisos; o arquivo corrigido nesta Sprint passa isoladamente.
+- A triagem dos avisos de dependências e a assinatura de release própria são necessárias antes de uma distribuição comercial.
 
 ---
 
@@ -211,9 +220,9 @@ Depois do login, use o menu de modo demonstração no cabeçalho do painel. Ele 
 |---|---|
 | João Victor Alves de Abreu | Estrutura lógica da plataforma e escolha das tecnologias. |
 | Luiz Henrique Barbosa Dias | Design do front-end e escolhas visuais. |
-| Rodrigo Kenshin Viana Matayoshi | Criou uma CNN (rede neural convolucional) para treinar o modelo de satélite e melhorar a precisão, e desenvolveu toda a parte matemática da estimativa de altura. |
+| Rodrigo Kenshin Viana Matayoshi | Desenvolveu a parte matemática da estimativa de altura e explorou uma CNN em estudo separado. A CNN não integra o modelo de regressão usado neste aplicativo. |
 
-**Uso do Lovable:** a maior parte do código foi gerada pela ferramenta Lovable (IA) a partir dos pedidos, revisões e medições de campo do grupo. Por isso o histórico tem cerca de 790 commits automáticos (`gpt-engineer-app[bot]`) e apenas 1 commit de um integrante. As contribuições acima foram confirmadas pelo grupo.
+**Uso do Lovable:** a maior parte do código foi gerada pela ferramenta Lovable (IA) a partir dos pedidos, revisões e medições de campo do grupo. No estado anterior à Sprint 4D, o histórico tem 815 commits de `gpt-engineer-app[bot]`, dois commits atribuídos ao Lovable e um commit de um integrante. As contribuições acima foram informadas pelo grupo; o histórico Git, sozinho, não comprova a autoria de cada decisão.
 
 ---
 
