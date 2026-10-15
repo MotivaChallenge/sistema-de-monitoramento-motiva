@@ -6,7 +6,7 @@ const bundled = process.env.CAPACITOR_BUNDLED === 'true';
 
 const config: CapacitorConfig = {
   appId: 'app.lovable.p070ca8a99f494040a84b3259ebce1a4a',
-  appName: 'sistema-de-monitoramento-motiva',
+  appName: 'VegiaMap',
   webDir: 'dist',
   ...(bundled
     ? {}

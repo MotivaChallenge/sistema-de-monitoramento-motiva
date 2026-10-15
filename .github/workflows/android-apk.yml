@@ -13,6 +13,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CAPACITOR_BUNDLED: 'true'
+      VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+      VITE_SUPABASE_PROJECT_ID: ${{ vars.VITE_SUPABASE_PROJECT_ID }}
     steps:
       - uses: actions/checkout@v4
 
@@ -28,7 +31,15 @@ jobs:
       - uses: android-actions/setup-android@v3
 
       - name: Instalar dependências
-        run: npm install
+        run: npm ci
+
+      - name: Conferir configuração pública do app
+        run: |
+          test -n "$VITE_SUPABASE_URL"
+          test -n "$VITE_SUPABASE_PUBLISHABLE_KEY"
+
+      - name: Testes automatizados
+        run: npm test
 
       - name: Build web
         run: npm run build

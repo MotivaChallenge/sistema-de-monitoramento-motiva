@@ -23,6 +23,12 @@ import { ModelCalibrationCard } from "@/components/vegia/ModelCalibrationCard";
 const OSMMap = lazy(() => import("@/components/vegia/OSMMap").then(m => ({ default: m.OSMMap })));
 const NDVILineChart = lazy(() => import("@/components/vegia/NDVILineChart").then(m => ({ default: m.NDVILineChart })));
 
+const coordinateOr = (value: unknown, fallback: number): number => {
+  if (value === null || value === undefined || value === "") return fallback;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
+
 const Segmento = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -34,8 +40,8 @@ const Segmento = () => {
 
   // Resolve real lat/lng from km_markers (fallback to street.lat/lng or São Paulo)
   const marker = seg ? kmMarkers.find(m => Math.round(m.km) === Math.round(seg.kmStart)) : undefined;
-  const lat = marker?.lat ?? Number(seg?.street?.lat) ?? -23.5505;
-  const lng = marker?.lng ?? Number(seg?.street?.lng) ?? -46.6333;
+  const lat = marker?.lat ?? coordinateOr(seg?.street?.lat, -23.5505);
+  const lng = marker?.lng ?? coordinateOr(seg?.street?.lng, -46.6333);
 
   // Find recommended equipment by nearest rocada centroid (squared distance — fine for ranking)
   const recommended = useMemo(() => {
