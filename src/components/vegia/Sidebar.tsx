@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useActiveAlertsCount } from "@/hooks/useAlertsFeed";
 import { useWorkOrders } from "@/hooks/useVegiaData";
 import { useUnreadNotificationsCount } from "@/hooks/useNotifications";
-import motivaLogo from "@/assets/motiva-logo.webp.asset.json";
+import motivaLogo from "@/assets/motiva-logo.webp";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -166,7 +166,7 @@ export const SidebarBody = ({ onNavigate, collapsed = false, onToggle }: Sidebar
       <div className={cn("pt-5 pb-6 flex items-center gap-3", collapsed ? "px-3 justify-center" : "px-5")}>
         <div className="relative shrink-0">
           <img
-            src={motivaLogo.url}
+            src={motivaLogo}
             alt="Motiva"
             className="h-11 w-11 rounded-md object-contain shadow-glow transition-transform duration-300 hover:scale-105"
           />
