@@ -4,8 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { z } from "zod";
-import motivaLogo from "@/assets/motiva-logo.webp.asset.json";
-import loginBg from "@/assets/login-highway.jpg.asset.json";
+import motivaLogo from "@/assets/motiva-logo.webp";
+import loginBg from "@/assets/login-highway.jpg";
 
 const signinSchema = z.object({
   email: z.string().trim().email("Email inválido").max(255),
@@ -72,7 +72,7 @@ const Auth = () => {
   return (
     <div className="relative min-h-screen flex items-center justify-center p-6 overflow-hidden">
       <img
-        src={loginBg.url}
+        src={loginBg}
         alt="Rodovia vista de cima com vegetação nas margens"
         width={1920}
         height={1280}
@@ -80,7 +80,7 @@ const Auth = () => {
       />
       <div className="relative w-full max-w-md rounded-2xl p-8 bg-foreground/45 backdrop-blur-xl border border-primary-foreground/25 shadow-2xl text-primary-foreground">
         <div className="flex items-center gap-3 mb-7">
-          <img src={motivaLogo.url} alt="Motiva" className="h-11 w-11 rounded-xl object-contain" />
+          <img src={motivaLogo} alt="Motiva" className="h-11 w-11 rounded-xl object-contain" />
           <div>
             <h1 className="text-[20px] font-bold tracking-tight">Acesso ao painel</h1>
             <p className="text-[12px] text-primary-foreground/70">Monitoramento de vegetação rodoviária</p>
